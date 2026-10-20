@@ -2,7 +2,7 @@
  "title": "Chinland Conflict Monitor",
  "publisher": "Chin Center for Peace and Reconciliation",
  "source": "Chinland Monitoring Briefing",
- "generated": "2026-10-20T08:58:10.049Z",
+ "generated": "2026-10-20T09:29:52.015Z",
  "latest": "2026-09",
  "months": {
   "2026-09": {
@@ -98,10 +98,10 @@
      "inChin": false,
      "place": "Zokhawthar, Champhai (Mizoram)",
      "detail": "Iron Gate, Zokhawthar village",
-     "pcode": null,
+     "pcode": "PIN 796321",
      "prec": "approx",
-     "lat": 23.367,
-     "lon": 93.392,
+     "lat": 23.456,
+     "lon": 93.328,
      "actors": "Police and Assam Rifles",
      "civK": null,
      "civI": null,
@@ -1681,7 +1681,8 @@
    "origin": "Matupi Township",
    "status": "Open",
    "lat": 23.727,
-   "lon": 92.718
+   "lon": 92.718,
+   "prec": "approx"
   },
   "Thiak Rawl IDP camp": {
    "ts": "Outside Chin State",
@@ -1690,7 +1691,8 @@
    "origin": "Matupi Township",
    "status": "Open",
    "lat": 23.727,
-   "lon": 92.718
+   "lon": 92.718,
+   "prec": "approx"
   }
  }
 }

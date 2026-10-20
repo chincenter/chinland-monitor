@@ -297,7 +297,7 @@ const CATS = {
   livelihood:{label:'Livelihood',color:'var(--c-livelihood)',shape:'square'},
 };
 const catTag = c => `<span class="cat"><i style="background:${CATS[c].color}${CATS[c].shape==='square'?';border-radius:2px':''}"></i>${esc(CATS[c].label)}</span>`;
-const PREC = {village:'Village (MIMU place code)',town:'Town (MIMU town code)',township:'Township only; exact site not confirmed',approx:'Approximate (outside MIMU coverage)',gps:'GPS coordinates',none:'Not mapped (Chinland-wide or place not stated)',unknown:''};
+const PREC = {village:'Village (MIMU place code)',town:'Town (MIMU town code)',township:'Township only; exact site not confirmed',approx:'District centre in Mizoram (exact point not yet verified)',verified:'Verified point in Mizoram (India Post place)',gps:'GPS coordinates',none:'Not mapped (Chinland-wide or place not stated)',unknown:''};
 
 /* ---------- map ---------- */
 const cent = {};
@@ -335,9 +335,9 @@ function makeMap(host, shadeVar){
       let [x,y]=px(pt.lon,pt.lat); const key=x.toFixed(0)+','+y.toFixed(0); const n=seen[key]=(seen[key]||0)+1;
       if(n>1){const a=(n-1)*2.1, r=7*Math.ceil((n-1)/3+0.1); x+=Math.cos(a)*r; y+=Math.sin(a)*r;}
       let el; const s=pt.big?7:5.5;
-      if(pt.shape==='square') el=mk('rect',{x:x-5,y:y-5,width:10,height:10,rx:2,class:'pt'},g);
-      else if(pt.shape==='diamond') el=mk('rect',{x:x-4.5,y:y-4.5,width:9,height:9,rx:1,transform:`rotate(45 ${x} ${y})`,class:'pt'},g);
-      else if(pt.shape==='triangle') el=mk('path',{d:`M${x} ${y-7}L${x+6.5} ${y+5}L${x-6.5} ${y+5}Z`,class:'pt'},g);
+      if(pt.shape==='square') el=mk('rect',{x:x-5,y:y-5,width:10,height:10,rx:2,class:'pt'+(pt.approx?' approx':'')},g);
+      else if(pt.shape==='diamond') el=mk('rect',{x:x-4.5,y:y-4.5,width:9,height:9,rx:1,transform:`rotate(45 ${x} ${y})`,class:'pt'+(pt.approx?' approx':'')},g);
+      else if(pt.shape==='triangle') el=mk('path',{d:`M${x} ${y-7}L${x+6.5} ${y+5}L${x-6.5} ${y+5}Z`,class:'pt'+(pt.approx?' approx':'')},g);
       else el=mk('circle',{cx:x,cy:y,r:s,class:'pt'+(pt.approx?' approx':'')},g);
       el.style.fill=pt.color; if(pt.approx) el.style.stroke=pt.color;
       el.setAttribute('tabindex','0'); el.setAttribute('role','button'); el.setAttribute('aria-label',pt.aria);
@@ -373,7 +373,7 @@ function eventCard(e){
   if(e.process) ppl.push('Process: '+e.process+(e.stage?' ('+e.stage+')':''));
   if(e.outcome) ppl.push('Outcome: '+e.outcome);
   if(e.area) ppl.push('Policy area: '+e.area);
-  ppl.push('Location: '+PREC[e.prec]+(e.pcode&&e.prec==='village'?' '+e.pcode:''));
+  ppl.push('Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''));
   if(e.confidence) ppl.push('Confidence: '+e.confidence);
   return `<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts||'Chinland-wide')} · ${esc(e.source)}</span>
     <b>${esc(e.type)}: ${esc(whereOf(e))}</b>${esc(e.text)}
@@ -411,7 +411,7 @@ function renderSecurity(){
       <button type="button" aria-pressed="true" data-cat="drug"><span class="sw sq" style="background:var(--c-drug)"></span>Drug seizures</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i style="background:var(--muted)"></i>Village or town</span><span><i class="ring"></i>Township only (exact site unconfirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township</span></div>
+    <div class="legend"><span><i style="background:var(--muted)"></i>Village or town</span><span><i class="ring"></i>Township or Mizoram district only (exact site not confirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township</span></div>
     <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row in the incident log to see details.</span></div></section>
 
   <section class="tile span4"><h2>Airstrikes by township <span class="src" id="src-bars"></span></h2>
@@ -475,9 +475,9 @@ function renderSecurity(){
   function select(id){ selected=id; const e=ev.find(x=>x.id===id); if(!e) return; map.mark(id);
     document.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
     $('sel').innerHTML=`<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts)} · ${esc(e.source)}</span><b>${esc(e.type)}: ${esc([e.place,e.detail].filter(Boolean).join(', ')||e.ts)}</b>${esc(e.text)}
-      <div class="meta" style="margin-top:4px">${[e.actors,casualty(e),'Location: '+PREC[e.prec]+(e.pcode&&e.prec==='village'?' '+e.pcode:''),e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`; }
+      <div class="meta" style="margin-top:4px">${[e.actors,casualty(e),'Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''),e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`; }
   function drawMap(){ const counts={}; ev.forEach(e=>{if(e.inChin&&layers[e.cat]) counts[e.ts]=(counts[e.ts]||0)+1;});
-    map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township',big:!!(e.civK||e.civI),
+    map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',big:!!(e.civK||e.civI),
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(e.place||e.detail||e.ts)}`,aria:`${dShort(e.date)}, ${e.type}, ${e.place||e.detail||e.ts}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=ev.filter(e=>filter==='all'||e.cat===filter);
@@ -545,7 +545,7 @@ function renderGovernance(){
       <button type="button" aria-pressed="true" data-cat="border"><span class="sw dia" style="background:var(--c-border)"></span>Border</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i class="ring"></i>Township only</span><span>Shading: events per township</span>${unmapped?`<span>${plural(unmapped,'event')} Chinland-wide or without a place, listed below but not mapped</span>`:''}</div>
+    <div class="legend"><span><i class="ring"></i>Township or Mizoram district only</span><span>Shading: events per township</span>${unmapped?`<span>${plural(unmapped,'event')} Chinland-wide or without a place, listed below but not mapped</span>`:''}</div>
     <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
 
   <section class="tile span7" id="relations"><h2>Political relations</h2>
@@ -592,7 +592,7 @@ function renderGovernance(){
   const areaSel=$('farea'); [...new Set(all.map(e=>e.area).filter(Boolean))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
   function select(id){ selected=id; const e=all.find(x=>x.id===id); if(!e) return; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); $('sel').innerHTML=eventCard(e); }
   function drawMap(){ const c={}; all.forEach(e=>{if(e.inChin&&e.ts&&layers[e.cat]) c[e.ts]=(c[e.ts]||0)+1;});
-    map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township',
+    map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc((e.actors||[]).join(', '))}`,aria:`${dShort(e.date)}, ${e.type}, ${(e.actors||[]).join(', ')}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea));
@@ -644,7 +644,7 @@ function renderHumanitarian(){
       <button type="button" aria-pressed="true" data-cat="site"><span class="sw tri" style="color:var(--c-site)"></span>IDP sites with figures</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i class="ring"></i>Township only</span><span>Mizoram points are district centres (approximate)</span></div>
+    <div class="legend"><span><i class="ring"></i>Township or Mizoram district only</span><span>IDP sites without a verified point sit at the district centre</span></div>
     <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
 
   <section class="tile span7"><h2>Market prices <span class="src" id="psrc"></span></h2><div id="prices"></div></section>
@@ -665,14 +665,14 @@ function renderHumanitarian(){
   // map + log
   const map=makeMap($('map'),'var(--c-humanitarian)');
   const sitePts = sitesWith.map(s=>{const x=(DATA.sites||{})[s]||{}; const rows=disp.filter(d=>d.site===s); return {id:'site:'+s,lat:x.lat,lon:x.lon,color:'var(--c-site)',shape:'triangle',
-    tip:`<b>${esc(s)}</b><br>${rows.map(r=>[r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':''].filter(Boolean).join(', ')).join('<br>')}`,aria:`IDP site ${s}`};});
+    tip:`<b>${esc(s)}</b>${x.prec==='approx'?' <i>(district centre)</i>':''}<br>${rows.map(r=>[r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':''].filter(Boolean).join(', ')).join('<br>')}`,aria:`IDP site ${s}`};});
   function select(id){ selected=id; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
     if(id.startsWith('site:')){ const s=id.slice(5), x=(DATA.sites||{})[s]||{}; const rows=disp.filter(d=>d.site===s);
       $('sel').innerHTML=`<span class="meta">${esc(m.label)} · ${esc(x.place||x.ts||'')}</span><b>${esc(s)}</b>${esc([x.type,x.origin?'residents from '+x.origin:'',x.status].filter(Boolean).join(' · '))}
       <div class="meta" style="margin-top:6px">${rows.map(r=>esc([r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':'',r.source,r.note].filter(Boolean).join(' · '))).join('<br>')}</div>`; return; }
     const e=all.find(x=>x.id===id); if(e) $('sel').innerHTML=eventCard(e); }
   function drawMap(){ const c={}; all.forEach(e=>{if(e.inChin&&e.ts&&layers[e.cat]) c[e.ts]=(c[e.ts]||0)+1;});
-    const pts=all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township',tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(whereOf(e))}`,aria:`${dShort(e.date)}, ${e.type}`}));
+    const pts=all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(whereOf(e))}`,aria:`${dShort(e.date)}, ${e.type}`}));
     map.draw({counts:c,selected,onSelect:select,points:pts.concat(layers.site?sitePts:[])}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=all.filter(e=>fcat==='all'||e.cat===fcat);
@@ -760,7 +760,7 @@ function renderAbout(){
   </ul>
 
   <h3>Locations</h3>
-  <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. Locations in Mizoram are approximate district centres, because MIMU covers Myanmar only. Records that concern all of Chinland, or give no place, are listed but not mapped. Boundaries are MIMU township boundaries and do not imply endorsement of any boundary.</p>
+  <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Boundaries are MIMU township boundaries and do not imply endorsement of any boundary.</p>
 
   <h3>Corrections</h3>
   <p>If a published record is wrong, CCPR corrects it in the next update. Earlier versions are kept in the site's public history.</p>
