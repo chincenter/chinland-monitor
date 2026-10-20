@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<title>Chinland Conflict Monitor</title>
+<meta name="description" content="Monthly monitoring of armed conflict, landmines and drug trafficking in Chinland, compiled by the Chin Center for Peace and Reconciliation.">
+<link rel="icon" type="image/png" href="data/ccpr-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=PT+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: IISS-style bento board. Row 1 = headline tiles, row 2 = briefing | map | breakdowns, row 3 = incident log. */
+:root{
+  --bg:#EEF0F4; --panel:#FFFFFF; --ink:#1B2440; --muted:#5A6177; --line:#D9DDE6;
+  --crimson:#A3123E; --crimson-soft:#F3DCE3; --amber:#C97A12; --amber-soft:#F7E7CF;
+  --blue:#2B5BAE; --blue-soft:#DCE6F6; --land:#E4E7EE; --land-edge:#FFFFFF; --navy:#1B2440;
+  --f-display:"PT Serif", Georgia, "Times New Roman", serif;
+  --f-body:"PT Sans", "Segoe UI", system-ui, sans-serif;
+  --f-data:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1320; --panel:#171C2B; --ink:#E6E9F2; --muted:#9AA1B6; --line:#2A3147;
+  --crimson:#E2557B; --crimson-soft:#3A1D2A; --amber:#EDA846; --amber-soft:#3A2D18;
+  --blue:#76A0EE; --blue-soft:#1C2A45; --land:#252B3D; --land-edge:#171C2B; --navy:#0B0F19; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1320; --panel:#171C2B; --ink:#E6E9F2; --muted:#9AA1B6; --line:#2A3147;
+  --crimson:#E2557B; --crimson-soft:#3A1D2A; --amber:#EDA846; --amber-soft:#3A2D18;
+  --blue:#76A0EE; --blue-soft:#1C2A45; --land:#252B3D; --land-edge:#171C2B; --navy:#0B0F19; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a{color:inherit}
+.wrap{max-width:1360px;margin:0 auto}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{width:34px;height:auto}
+.brand b{font-family:var(--f-display);font-size:19px;line-height:1.1;display:block}
+.brand small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+nav.views{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav.views a{font-size:13px;text-decoration:none;padding:6px 10px;border-radius:6px;color:var(--muted)}
+nav.views a[aria-current="page"]{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+nav.views a:hover{color:var(--ink)}
+.month{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.month select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+
+.board{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-top:16px}
+.tile{background:var(--panel);border-radius:var(--r);padding:18px 18px 16px;min-width:0;border:1px solid var(--line)}
+.tile h2{font-family:var(--f-body);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 6px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tile h2 .src{font-family:var(--f-data);font-size:10.5px;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:400}
+.tile p.sub{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.intro{grid-column:span 3;background:transparent;border:none;padding:4px 4px 0}
+.intro h1{font-family:var(--f-display);font-size:26px;line-height:1.15;margin:0 0 10px;text-wrap:balance}
+.intro p{margin:0 0 10px;color:var(--muted);font-size:14px;max-width:46ch}
+.kpi{grid-column:span 3;display:flex;flex-direction:column}
+.kpi .num{font-family:var(--f-display);font-size:58px;line-height:1;margin:8px 0 6px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .num small{font-size:20px;margin-left:4px}
+.kpi .cap{font-size:13px;color:var(--muted);margin:0}
+.kpi .split{display:flex;gap:22px;margin:8px 0 6px}
+.kpi .split div{display:flex;flex-direction:column}
+.kpi .split .num{font-size:52px;margin:0}
+.kpi .split span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.kpi .foot{margin-top:auto;padding-top:10px;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line)}
+.c-crimson{color:var(--crimson)} .c-blue{color:var(--blue)}
+.na{color:var(--muted)!important;font-size:28px!important}
+
+.brief{grid-column:span 3;grid-row:span 2;display:flex;flex-direction:column}
+.brief .cover{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:4/3;max-width:100%;background:var(--navy)}
+.brief .cover img{width:100%;height:100%;object-fit:cover;opacity:.55;display:block}
+.brief .cover .t{position:absolute;inset:auto 0 0 0;padding:14px;color:#fff}
+.brief .cover .t small{font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.85}
+.brief .cover .t b{display:block;font-family:var(--f-display);font-size:22px;line-height:1.1;margin:4px 0 8px}
+.brief .cover .t span{display:inline-block;background:var(--crimson);color:#fff;font-size:12px;padding:3px 9px;border-radius:3px;font-weight:700}
+.brief .dl{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.brief .dl a{display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:14px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
+.brief .dl a:hover{border-color:var(--crimson);color:var(--crimson)}
+.brief .dl a span{font-family:var(--f-data);font-weight:400;font-size:11px;color:var(--muted)}
+.brief .note{font-size:12px;color:var(--muted);margin-top:auto;padding-top:14px}
+.brief .stats{margin:14px 0 0;padding:0;list-style:none}
+.brief .stats li{display:flex;justify-content:space-between;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.brief .stats li b{font-family:var(--f-data);font-weight:500}
+
+.maptile{grid-column:span 5;grid-row:span 2;display:flex;flex-direction:column}
+.layers{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px}
+.layers button{font:inherit;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.layers button[aria-pressed="false"]{opacity:.45}
+.layers button:focus-visible,.filters button:focus-visible,.log tr:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.sw{width:10px;height:10px;border-radius:50%;display:inline-block}
+.mapbox{position:relative;flex:1;min-height:420px}
+#map{width:100%;height:100%;display:block}
+#map .ts{fill:var(--land);stroke:var(--land-edge);stroke-width:1.4;transition:fill .15s}
+#map .ts:hover{fill:var(--crimson-soft)}
+#map .tslabel{font-family:var(--f-body);font-size:10px;fill:var(--muted);text-anchor:middle;pointer-events:none;letter-spacing:.06em;text-transform:uppercase}
+#map .ctx{font-family:var(--f-body);font-size:10px;fill:var(--muted);letter-spacing:.18em;text-transform:uppercase;opacity:.75}
+#map .town{fill:var(--ink)} #map .townl{font-family:var(--f-body);font-size:9.5px;fill:var(--ink)}
+#map .ev{cursor:pointer;stroke:var(--panel);stroke-width:1.5}
+#map .ev:focus{outline:none} #map .ev:focus-visible,#map .ev.sel{stroke:var(--ink);stroke-width:2.5}
+#map .ev.approx{fill-opacity:0;stroke-width:2;stroke-dasharray:3 2}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--panel);font-size:12px;padding:6px 8px;border-radius:5px;max-width:230px;line-height:1.35;transform:translate(-50%,calc(-100% - 10px))}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.legend i.ring{background:transparent;border:2px dashed var(--muted)}
+.sel-card{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;min-height:74px}
+.sel-card .meta{font-family:var(--f-data);font-size:11px;color:var(--muted)}
+.sel-card b{display:block;margin:2px 0}
+
+.bars{grid-column:span 4}
+.hbar{display:grid;grid-template-columns:88px minmax(0,1fr) 44px;align-items:center;gap:8px;font-size:13px;margin:7px 0}
+.hbar .track,.hbar .fill{display:block}
+.hbar .track{height:14px;background:var(--bg);border-radius:3px;overflow:hidden}
+.hbar .fill{height:100%;border-radius:3px}
+.hbar .v{font-family:var(--f-data);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.duo .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+.chip b{font-family:var(--f-data);font-weight:500;margin-right:4px}
+.big{font-family:var(--f-display);font-size:40px;line-height:1;display:block;margin:6px 0 2px;color:var(--crimson)}
+
+.drugs{grid-column:span 4}
+.drugs .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.drugs .row:last-child{border-bottom:none}
+.drugs .row > span{min-width:0}
+.drugs .row > span:last-child{font-family:var(--f-data);font-size:12.5px;text-align:right;flex-shrink:0;max-width:52%}
+.drugs .tag{font-size:10.5px;color:var(--muted);display:block;font-family:var(--f-body)}
+
+.logtile{grid-column:span 12}
+.logwrap{overflow-x:auto}
+table.log{width:100%;border-collapse:collapse;font-size:13.5px;min-width:760px}
+.log th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line)}
+.log td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.log td.d{font-family:var(--f-data);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.log td.n{font-family:var(--f-data);font-size:12px;white-space:nowrap}
+.log tr{cursor:pointer} .log tbody tr:hover td{background:var(--bg)} .log tr.sel td{background:var(--crimson-soft)}
+.cat{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.cat.conflict{background:var(--crimson-soft);color:var(--crimson)}
+.cat.landmine{background:var(--amber-soft);color:var(--amber)}
+.cat.drug{background:var(--blue-soft);color:var(--blue)}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;text-transform:none;letter-spacing:0}
+.filters button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+
+.state{grid-column:1/-1;padding:40px 18px;text-align:center;color:var(--muted)}
+footer{margin-top:20px;display:grid;grid-template-columns:2fr 1fr;gap:20px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+footer b{color:var(--ink)}
+footer p{margin:0 0 6px;max-width:80ch}
+
+@media (max-width:1100px){
+  .intro,.kpi{grid-column:span 6}
+  .brief{grid-column:span 5;grid-row:auto}
+  .maptile{grid-column:span 7;grid-row:span 2}
+  .bars,.drugs{grid-column:span 5}
+}
+@media (max-width:760px){
+  .board{grid-template-columns:minmax(0,1fr)}
+  .intro,.kpi,.brief,.maptile,.bars,.drugs,.logtile{grid-column:1/-1;grid-row:auto}
+  .mapbox{min-height:560px}
+  footer{grid-template-columns:1fr}
+  nav.views{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header class="top">
+  <a class="brand" href="#top" aria-label="Chinland Conflict Monitor home">
+    <img src="data/ccpr-mark.png" alt="CCPR logo">
+    <span><b>Chinland Conflict Monitor</b><small>Chin Center for Peace and Reconciliation</small></span>
+  </a>
+  <nav class="views" aria-label="Sections">
+    <a href="#top" aria-current="page">Dashboard</a>
+    <a href="#maptile">Incident map</a>
+    <a href="#bars">Conflict and landmines</a>
+    <a href="#drugs">Drugs</a>
+    <a href="#log">Incident log</a>
+    <a href="#brief">Briefing</a>
+  </nav>
+  <label class="month" for="month">Month
+    <select id="month"></select>
+  </label>
+</header>
+
+<main class="board" id="top">
+  <div class="state" id="state">Loading the latest data…</div>
+</main>
+
+<footer>
+  <div>
+    <p><b>About the data.</b> The content and data in the Chinland Monitoring Briefing are compiled, as far as accessible, from news media reports, statements of the relevant organizations and information obtained from local residents. Actual figures on the ground may be higher.</p>
+    <p>Headline figures are the monthly totals published in each briefing. The map and log show individual incidents reported in the briefing, so they may not add up to every total. Locations use MIMU Place Codes (village points v9.7, town points v9.4); where a village could not be matched with confidence, the incident is shown at township level. Mizoram locations are approximate district headquarters. Boundaries are MIMU township boundaries and do not imply endorsement.</p>
+    <p id="updated"></p>
+  </div>
+  <div>
+    <p><b>Chin Center for Peace and Reconciliation</b></p>
+    <p>chinpeacecenter.org</p>
+  </div>
+</footer>
+</div>
+
+<template id="board-tpl">
+  <section class="tile intro">
+    <h1>Armed conflict, landmines and drugs in Chinland</h1>
+    <p>A monthly view of incidents recorded in CCPR's Chinland Monitoring Briefing. Figures cover Chin State, with drug seizures on the Mizoram and Kalay borders where they concern trafficking into Chinland.</p>
+    <p id="asof"></p>
+  </section>
+  <section class="tile kpi">
+    <h2>Airstrikes <span class="src" id="src-air"></span></h2>
+    <div class="num c-crimson" id="k-air"></div>
+    <p class="cap" id="k-air-cap"></p>
+    <div class="foot" id="k-air-foot"></div>
+  </section>
+  <section class="tile kpi">
+    <h2>Civilian casualties <span class="src" id="src-civ"></span></h2>
+    <div class="split">
+      <div><span>Killed</span><b class="num" id="k-civk"></b></div>
+      <div><span>Injured</span><b class="num" id="k-civi"></b></div>
+    </div>
+    <p class="cap">Airstrikes, heavy weapons, landmines and other armed violence.</p>
+    <div class="foot" id="k-civ-foot"></div>
+  </section>
+  <section class="tile kpi">
+    <h2>Methamphetamine seized <span class="src" id="src-drug"></span></h2>
+    <div class="num c-blue" id="k-meth"></div>
+    <p class="cap" id="k-meth-cap"></p>
+    <div class="foot" id="k-meth-foot"></div>
+  </section>
+
+  <section class="tile brief" id="brief">
+    <h2>The briefing</h2>
+    <div class="cover">
+      <img id="cover" alt="Cover photo of the Chinland Monitoring Briefing">
+      <div class="t"><small>Monthly situation briefing</small><b>Chinland Monitoring Briefing</b><span id="cover-month"></span></div>
+    </div>
+    <div class="dl" id="downloads"></div>
+    <ul class="stats" id="brief-stats"></ul>
+    <p class="note">Published monthly in Burmese and English for diplomats, donors and researchers.</p>
+  </section>
+
+  <section class="tile maptile" id="maptile">
+    <h2>Incident map <span class="src">MIMU boundaries and place codes</span></h2>
+    <div class="layers" role="group" aria-label="Map layers">
+      <button type="button" aria-pressed="true" data-cat="conflict"><span class="sw" style="background:var(--crimson)"></span>Conflict</button>
+      <button type="button" aria-pressed="true" data-cat="landmine"><span class="sw" style="background:var(--amber)"></span>Landmines</button>
+      <button type="button" aria-pressed="true" data-cat="drug"><span class="sw" style="background:var(--blue);border-radius:2px"></span>Drug seizures</button>
+    </div>
+    <div class="mapbox" id="mapbox">
+      <svg id="map" role="img" aria-label="Map of Chin State townships with incident locations"></svg>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--crimson)"></i>Village or town</span>
+      <span><i class="ring"></i>Township only (exact site unconfirmed)</span>
+      <span>Shading: incidents per township</span>
+    </div>
+    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row in the incident log to see details.</span></div>
+  </section>
+
+  <section class="tile bars" id="bars">
+    <h2>Airstrikes by township <span class="src" id="src-bars"></span></h2>
+    <p class="sub">Strikes targeting civilians. The figure after the slash is civilians injured.</p>
+    <div id="air-bars"></div>
+    <div class="chips" id="damage"></div>
+    <div class="duo">
+      <div>
+        <div class="k">Landmine casualties</div>
+        <div id="lm-bars"></div>
+      </div>
+      <div>
+        <div class="k">Children killed by airstrikes, year to date</div>
+        <b class="big" id="k-child"></b>
+        <p class="sub" id="k-child-cap" style="margin:0"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="tile drugs" id="drugs">
+    <h2>Seizures on Chinland's borders <span class="src" id="src-drugs"></span></h2>
+    <p class="sub">Arrests of traffickers on routes into and out of Chinland.</p>
+    <div id="drug-rows"></div>
+  </section>
+
+  <section class="tile logtile" id="log">
+    <h2>Incident log <span class="filters" role="group" aria-label="Filter incidents" id="filters">
+      <button type="button" aria-pressed="true" data-f="all">All</button>
+      <button type="button" aria-pressed="false" data-f="conflict">Conflict</button>
+      <button type="button" aria-pressed="false" data-f="landmine">Landmines</button>
+      <button type="button" aria-pressed="false" data-f="drug">Drugs</button>
+    </span></h2>
+    <div class="logwrap">
+      <table class="log">
+        <thead><tr><th>Date</th><th>Category</th><th>Township</th><th>Location</th><th>What happened</th><th>Civilians</th><th>Source</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</template>
+
+<script src="data/townships.js"></script>
+<script>
+(function(){
+  const TS = window.CHIN_TOWNSHIPS;
+  const $ = id => document.getElementById(id);
+  const fmt = (n,d=0) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fmtKg = n => (Math.round(n*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
+  const fmtDec = n => Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
+  const dShort = s => new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  const dLong = s => new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  const cent = {};
+  TS.forEach(t=>{let a=0,cx=0,cy=0;const c=t.c;for(let i=0;i<c.length-1;i++){const[x0,y0]=c[i],[x1,y1]=c[i+1];const f=x0*y1-x1*y0;a+=f;cx+=(x0+x1)*f;cy+=(y0+y1)*f;}a/=2;cent[t.n]=[cx/(6*a),cy/(6*a)];});
+
+  const B = {w:92.55,e:94.25,s:20.6,n:24.15}, k = Math.cos(22.4*Math.PI/180);
+  const W = 400, H = Math.round(W*(B.n-B.s)/((B.e-B.w)*k));
+  const px = (lon,lat)=>[ (lon-B.w)/(B.e-B.w)*W, (B.n-lat)/(B.n-B.s)*H ];
+  const NS='http://www.w3.org/2000/svg';
+  let svg, DATA, month, layersOn={conflict:true,landmine:true,drug:true}, filter='all', selected=null;
+
+  fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(start).catch(()=>{ $('state').textContent='The data file could not be loaded. Please try again later.'; });
+
+  function start(data){
+    DATA = data;
+    const board = $('top'); board.innerHTML=''; board.appendChild($('board-tpl').content.cloneNode(true));
+    svg = $('map'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+    const sel = $('month');
+    Object.keys(data.months).sort().reverse().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=data.months[k].label;sel.appendChild(o);});
+    sel.value = data.latest; sel.addEventListener('change',()=>render(sel.value));
+    if (data.generated) $('updated').textContent = 'Data last published ' + new Date(data.generated).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) + '.';
+    document.querySelectorAll('.layers button').forEach(b=>b.addEventListener('click',()=>{
+      const c=b.dataset.cat; layersOn[c]=!layersOn[c]; b.setAttribute('aria-pressed',layersOn[c]); drawMap(); if(selected) select(selected);
+    }));
+    document.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{
+      filter=b.dataset.f; document.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();
+    }));
+    render(data.latest);
+  }
+
+  // ----- figures helpers -----
+  const rowsOf = ind => month.figures.filter(f=>f.indicator===ind);
+  const has = ind => rowsOf(ind).length>0;
+  const sum = ind => rowsOf(ind).reduce((s,f)=>s+(f.value||0),0);
+  const byBd = ind => { const o={}; rowsOf(ind).forEach(f=>{o[f.breakdown]=(o[f.breakdown]||0)+(f.value||0);}); return o; };
+  const srcOf = (...inds) => { for(const i of inds){ const r=rowsOf(i)[0]; if(r&&r.source) return r.source; } return ''; };
+  const noteOf = ind => (rowsOf(ind).find(f=>f.note)||{}).note||'';
+  const val = (ind) => has(ind) ? sum(ind) : null;
+
+  function render(key){
+    month = DATA.months[key];
+    $('asof').textContent = `Showing ${month.label}. Source: Chinland Monitoring Briefing, ${month.label}.`;
+    const setNum = (id, v, html) => { const el=$(id); el.classList.toggle('na', v===null); el.innerHTML = v===null ? 'Not reported' : (html||esc(v)); };
+
+    // Airstrikes
+    const air = val('Airstrikes'); setNum('k-air', air);
+    $('src-air').textContent = srcOf('Airstrikes');
+    const airTs = byBd('Airstrikes'); const nTs = Object.keys(airTs).filter(k=>k!=='All').length;
+    $('k-air-cap').textContent = air===null ? '' : `Airstrikes targeting civilians${nTs?` in ${nTs} township${nTs>1?'s':''}`:''}.`;
+    const parts=[];
+    if (has('Civilians injured in airstrikes')) parts.push(`${sum('Civilians injured in airstrikes')} civilians injured`);
+    if (has('Civilians killed in airstrikes')) parts.push(`${sum('Civilians killed in airstrikes')} killed`);
+    const dm=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>has(i)).map(([i,l])=>`${sum(i)} ${l}`);
+    if (dm.length) parts.push(dm.join(', ')+' damaged');
+    $('k-air-foot').textContent = parts.join(' · ');
+
+    // Civilian casualties
+    const groups = [['Landmines','Landmines: civilians killed','Landmines: civilians injured'],['Heavy weapons','Heavy weapons: civilians killed','Heavy weapons: civilians injured'],
+                    ['Airstrikes','Civilians killed in airstrikes','Civilians injured in airstrikes'],['Other armed violence','Other armed violence: civilians killed','Other armed violence: civilians injured']];
+    let ck=null, ci=null; const cf=[];
+    groups.forEach(([lab,kk,ii])=>{ if(has(kk)||has(ii)){ const a=val(kk)||0,b=val(ii)||0; ck=(ck||0)+a; ci=(ci||0)+b; cf.push(`${lab} ${a} killed, ${b} injured`);} });
+    setNum('k-civk', ck); setNum('k-civi', ci);
+    $('src-civ').textContent = srcOf('Landmines: civilians killed','Heavy weapons: civilians killed');
+    $('k-civ-foot').textContent = cf.join(' · ');
+
+    // Drugs
+    const mzM = val('Drugs, Mizoram: methamphetamine (kg)'), klM = val('Drugs, Kalay: methamphetamine (kg)');
+    const mzA = val('Drugs, Mizoram: people arrested'), klA = val('Drugs, Kalay: people arrested'), mzH = val('Drugs, Mizoram: heroin (g)');
+    const meth = (mzM===null && klM===null) ? null : (mzM||0)+(klM||0);
+    setNum('k-meth', meth, meth===null?null:`${fmtKg(meth)}<small>kg</small>`);
+    $('src-drug').textContent = srcOf('Drugs, Mizoram: methamphetamine (kg)','Drugs, Kalay: methamphetamine (kg)');
+    const arr = (mzA===null && klA===null) ? null : (mzA||0)+(klA||0);
+    $('k-meth-cap').textContent = arr===null ? '' : `${arr} people arrested in Mizoram State and Kalay town.`;
+    const mf=[]; if(mzM!==null) mf.push(`Mizoram ${fmtDec(mzM)} kg`+(mzH?` and ${fmt(mzH)} g heroin`:'')); if(klM!==null) mf.push(`Kalay ${fmtDec(klM)} kg`);
+    $('k-meth-foot').textContent = mf.join(' · ');
+
+    // Briefing
+    const b = month.briefing || {};
+    const cov = $('cover'); if (b.cover) { cov.src = 'data/'+b.cover; cov.hidden=false; } else cov.hidden=true;
+    $('cover-month').textContent = month.label;
+    const dl=[]; if(b.pdf_en) dl.push(`<a href="data/${encodeURI(b.pdf_en)}" target="_blank" rel="noopener">Read the briefing in English <span>PDF</span></a>`);
+    if(b.pdf_my) dl.push(`<a href="data/${encodeURI(b.pdf_my)}" target="_blank" rel="noopener">မြန်မာဘာသာဖြင့် ဖတ်ရန် <span>PDF</span></a>`);
+    $('downloads').innerHTML = dl.join('') || '<p class="sub">The PDF for this month is not online yet.</p>';
+    const ev = month.incidents;
+    const cnt = c => ev.filter(e=>e.cat===c).length;
+    $('brief-stats').innerHTML = `<li>Conflict incidents logged<b>${cnt('conflict')}</b></li><li>Landmine incidents logged<b>${cnt('landmine')}</b></li><li>Drug seizures logged<b>${cnt('drug')}</b></li><li>Townships affected<b>${new Set(ev.filter(e=>e.inChin).map(e=>e.ts)).size}</b></li>`;
+
+    // Airstrike bars
+    const ai = byBd('Civilians injured in airstrikes'); const amax = Math.max(1,...Object.values(airTs));
+    $('src-bars').textContent = srcOf('Airstrikes');
+    $('air-bars').innerHTML = Object.keys(airTs).length ? Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t==='All'?'All townships':t,v,amax,'var(--crimson)', ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join('') : '<p class="sub">No airstrike figures for this month.</p>';
+    $('damage').innerHTML = [['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>has(i)).map(([i,l])=>`<span class="chip"><b>${sum(i)}</b>${l} damaged</span>`).join('');
+    const lk=val('Landmines: civilians killed'), li=val('Landmines: civilians injured'), lmax=Math.max(1,lk||0,li||0);
+    $('lm-bars').innerHTML = (lk===null&&li===null) ? '<p class="sub">Not reported</p>' : hbar('Killed',lk||0,lmax,'var(--crimson)')+hbar('Injured',li||0,lmax,'var(--amber)');
+    const ch = val('Children killed by airstrikes in Chinland, year to date');
+    $('k-child').textContent = ch===null ? '–' : ch;
+    $('k-child-cap').textContent = ch===null ? 'Not reported this month.' : [noteOf('Children killed by airstrikes in Chinland, year to date'), srcOf('Children killed by airstrikes in Chinland, year to date')].filter(Boolean).join('. ');
+
+    // Drug rows
+    $('src-drugs').textContent = srcOf('Drugs, Mizoram: methamphetamine (kg)');
+    const md = byBd('Drugs, Mizoram: methamphetamine (kg)'), hd = byBd('Drugs, Mizoram: heroin (g)');
+    const districts = [...new Set([...Object.keys(md),...Object.keys(hd)])];
+    let rows = districts.map(d=>`<div class="row"><span>${esc(d==='All'?'Mizoram State':d+' District')}<span class="tag">Mizoram, India</span></span><span>${md[d]!=null?fmtDec(md[d])+' kg meth':''}${md[d]!=null&&hd[d]?' · ':''}${hd[d]?fmt(hd[d])+' g heroin':''}</span></div>`).join('');
+    if (klM!==null) rows += `<div class="row"><span>Kalay town<span class="tag">Sagaing Region, main route into Chinland</span></span><span>${fmtDec(klM)} kg meth</span></div>`;
+    if (arr!==null) rows += `<div class="row"><span>People arrested<span class="tag">Myanmar nationals in Mizoram; all arrests in Kalay</span></span><span>${mzA||0} + ${klA||0}</span></div>`;
+    $('drug-rows').innerHTML = rows || '<p class="sub">No drug figures for this month.</p>';
+
+    selected = null; $('sel').innerHTML='<span class="meta">Select a point or a row in the incident log to see details.</span>';
+    drawMap(); drawLog();
+  }
+
+  function hbar(label,v,max,color,extra){
+    return `<div class="hbar"><span>${esc(label)}</span><span class="track"><span class="fill" style="width:${max?Math.max(2,v/max*100):0}%;background:${color}"></span></span><span class="v">${v}${extra||''}</span></div>`;
+  }
+  const mk=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const a in attrs)e.setAttribute(a,attrs[a]);(parent||svg).appendChild(e);return e;};
+
+  function drawMap(){
+    const counts={}; month.incidents.forEach(e=>{ if(e.inChin && layersOn[e.cat]) counts[e.ts]=(counts[e.ts]||0)+1; });
+    svg.innerHTML='';
+    const max = Math.max(1,...Object.values(counts));
+    TS.forEach(t=>{
+      const d = 'M'+t.c.map(p=>px(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join('L')+'Z';
+      const p = mk('path',{d,class:'ts'}); const n = counts[t.n]||0;
+      if(n) p.style.fill = `color-mix(in srgb, var(--crimson) ${Math.round(12+38*n/max)}%, var(--land))`;
+      const tt = document.createElementNS(NS,'title'); tt.textContent = `${t.n} Township: ${n} incident${n===1?'':'s'} shown`; p.appendChild(tt);
+    });
+    TS.forEach(t=>{const [x,y]=px(...cent[t.n]); const l=mk('text',{x:x.toFixed(1),y:(y+(t.n==='Kanpetlet'?14:t.n==='Paletwa'?-24:0)).toFixed(1),class:'tslabel'}); l.textContent=t.n;});
+    [['MIZORAM','(INDIA)',92.72,23.9],['SAGAING',null,94.12,22.75],['MAGWAY',null,94.14,21.75],['RAKHINE',null,93.0,20.75]].forEach(([a,b,lon,lat])=>{
+      const [x,y]=px(lon,lat); const t=mk('text',{x,y,class:'ctx','text-anchor':'middle'}); t.textContent=a;
+      if(b){const t2=mk('text',{x,y:y+12,class:'ctx','text-anchor':'middle'}); t2.textContent=b;}
+    });
+    [['Hakha',93.60483,22.64011],['Tedim',93.65619,23.37058],['Falam',93.68034,22.91105],['Mindat',93.97365,21.37176],['Matupi',93.44086,21.60475],['Kalay',94.02977,23.1933]].forEach(([n,lon,lat])=>{
+      const [x,y]=px(lon,lat); mk('rect',{x:x-2,y:y-2,width:4,height:4,class:'town'}); const t=mk('text',{x:x+6,y:y+3,class:'townl'}); t.textContent=n;
+    });
+    const g = mk('g',{}); const seen={};
+    month.incidents.forEach(e=>{
+      if(!layersOn[e.cat] || e.lat==null) return;
+      let [x,y]=px(e.lon,e.lat); const key=x.toFixed(0)+','+y.toFixed(0); const n=seen[key]=(seen[key]||0)+1;
+      if(n>1){const a=(n-1)*2.1, r=7*Math.ceil((n-1)/3+0.1); x+=Math.cos(a)*r; y+=Math.sin(a)*r;}
+      const col = e.cat==='conflict'?'var(--crimson)':e.cat==='landmine'?'var(--amber)':'var(--blue)';
+      const approx = e.prec==='township';
+      const el = e.cat==='drug' ? mk('rect',{x:x-5,y:y-5,width:10,height:10,rx:2,class:'ev'},g)
+                                : mk('circle',{cx:x,cy:y,r:(e.civK||e.civI)?7:5.5,class:'ev'+(approx?' approx':'')},g);
+      el.style.fill = col; if(approx) el.style.stroke = col;
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button');
+      el.setAttribute('aria-label',`${dShort(e.date)}, ${e.type}, ${e.place||e.detail||e.ts}`);
+      el.dataset.id = e.id; if(e.id===selected) el.classList.add('sel');
+      el.addEventListener('mouseenter',()=>showTip(e,x,y)); el.addEventListener('mouseleave',hideTip);
+      el.addEventListener('click',()=>select(e.id));
+      el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();select(e.id);}});
+    });
+  }
+  function showTip(e,x,y){
+    const box=$('mapbox'), r=svg.getBoundingClientRect(), b=box.getBoundingClientRect();
+    const sc = Math.min(r.width/W, r.height/H), ox=(r.width-W*sc)/2+(r.left-b.left), oy=(r.height-H*sc)/2+(r.top-b.top);
+    const t=$('tip'); t.innerHTML=`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(e.place||e.detail||e.ts)}`;
+    t.style.left=(ox+x*sc)+'px'; t.style.top=(oy+y*sc)+'px'; t.hidden=false;
+  }
+  function hideTip(){ $('tip').hidden=true; }
+
+  function casualtyText(e){
+    const p=[];
+    if(e.civK) p.push(`${e.civK} civilian${e.civK>1?'s':''} killed`);
+    if(e.civI) p.push(`${e.civI} civilian${e.civI>1?'s':''} injured`);
+    if(e.cbK) p.push(`${e.cbK} combatant${e.cbK>1?'s':''} killed`);
+    if(e.cbI) p.push(`${e.cbI} combatant${e.cbI>1?'s':''} injured`);
+    if(e.cat==='drug'){
+      if(e.arrests) p.push(`${e.arrests} arrested`);
+      if(e.methKg) p.push(`${fmtDec(e.methKg)} kg meth`);
+      if(e.methTablets) p.push(`${fmt(e.methTablets)} meth tablets`);
+      if(e.heroinG) p.push(`${fmt(e.heroinG)} g heroin`);
+    }
+    return p.join(' · ');
+  }
+  const PREC = {village:'Village (MIMU place code)',town:'Town (MIMU town code)',township:'Township only; exact site not confirmed',approx:'Approximate',gps:'GPS coordinates',unknown:''};
+
+  function select(id){
+    selected=id; const e=month.incidents.find(x=>x.id===id); if(!e) return;
+    document.querySelectorAll('#map .ev').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+    document.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+    const where = [e.place, e.detail].filter(Boolean).join(', ') || e.ts;
+    $('sel').innerHTML = `<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts)} · ${esc(e.source)}</span>
+      <b>${esc(e.type)}: ${esc(where)}</b>${esc(e.text)}
+      <div class="meta" style="margin-top:4px">${[e.actors, casualtyText(e), 'Location: '+PREC[e.prec]+(e.pcode&&e.prec==='village'?' '+e.pcode:''), e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`;
+  }
+
+  function drawLog(){
+    const tb=$('rows'); tb.innerHTML='';
+    month.incidents.filter(e=>filter==='all'||e.cat===filter).forEach(e=>{
+      const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
+      const lab = {conflict:'Conflict',landmine:'Landmine',drug:'Drugs'}[e.cat];
+      const civ = (e.civK||e.civI)?`${e.civK||0} killed, ${e.civI||0} injured`:(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'None reported');
+      const where = [e.place, e.detail].filter(Boolean).join(', ');
+      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td><span class="cat ${e.cat}">${lab}</span></td><td>${esc(e.ts)}</td><td>${esc(where)}</td><td>${esc(e.text)}</td><td class="n">${esc(civ)}</td><td class="n">${esc(e.source)}</td>`;
+      tr.addEventListener('click',()=>select(e.id));
+      tr.addEventListener('keydown',ev=>{if(ev.key==='Enter'){select(e.id);}});
+      if(e.id===selected) tr.classList.add('sel');
+      tb.appendChild(tr);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
