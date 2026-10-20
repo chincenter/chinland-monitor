@@ -729,10 +729,9 @@ function renderPrices(prices, prevPrices){
    ABOUT PAGE
    ========================================================= */
 function renderAbout(){
-  const ms=Object.keys(DATA.months).sort(); const tot=k=>ms.reduce((s,m)=>s+((DATA.months[m][k]||[]).length),0);
   V.innerHTML=`<section class="tile span12"><div class="about">
   <h1 style="font-family:var(--f-display);font-size:28px;margin:0 0 8px">About the data</h1>
-  <p>The Chinland Conflict Monitor turns CCPR's monthly <b>Chinland Monitoring Briefing</b> into structured, mapped records. It currently holds ${plural(ms.length,'month')} (${esc(ms.map(m=>DATA.months[m].label).join(', '))}): ${fmt(tot('incidents'))} security incidents, ${fmt(tot('events'))} governance, political, border, humanitarian and livelihood events, ${fmt(tot('prices'))} market prices and ${fmt(tot('displacement'))} displacement figures.</p>
+  <p>The Chinland Conflict Monitor turns CCPR's monthly <b>Chinland Monitoring Briefing</b> into structured, mapped records.</p>
 
   <h3>What is covered</h3>
   <ul>
@@ -748,7 +747,7 @@ function renderAbout(){
     <li>A second staff member verifies it against another source where possible, removes duplicates and sets a confidence level.</li>
     <li>Descriptions are written in Burmese and translated into English.</li>
     <li>Monthly totals are checked against the individual records. Differences are explained, not hidden.</li>
-    <li>CCPR's Operations Director approves the month. Only approved records are published.</li>
+    <li>Each month is reviewed and approved within CCPR before publication. Only approved records are published.</li>
   </ol>
 
   <h3>How to read the numbers</h3>
