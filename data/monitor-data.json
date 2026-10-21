@@ -2,7 +2,7 @@
  "title": "Chinland Conflict Monitor",
  "publisher": "Chin Center for Peace and Reconciliation",
  "source": "Chinland Monitoring Briefing",
- "generated": "2026-10-21T11:05:51.116Z",
+ "generated": "2026-10-21T11:30:25.867Z",
  "latest": "2026-09",
  "months": {
   "2025-01": {
@@ -6092,7 +6092,7 @@
      "facilitator": null,
      "others": "Elected MPs from the 2020 election; local administrations",
      "process": "Chin National Council (CNC) process",
-     "stage": "Implementation",
+     "stage": null,
      "outcome": null,
      "issues": [
       "Chin unity, disputes and the CNC talks"
@@ -10068,7 +10068,9 @@
      "prec": "none",
      "lat": null,
      "lon": null,
-     "actors": [],
+     "actors": [
+      "Daai Regional Council"
+     ],
      "facilitator": null,
      "others": "CDF-Daai",
      "process": null,
@@ -15940,7 +15942,7 @@
      "prec": "township",
      "lat": 20.9982,
      "lon": 93.8745,
-     "actors": "CDF-Daai",
+     "actors": "CPU/CPA (CDF-Daai)",
      "issues": [
       "Military service and forced recruitment"
      ],
@@ -16134,7 +16136,7 @@
      "prec": "village",
      "lat": 21.3702,
      "lon": 93.4731,
-     "actors": "CDF-Daai",
+     "actors": "CPU/CPA (CDF-Daai)",
      "issues": [
       "Military service and forced recruitment"
      ],
@@ -28910,7 +28912,7 @@
      "facilitator": null,
      "others": null,
      "process": "Chinland judiciary strengthening",
-     "stage": "Proposed",
+     "stage": null,
      "outcome": null,
      "issues": [
       "Laws, courts and police in Chinland"
@@ -29515,7 +29517,7 @@
    "group": "Chinland Council and members"
   },
   "Daai Regional Council": {
-   "name": "Daai Regional Council",
+   "name": "CDF-Daai / Daai Regional Council (joined CPU/CPA in 2026)",
    "name_my": null,
    "type": "Local government or council",
    "parent": null,
@@ -29636,7 +29638,7 @@
    "about": "Building the Chinland judiciary: links between the Supreme Court and township and regional courts, judge capacity, prison and detention standards.",
    "actors": "Chinland Supreme Court",
    "started": "2026-04-15",
-   "stage": "Proposed",
+   "stage": "Consultation",
    "last": "2026-09-23",
    "log": [
     {
@@ -29646,7 +29648,7 @@
     },
     {
      "date": "2026-09-23",
-     "stage": "Proposed",
+     "stage": null,
      "id": "E20260923-277d"
     }
    ]
@@ -29656,7 +29658,7 @@
    "about": "On 26 February 2025 in Aizawl, with mediation led by the Mizoram Chief Minister, the Chinland Council and the ICNCC agreed to form the Chin National Council and a Chin National Constitution Drafting Committee. The process follows how that agreement is put into practice.",
    "actors": "Chinland Council; ICNCC; Mizoram Government (facilitator)",
    "started": "2025-02-26",
-   "stage": "Implementation",
+   "stage": "Agreed or adopted",
    "last": "2026-08-06",
    "log": [
     {
@@ -29666,7 +29668,7 @@
     },
     {
      "date": "2025-06-11",
-     "stage": "Implementation",
+     "stage": null,
      "id": "E20250611-9d55"
     },
     {

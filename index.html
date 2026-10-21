@@ -157,6 +157,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);margin-top:8px}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .legend i.ring{background:transparent;border:2px dashed var(--muted)}
+.sel-card:empty{display:none}
 .sel-card{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;min-height:74px}
 .meta{font-family:var(--f-data);font-size:11px;color:var(--muted)}
 .sel-card b{display:block;margin:2px 0}
@@ -306,6 +307,7 @@ details.rec[open]>summary{background:var(--soft)}
 .recbody{padding:4px 4px 10px 98px;font-size:13.5px}
 .log td.ttl{min-width:260px;max-width:560px}
 .log td.ttl i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.log tr.logmore td{background:none;padding:12px 10px;text-align:left}
 .log tr.more td{background:var(--soft);border-top:none;padding:6px 10px 12px}
 .log tr.more .full{font-size:13.5px;max-width:880px}
 @media (max-width:760px){.recbody{padding-left:4px}details.rec>summary{flex-wrap:wrap}details.rec>summary .sd{min-width:0}}
@@ -317,6 +319,7 @@ details.rec[open]>summary{background:var(--soft)}
 .pos.objects{background:var(--bad-soft);color:var(--bad);border-color:transparent}.pos.supports{background:var(--good-soft);color:var(--good);border-color:transparent}
 .aa-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);gap:18px;margin-top:6px}
 .aa-grid .thread-list{max-height:640px;overflow:auto;padding-right:6px}
+#htypes .kbar{grid-template-columns:minmax(0,230px) 1fr 30px}
 .kbar{width:100%;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;padding:3px 4px;margin:3px 0;border-radius:6px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) 60px 26px;gap:8px;align-items:center;text-align:left}
 .kbar[aria-pressed="true"]{background:var(--accent-soft)}.kbar .track{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}.kbar .fill{display:block;height:100%;background:var(--accent)}.kbar .v{font-family:var(--f-data);font-size:12px;text-align:right}
 .resp-col h4{margin:8px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
@@ -408,7 +411,7 @@ const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&l
 const fmt = (n,d=0) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtDec = n => Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
 const fmtKg = n => (Math.round(n*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
-const dShort = s => new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const dShort = s => new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}).replace('Sept','Sep');
 const dLong = s => new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 const plural = (n,w,p) => `${n} ${n===1?w:(p||w+'s')}`;
 const monthEnd = m => { const [y,mo]=m.split('-').map(Number); return new Date(Date.UTC(y,mo,0)).toISOString().slice(0,10); };
@@ -620,12 +623,15 @@ function makeMap(host, shadeVar, opts){
   return api;
 }
 
+let LOGALL=false;
+function logPage(list,sel){ list=list.slice().reverse(); const cut=list.length>30&&!LOGALL&&!(sel&&list.findIndex(e=>e.id===sel)>=25); return {vis:cut?list.slice(0,25):list, more:cut?list.length:0}; }
+function logMoreRow(tb,n,redraw){ if(!n) return; const tr=document.createElement('tr'); tr.className='logmore'; tr.innerHTML=`<td colspan="4"><button type="button" class="dlg-x">Show all ${n}</button></td>`; tr.querySelector('button').addEventListener('click',()=>{LOGALL=true; redraw();}); tb.appendChild(tr); }
 function hbar(label,v,max,color,extra){ return `<div class="hbar"><span>${esc(label)}</span><span class="track"><span class="fill" style="width:${max?Math.max(2,v/max*100):0}%;background:${color}"></span></span><span class="v">${v}${extra||''}</span></div>`; }
 
 /* ---------- data helpers ---------- */
 const monthsIn = () => Object.keys(DATA.months).filter(k=>k>=FROM&&k<=TO).sort();
 const PER = () => mon().multi?'in this period':'this month';
-const shortM = k => { const [y,m]=k.split('-'); return new Date(Date.UTC(+y,+m-1,1)).toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'}); };
+const shortM = k => { const [y,m]=k.split('-'); return new Date(Date.UTC(+y,+m-1,1)).toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'}).replace('Sept','Sep'); };
 /* The selected period: one month as published, or several months merged. Additive figures are summed;
    year-to-date figures, displacement snapshots, prices and the briefing come from the latest month. */
 function mon(){
@@ -717,7 +723,7 @@ function openActor(a){ ACTOR=a; writeHash(); const d=ensureDlg(), info=DATA.acto
   const fam={}; recs.filter(r=>r.kind==='event').forEach(r=>{const f=famOf(r.type); fam[f]=(fam[f]||0)+1;});
   const draw=()=>{ const list=scope==='all'?recs:per; $('dlg-list').innerHTML=list.length?list.slice(0,150).map(r=>`<div class="thread">${recLine(r)}</div>`).join('')+(list.length>150?`<p class="sub">Showing the latest 150 of ${list.length}.</p>`:''):`<p class="empty">No records ${scope==='all'?'yet':PER()}.</p>`;
     d.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===scope)); };
-  d.innerHTML=`<div class="dlg-h"><div><div class="meta" style="font-size:12px;color:var(--muted)">${gBadge(info.group)}${esc(info.group||'Group not set')}${info.type?' · '+esc(info.type):''}</div><h2>${esc(a)}</h2>${info.name&&info.name!==a?`<div class="sub" style="margin:2px 0 0">${esc(info.name)}</div>`:''}</div><button type="button" class="dlg-x" data-close>Close</button></div>
+  d.innerHTML=`<div class="dlg-h"><div><div class="meta" style="font-size:12px;color:var(--muted)">${info.group?gBadge(info.group)+esc(info.group):''}${info.group&&info.type?' · ':''}${esc(info.type||'')}</div><h2>${esc(a)}</h2>${info.name&&info.name!==a?`<div class="sub" style="margin:2px 0 0">${esc(info.name)}</div>`:''}</div><button type="button" class="dlg-x" data-close>Close</button></div>
     <div class="dlg-b"><p class="sub" style="margin-top:0">${plural(recs.length,'record')} in all months, ${per.length} ${PER()}. ${a==='ULA/AA'?'Includes security incidents that name the Arakan Army.':'Security incidents are matched by the name in the Actors field.'}</p>
     ${Object.keys(fam).length?`<div class="k">What it did</div><div class="chips" style="margin:4px 0 8px">${Object.entries(fam).sort((x,y)=>y[1]-x[1]).map(([f,n])=>`<span class="chip"><b>${n}</b> ${esc(f)}</span>`).join('')}</div>`:''}
     ${Object.keys(iss).length?`<div class="k">Issues</div><div style="margin:4px 0 8px">${Object.entries(iss).sort((x,y)=>y[1]-x[1]).map(([i,n])=>`<button type="button" class="ichip" data-issue="${esc(i)}">${esc(i)} (${n})</button>`).join('')}</div>`:''}
@@ -781,7 +787,7 @@ function trendTile(title, series){
   const charts=series.map(se=>{ const vals=ks.map(k=>se.fn(DATA.months[k])); const max=Math.max(1,...vals.filter(v=>v!=null));
     const bars=vals.map((v,i)=>{ const x=6+i*((w-12)/ks.length)+((w-12)/ks.length-bw)/2, bh=v==null?0:Math.max(v>0?2:0,(h-pad-16)*v/max), y=h-pad-bh;
       const lab=v==null?'–':fmtDec(v); const show=ks.length<=8||i===ks.length-1||v===max;
-      return `<g><rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" style="fill:${se.color}"><title>${esc(DATA.months[ks[i]].label)}: ${v==null?'not reported':lab}</title></rect>${show?`<text class="tv" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${lab}</text>`:''}${ks.length<=7||(i%3===0&&i<ks.length-3)||i===ks.length-1?`<text class="axis" x="${x+bw/2}" y="${h-4}" text-anchor="middle">${esc(shortM(ks[i]).replace(' 20',' ’'))}</text>`:''}</g>`; }).join('');
+      return `<g><rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" style="fill:${se.color}"><title>${esc(DATA.months[ks[i]].label)}: ${v==null?'not reported':lab}</title></rect>${show?`<text class="tv" x="${i===ks.length-1?x+bw:x+bw/2}" y="${y-4}" text-anchor="${i===ks.length-1?'end':'middle'}">${lab}</text>`:''}${ks.length<=7||(i%(ks.length>12?6:3)===0&&i<ks.length-(ks.length>12?4:3))||i===ks.length-1?`<text class="axis" x="${i===0?x:i===ks.length-1?x+bw:x+bw/2}" y="${h-4}" text-anchor="${i===0?'start':i===ks.length-1?'end':'middle'}">${esc(shortM(ks[i]).replace(' 20',' ’').replace('Sept','Sep'))}</text>`:''}</g>`; }).join('');
     return `<figure class="trend"><figcaption>${esc(se.label)}</figcaption><svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(se.label)} by month">${bars}<line x1="0" x2="${w}" y1="${h-pad}" y2="${h-pad}" class="grid"/></svg></figure>`; }).join('');
   return `<section class="tile span12"><h2>${esc(title)} <span class="src">month by month, ${esc(mon().label)}</span></h2><div class="trends">${charts}</div></section>`;
 }
@@ -792,15 +798,15 @@ const figOf = (m,ind) => { const r=(m.figures||[]).filter(f=>f.indicator===ind);
 const LOGSRC='counted from the incident log';
 const CIVG=[['Landmines','Landmines: civilians killed','Landmines: civilians injured',e=>e.cat==='landmine'],
   ['Heavy weapons','Heavy weapons: civilians killed','Heavy weapons: civilians injured',e=>/^Heavy weapons/.test(e.type)],
-  ['Airstrikes','Civilians killed in airstrikes','Civilians injured in airstrikes',e=>e.type==='Airstrike'||e.type==='Drone strike'],
+  ['Air and drone strikes','Civilians killed in airstrikes','Civilians injured in airstrikes',e=>e.type==='Airstrike'||e.type==='Drone strike'],
   ['Other armed violence','Other armed violence: civilians killed','Other armed violence: civilians injured',()=>true]];
 const DRUGF=['Drugs, Mizoram: methamphetamine (kg)','Drugs, Kalay: methamphetamine (kg)','Drugs, Mizoram: heroin (g)','Drugs, Mizoram: people arrested','Drugs, Kalay: people arrested'];
 function monthSec(mm){
   const F=mm.figures||[], has=i=>F.some(f=>f.indicator===i), val=i=>figOf(mm,i)||0, inc=mm.incidents||[];
-  const civ={fromLog:!CIVG.some(([,k,i])=>has(k)||has(i)), groups:{}};
+  const civ={fromLog:true, groups:{}};
   if(!civ.fromLog) CIVG.forEach(([l,k,i])=>{ if(has(k)||has(i)) civ.groups[l]=[val(k),val(i)]; });
   else inc.filter(e=>e.inChin&&e.cat!=='drug'&&(e.civK||e.civI)).forEach(e=>{ const l=CIVG.find(g=>g[3](e))[0], g=civ.groups[l]||(civ.groups[l]=[0,0]); g[0]+=e.civK||0; g[1]+=e.civI||0; });
-  const dr={fromLog:!DRUGF.some(has), by:{}, mzA:0, klA:0, klM:0};
+  const dr={fromLog:true, by:{}, mzA:0, klA:0, klM:0};
   const add=(d,kg,h)=>{ const o=dr.by[d]||(dr.by[d]={kg:0,h:0}); o.kg+=kg; o.h+=h; };
   if(!dr.fromLog){
     F.filter(f=>f.indicator===DRUGF[0]).forEach(f=>add(f.breakdown,f.value||0,0)); F.filter(f=>f.indicator===DRUGF[2]).forEach(f=>add(f.breakdown,0,f.value||0));
@@ -862,28 +868,27 @@ function renderSecurity(){
   V.innerHTML = `
   <section class="tile intro wide">
     <h1>Armed conflict, landmines and drugs in Chinland</h1>
-    <p>Incidents recorded in CCPR's Chinland Monitoring Briefing. Figures cover Chin State, with drug seizures on the Mizoram and Kalay borders where they concern trafficking into Chinland.</p>
-    <p>Showing ${esc(m.label)}.</p>
+    <p>From CCPR's monthly Chinland Monitoring Briefing. Chin State, plus drug seizures on routes through Mizoram and Kalay.</p>
   </section>
-  <section class="tile kpi"><h2>Airstrikes on civilian areas <a class="src" href="#about/airstrikes">How we count</a></h2><div class="num" id="k-air"></div><p class="cap" id="k-air-cap"></p><div class="foot" id="k-air-foot"></div></section>
-  <section class="tile kpi"><h2>Civilian casualties <span class="src" id="src-civ"></span></h2>
+  <section class="tile kpi"><h2>Airstrikes on civilian areas <a class="src" href="#about/airstrikes">Method</a></h2><div class="num" id="k-air"></div><p class="cap" id="k-air-cap"></p><div class="foot" id="k-air-foot"></div></section>
+  <section class="tile kpi"><h2>Civilian casualties</h2>
     <div class="split"><div><span>Killed</span><b class="num" id="k-civk"></b></div><div><span>Injured</span><b class="num" id="k-civi"></b></div></div>
-    <p class="cap">Airstrikes, heavy weapons, landmines and other armed violence.</p><div class="foot" id="k-civ-foot"></div></section>
-  <section class="tile kpi"><h2>Landmine casualties <span class="src" id="src-lm"></span></h2>
+    <div class="foot" id="k-civ-foot"></div></section>
+  <section class="tile kpi"><h2>Landmine casualties</h2>
     <div class="split"><div><span>Killed</span><b class="num" id="k-lmk"></b></div><div><span>Injured</span><b class="num" id="k-lmi"></b></div></div>
-    <p class="cap">Civilians killed or injured by landmines and explosive remnants of war.</p><div class="foot" id="k-lm-foot"></div></section>
-  <section class="tile kpi"><h2>Methamphetamine seized <span class="src" id="src-drug"></span></h2><div class="num" id="k-meth"></div><p class="cap" id="k-meth-cap"></p><div class="foot" id="k-meth-foot"></div></section>
+    <p class="cap">Civilians, including explosive remnants of war.</p></section>
+  <section class="tile kpi"><h2>Methamphetamine seized</h2><div class="num" id="k-meth"></div><p class="cap" id="k-meth-cap"></p><div class="foot" id="k-meth-foot"></div></section>
 
   ${trendTile('Security trends',[{label:'Airstrikes on civilian areas',color:'var(--c-conflict)',fn:strikeCount},
-     {label:'Civilians killed (all causes reported)',color:'var(--c-conflict)',fn:m=>Object.values(monthSec(m).civ.groups).reduce((a,g)=>a+g[0],0)},
+     {label:'Civilians killed',color:'var(--c-conflict)',fn:m=>Object.values(monthSec(m).civ.groups).reduce((a,g)=>a+g[0],0)},
      {label:'Landmine casualties (killed and injured)',color:'var(--c-landmine)',fn:m=>{const g=monthSec(m).civ.groups.Landmines; return g?g[0]+g[1]:0;}},
      {label:'Methamphetamine seized (kg)',color:'var(--c-drug)',fn:m=>{const d=monthSec(m).dr; return Math.round((Object.values(d.by).reduce((a,o)=>a+o.kg,0)+d.klM)*10)/10;}}])}
   <section class="tile brief span3 rows2" id="brief"><h2>The briefing</h2>
-    <div class="cover"><img id="cover" alt="Cover photo of the Chinland Monitoring Briefing"><div class="t"><small>Monthly situation briefing</small><b>Chinland Monitoring Briefing</b><span>${esc(m.label)}</span></div></div>
-    <div class="dl" id="downloads"></div><ul class="stats" id="brief-stats"></ul>
-    <p class="note">Published monthly in Burmese and English for diplomats, donors and researchers.</p></section>
+    <div class="cover"><img id="cover" alt="Cover photo of the Chinland Monitoring Briefing"><div class="t"><small>Monthly situation briefing</small><b>Chinland Monitoring Briefing</b><span>${esc((DATA.months[TO]||{}).label||'')}</span></div></div>
+    <div class="dl" id="downloads"></div>
+    <p class="note">Published monthly by CCPR.</p></section>
 
-  <section class="tile maptile span5 rows2"><h2>Incident map <span class="src">MIMU and MIRSAC boundaries</span></h2>
+  <section class="tile maptile span5 rows2"><h2>Incident map</h2>
     <div class="layers" role="group" aria-label="Map layers">
       <button type="button" aria-pressed="true" data-cat="conflict"><span class="sw" style="background:var(--c-conflict)"></span>Conflict</button>
       <button type="button" aria-pressed="true" data-cat="landmine"><span class="sw" style="background:var(--c-landmine)"></span>Landmines</button>
@@ -891,17 +896,14 @@ function renderSecurity(){
       <button type="button" aria-pressed="true" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i style="background:var(--muted);width:6px;height:6px;opacity:.6"></i>Village (MIMU, 1,373 in Chin State)</span><span><i style="background:var(--muted)"></i>Incident at a village or town</span><span>Zoom in to read village names</span><span><i class="ring"></i>Township or Mizoram district only (exact site not confirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township or Mizoram district</span></div>
-    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row in the incident log to see details.</span></div></section>
+    <div class="legend"><span><i style="background:var(--muted)"></i>Incident</span><span><i class="ring"></i>Township only</span><span>Larger dot: civilians harmed</span></div>
+    <div class="sel-card" id="sel" aria-live="polite"></div></section>
 
-  <section class="tile span4"><h2>Airstrikes by township <span class="src" id="src-bars"></span></h2>
-    <p class="sub">Separate attacks on civilian areas. The figure after the slash is civilians injured.</p>
-    <div id="air-bars"></div><div class="chips" id="damage"></div>
-    <div class="duo"><div><div class="k">Landmine incidents by township</div><div id="lm-bars"></div></div>
-      <div><div class="k">Children killed by airstrikes, year to date (other source)</div><b class="big" id="k-child"></b><p class="sub" id="k-child-cap" style="margin:0"></p></div></div></section>
+  <section class="tile span4"><h2>Airstrikes on civilian areas, by township</h2>
+    <div id="air-bars"></div>
+    <div class="k" style="margin-top:16px">Landmine incidents, by township</div><div id="lm-bars"></div></section>
 
-  <section class="tile span4"><h2>Seizures on Chinland's borders <span class="src" id="src-drugs"></span></h2>
-    <p class="sub">Arrests of traffickers on routes into and out of Chinland.</p><div class="rowlist" id="drug-rows"></div></section>
+  <section class="tile span4"><h2>Drug seizures, by place</h2><div class="rowlist" id="drug-rows"></div></section>
 
   <section class="tile span12"><h2>Incident log <span class="filters" role="group" aria-label="Filter incidents" id="filters">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="conflict">Conflict</button>
@@ -919,28 +921,19 @@ function renderSecurity(){
   strikes.filter(e=>e.type==='Airstrike').forEach(e=>{ if(e.civI) airInj[e.ts]=(airInj[e.ts]||0)+e.civI; });
   const nTs=Object.keys(airTs).length;
   setNum('k-air',air,null,'var(--c-conflict)');
-  $('k-air-cap').textContent = air?`Separate attacks on villages, towns and other civilian places in ${plural(nTs,'township')}. Counted by attack, not by bomb.`:`No airstrikes on civilian areas recorded ${PER()}.`;
-  const aK=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civK||0),0), aI=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civI||0),0);
-  const parts=[]; if(strikes.length) parts.push(`${aK} civilians killed, ${aI} injured`);
-  const dm=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`${fSum(i)} ${l}`);
-  if(dm.length&&allPrinted) parts.push(dm.join(', ')+' damaged');
+  $('k-air-cap').textContent = air?`In ${plural(nTs,'township')}. One attack on one place counts once, however many bombs.`:`None recorded ${PER()}.`;
   const armed=nAtt(strikes.filter(e=>e.type==='Airstrike'&&e.hit!=='Civilian area')), drone=nAtt(strikes.filter(e=>e.type==='Drone strike'));
-  parts.push(drone?`${plural(drone,'drone strike')}`:'No drone strikes recorded'); if(armed) parts.push(`${plural(armed,'airstrike')} on armed positions or unclear targets`);
-  const printed=fVal('Airstrikes as printed in the briefing');
-  if(printed!==null&&printed!==air&&!mon().multi) parts.push(`The printed briefing reported ${fmtDec(printed)}, counting individual bombs`);
-  $('k-air-foot').textContent=parts.join(' · ');
+  $('k-air-foot').textContent=[armed?`${fmt(armed)} more on armed positions or unclear targets`:'', drone?`${plural(drone,'drone strike')}`:''].filter(Boolean).join(' · ');
   let ck=0,ci=0; const cf=[];
-  CIVG.forEach(([l])=>{ if(CG[l]){ ck+=CG[l][0]; ci+=CG[l][1]; cf.push(`${l} ${CG[l][0]} killed, ${CG[l][1]} injured`);} });
-  if(PS.civ.log&&!cf.length) cf.push('No civilian casualties in the incident log');
-  setNum('k-civk',ck); setNum('k-civi',ci); $('src-civ').textContent=PS.civ.src; $('k-civ-foot').textContent=cf.join(' · ');
+  CIVG.forEach(([l])=>{ if(CG[l]){ ck+=CG[l][0]; ci+=CG[l][1]; cf.push(`${l}: ${CG[l][0]} killed, ${CG[l][1]} injured`);} });
+  setNum('k-civk',ck); setNum('k-civi',ci); $('k-civ-foot').textContent=cf.join(' · ');
   const mzKg=r1(Object.values(DR.by).reduce((a,o)=>a+o.kg,0)), mzH=Object.values(DR.by).reduce((a,o)=>a+o.h,0);
-  const mzM=Object.keys(DR.by).length||DR.fig?mzKg:null, klM=DR.hasKl?r1(DR.klM):null, mzA=DR.hasA?DR.mzA:null, klA=DR.hasA?DR.klA:null;
-  const meth=(mzM===null&&klM===null)?null:r1((mzM||0)+(klM||0));
-  setNum('k-meth',meth,meth===null?null:`${fmtKg(meth)}<small>kg</small>`,'var(--c-drug)'); $('src-drug').textContent=DR.src;
-  const arr=(mzA===null&&klA===null)?null:(mzA||0)+(klA||0);
-  $('k-meth-cap').textContent=arr===null?'':(DR.log?`${arr} people arrested in recorded seizures. Tablets are converted at 0.1 g each.`:`${arr} people arrested in Mizoram State and Kalay town.`);
-  const inC=DR.by['Chin State'], mzOnly=r1(mzKg-(inC?inC.kg:0)), mzHo=mzH-(inC?inC.h:0);
-  const mf=[]; if(mzM!==null&&(mzOnly||mzHo||!inC)) mf.push(`Mizoram ${fmtDec(mzOnly)} kg`+(mzHo?` and ${fmtH(mzHo)}`:'')); if(inC) mf.push(`Inside Chin State ${fmtDec(r1(inC.kg))} kg`+(inC.h?` and ${fmtH(inC.h)}`:'')); if(klM!==null) mf.push(`Kalay ${fmtDec(klM)} kg`); $('k-meth-foot').textContent=mf.join(' · ');
+  const klM=DR.hasKl?r1(DR.klM):0, meth=r1(mzKg+klM), heroin=mzH, arr=(DR.mzA||0)+(DR.klA||0);
+  const kgFmt=v=>fmtDec(Math.round(v*10)/10);
+  const hasDrug=ev.some(e=>e.cat==='drug');
+  $('k-meth').innerHTML=hasDrug?`<i style="background:var(--c-drug)"></i>${kgFmt(meth)}<small>kg</small>`:`<span class="na">None recorded</span>`;
+  $('k-meth-cap').textContent=hasDrug?[arr?`${plural(arr,'person','people')} arrested`:'',heroin?`${heroin>=1000?kgFmt(heroin/1000)+' kg':fmt(heroin)+' g'} of heroin`:''].filter(Boolean).join(' · '):'';
+  $('k-meth-foot').textContent='';
 
   const b=m.briefing||{}; const cov=$('cover'); if(b.cover){cov.src='data/'+b.cover;} else cov.hidden=true;
   const dl=[]; if(b.pdf_en) dl.push(`<a href="data/${encodeURI(b.pdf_en)}" target="_blank" rel="noopener">Read the briefing in English <span>PDF</span></a>`);
@@ -952,27 +945,18 @@ function renderSecurity(){
   const arch=(DATA.briefings||[]).filter(x=>x.month!==TO);
   if(arch.length) $('downloads').insertAdjacentHTML('afterend',`<div class="k" style="margin-top:14px">Earlier briefings</div><ul class="archive">${arch.map(x=>`<li><span>${esc(x.label)}</span><span>${x.url_en?`<a href="${esc(x.url_en)}" target="_blank" rel="noopener">English PDF</a>`:''}${x.url_my?` · <a href="${esc(x.url_my)}" target="_blank" rel="noopener" lang="my">မြန်မာ</a>`:''}</span></li>`).join('')}</ul><p class="note" style="padding-top:8px"><a href="https://chinpeacecenter.org/publication/" target="_blank" rel="noopener">All CCPR publications</a></p>`);
   const cnt=c=>ev.filter(e=>e.cat===c).length;
-  $('brief-stats').innerHTML=`<li>Conflict incidents logged<b>${cnt('conflict')}</b></li><li>Landmine incidents logged<b>${cnt('landmine')}</b></li><li>Drug seizures logged<b>${cnt('drug')}</b></li><li>Governance and political events<b>${(m.events||[]).filter(e=>['governance','political','border'].includes(e.cat)).length}</b></li><li>Humanitarian and livelihood events<b>${(m.events||[]).filter(e=>['humanitarian','livelihood'].includes(e.cat)).length}</b></li>`;
 
   const ai=airInj, amax=Math.max(1,...Object.values(airTs));
-  $('src-bars').textContent='counted from the incident log';
-  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):`<p class="empty">No airstrikes on civilian areas recorded ${PER()}.</p>`;
-  $('damage').innerHTML=!allPrinted?'':[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`<span class="chip"><b>${fSum(i)}</b>${l} damaged</span>`).join('');
+  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)')).join(''):`<p class="empty">None recorded ${PER()}.</p>`;
   const LG=CG.Landmines, lk=LG?LG[0]:(PS.civ.log?0:null), li=LG?LG[1]:(PS.civ.log?0:null), lmax=Math.max(1,lk||0,li||0);
   const lmEv=ev.filter(e=>e.cat==='landmine'&&e.inChin&&e.type!=='Clearance or EORE activity'), lmTs={}; lmEv.forEach(e=>{lmTs[e.ts]=(lmTs[e.ts]||0)+1;});
   const lmMax=Math.max(1,...Object.values(lmTs));
   $('lm-bars').innerHTML=lmEv.length?Object.entries(lmTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,lmMax,'var(--c-landmine)')).join(''):`<p class="sub">None recorded ${PER()}</p>`;
-  setNum('k-lmk',lk,null,'var(--c-landmine)'); setNum('k-lmi',li); $('src-lm').textContent=PS.civ.src;
-  const mineAtt=ev.filter(e=>e.inChin&&e.type==='Mine or IED attack').length;
-  $('k-lm-foot').textContent=[lmEv.length?`${plural(lmEv.length,'landmine incident')} in the log, in ${plural(Object.keys(lmTs).length,'township')}`:`No landmine incidents in the log ${PER()}`, mineAtt?`${plural(mineAtt,'mine attack')} on armed forces, not counted here`:''].filter(Boolean).join(' · ');
-  const ch=fVal('Children killed by airstrikes in Chinland, year to date');
-  $('k-child').textContent=ch===null?'–':ch; $('k-child-cap').textContent=ch===null?`Not reported ${PER()}.`:[fNote('Children killed by airstrikes in Chinland, year to date'),fSrc('Children killed by airstrikes in Chinland, year to date')].filter(Boolean).join('. ');
+  setNum('k-lmk',lk,null,'var(--c-landmine)'); setNum('k-lmi',li);
 
-  $('src-drugs').textContent=DR.src;
-  let rows=Object.entries(DR.by).sort((a,b)=>(b[1].kg-a[1].kg)||(b[1].h-a[1].h)).map(([d,o])=>`<div class="row"><span>${esc(d==='All'?'Mizoram State':d==='Chin State'?'Inside Chin State':d+' District')}<span class="tag">${d==='Chin State'?'Chinland':'Mizoram, India'}</span></span><span>${o.kg?fmtDec(r1(o.kg))+' kg meth':''}${o.kg&&o.h?' · ':''}${o.h?fmtH(o.h):''}${!o.kg&&!o.h?'seized, amount not given':''}</span></div>`).join('');
-  if(klM!==null) rows+=`<div class="row"><span>Kalay town<span class="tag">Sagaing Region, main route into Chinland</span></span><span>${fmtDec(klM)} kg meth</span></div>`;
-  if(arr!==null) rows+=`<div class="row"><span>People arrested<span class="tag">${DR.log?'Mizoram and Chin State; Kalay':'Myanmar nationals in Mizoram; all arrests in Kalay'}</span></span><span>${mzA||0} + ${klA||0}</span></div>`;
-  $('drug-rows').innerHTML=rows||`<p class="empty">No drug figures ${PER()}.</p>`;
+  let rows=Object.entries(DR.by).sort((a,b)=>(b[1].kg-a[1].kg)||(b[1].h-a[1].h)).map(([d,o])=>`<div class="row"><span>${esc(d==='All'?'Mizoram State':d==='Chin State'?'Inside Chin State':d+' District')}${d==='Chin State'?'':'<span class="tag">Mizoram, India</span>'}</span><span>${o.kg?kgFmt(o.kg)+' kg meth':''}${o.kg&&o.h?' · ':''}${o.h?(o.h>=1000?kgFmt(o.h/1000)+' kg':fmt(o.h)+' g')+' heroin':''}${!o.kg&&!o.h?'seized, amount not given':''}</span></div>`).join('');
+  if(klM) rows+=`<div class="row"><span>Kalay town<span class="tag">Sagaing Region</span></span><span>${kgFmt(klM)} kg meth</span></div>`;
+  $('drug-rows').innerHTML=rows||`<p class="empty">None recorded ${PER()}.</p>`;
 
   const map=makeMap($('map'),'var(--c-conflict)');
   const casualty=e=>{const p=[]; if(e.civK)p.push(`${e.civK} civilian${e.civK>1?'s':''} killed`); if(e.civI)p.push(`${e.civI} civilian${e.civI>1?'s':''} injured`); if(e.cbK)p.push(`${e.cbK} combatant${e.cbK>1?'s':''} killed`); if(e.cbI)p.push(`${e.cbI} combatant${e.cbI>1?'s':''} injured`);
@@ -987,9 +971,9 @@ function renderSecurity(){
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=ev.filter(e=>(filter==='all'||e.cat===filter)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No incidents recorded for this selection.</p></td></tr>'; return; }
-    list.forEach(e=>{
-      const civ=(e.civK||e.civI)?`${e.civK||0} killed, ${e.civI||0} injured`:(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'None reported');
-      const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}${e.attacks>1?` <span class="pill neutral">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td class="n">${esc(civ)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); }
+    const P=logPage(list,selected); P.vis.forEach(e=>{
+      const civ=(e.civK||e.civI)?[e.civK?`${e.civK} killed`:'',e.civI?`${e.civI} injured`:''].filter(Boolean).join(', '):(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'');
+      const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))} ${e.date.slice(2,4)}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}${e.attacks>1?` <span class="pill neutral">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td class="n">${esc(civ)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); logMoreRow(tb,P.more,drawLog); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
@@ -1017,26 +1001,22 @@ function renderGovernance(){
   V.innerHTML=`
   <section class="tile intro">
     <h1>Governance, politics and the border</h1>
-    <p>What Chin authorities decided and delivered, how political actors engaged with each other, and what changed on the India border. Recorded from the Chinland Monitoring Briefing.</p>
-    <p>Showing ${esc(m.label)}. Counts are events recorded, not every action taken.</p>
+    <p>What Chin authorities decided and delivered, how political actors dealt with each other, and what changed on the India border.</p>
   </section>
   <section class="tile kpi"><h2>Governance actions</h2><div class="num"><i style="background:var(--c-governance)"></i>${gov.length}</div>
-    <p class="cap">Laws, orders, services, justice and public consultations by Chin authorities.</p>
-    <div class="foot">${Object.entries(byLevel).map(([l,n])=>`${esc(l)} ${n}`).join(' · ')||'None recorded'}</div></section>
+    <p class="cap">Laws, orders, services and justice by Chin authorities.</p></section>
   <section class="tile kpi"><h2>Political events</h2><div class="num"><i style="background:var(--c-political)"></i>${pol.length}</div>
-    <p class="cap">Meetings, agreements, statements and disputes between actors.</p>
-    <div class="foot">${topTypes(pol)}</div></section>
+    <p class="cap">Meetings, agreements, statements and disputes.</p></section>
   <section class="tile kpi"><h2>Border events</h2><div class="num"><i style="background:var(--c-border)"></i>${bor.length}</div>
-    <p class="cap">Orders by Indian and Mizoram authorities, and road and trade route closures.</p>
-    <div class="foot">${topTypes(bor)}</div></section>
+    <p class="cap">Indian and Mizoram measures, refugees, and trade routes.</p></section>
 
   ${trendTile('Governance and political trends',[{label:'Governance actions',color:'var(--c-governance)',fn:m=>(m.events||[]).filter(e=>e.cat==='governance').length},
      {label:'Political events',color:'var(--c-political)',fn:m=>(m.events||[]).filter(e=>e.cat==='political').length},
      {label:'Border events',color:'var(--c-border)',fn:m=>(m.events||[]).filter(e=>e.cat==='border').length}])}
-  <section class="tile span12" id="groups"><h2>Who acted <span class="src">governance, political and border events by actor group, ${esc(m.label)}</span></h2>
-    <p class="sub">Select a group to filter the map and log. Select a name to see what that actor did.</p>
+  <section class="tile span12" id="groups"><h2>Who acted <span class="src">events by actor group</span></h2>
+    <p class="sub">Click a group to filter the map and log, or a name to see that actor's record.</p>
     <div id="group-rows"></div></section>
-  <section class="tile span12" id="issues"><h2>Issues to follow <span class="src">records in all months; the large number is ${esc(m.label)}</span></h2>
+  <section class="tile span12" id="issues"><h2>Issues to follow</h2>
     <p class="sub">Select an issue to follow it over time.</p>
     <div class="icards" id="icards"></div><div id="issue-view"></div></section>
   <section class="tile span12" id="aa"><h2>The Arakan Army in Chinland <span class="src">${esc(m.label)}</span></h2>
@@ -1044,11 +1024,10 @@ function renderGovernance(){
     <div class="aa-grid"><div><div class="k">What the records show</div><div id="aa-kinds"></div></div>
       <div><div class="k">Records <span id="aa-n" style="text-transform:none;letter-spacing:0"></span></div><div class="thread-list" id="aa-list"></div></div>
       <div class="resp-col"><div class="k">How Chin bodies responded</div><div id="aa-resp"></div></div></div></section>
-  <section class="tile span7" id="procs"><h2>Processes to watch <span class="src">stage as of the end of ${esc(m.label)}</span></h2>
-    <p class="sub">Long-running processes and the latest stage the briefing reported. A stage only moves when a recorded event shows it.</p>
+  <section class="tile span7" id="procs"><h2>Processes to watch <span class="src">latest stage reported</span></h2>
     <div id="proc-list"></div></section>
 
-  <section class="tile maptile span5 rows3"><h2>Where it happened <span class="src">MIMU and MIRSAC boundaries</span></h2>
+  <section class="tile maptile span5 rows2"><h2>Where it happened</h2>
     <div class="layers" role="group" aria-label="Map layers">
       <button type="button" aria-pressed="true" data-cat="governance"><span class="sw" style="background:var(--c-governance)"></span>Governance</button>
       <button type="button" aria-pressed="true" data-cat="political"><span class="sw sq" style="background:var(--c-political)"></span>Political</button>
@@ -1056,14 +1035,14 @@ function renderGovernance(){
       <button type="button" aria-pressed="false" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i class="ring"></i>Township or Mizoram district only</span><span>Shading: events per township or district</span>${unmapped?`<span>${plural(unmapped,'event')} Chinland-wide or without a place, listed below but not mapped</span>`:''}</div>
-    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
+    <div class="legend"><span><i class="ring"></i>Township or district only</span>${unmapped?`<span>${plural(unmapped,'event')} with no single place are in the log, not on the map</span>`:''}</div>
+    <div class="sel-card" id="sel" aria-live="polite"></div></section>
 
   <section class="tile span7" id="areas"><h2>What Chin authorities worked on <span class="src">governance actions by policy area</span></h2>
-    <p class="sub">Each bar counts recorded governance actions ${PER()}. Select a bar to list those actions below.</p>
+    <p class="sub">Click a bar to filter the event log.</p>
     <div id="area-bars"></div></section>
 
-  <section class="tile span7" id="edu"><h2>Education <span class="src">${esc(m.label)}</span></h2>
+  <section class="tile span12" id="edu"><h2>Education <span class="src">${esc(m.label)}</span></h2>
     <div class="edu-k" id="edu-k"></div>
     <div id="edu-chart"></div>
     <div id="edu-list" style="margin-top:10px"></div></section>
@@ -1082,7 +1061,7 @@ function renderGovernance(){
   let ffam='all', fissue='all';
   const drawGroups=()=>{ const gc={}, ga={}; all.forEach(e=>{ evGroups(e).forEach(g=>{gc[g]=(gc[g]||0)+1;}); (e.actors||[]).concat(e.facilitator?[e.facilitator]:[]).forEach(a=>{const g=groupOf(a); if(!g) return; ga[g]=ga[g]||{}; ga[g][a]=(ga[g][a]||0)+1;}); });
     const gmax=Math.max(1,...Object.values(gc));
-    $('group-rows').innerHTML=(DATA.groups||[]).map(g=>{ const n=gc[g]||0; const tops=Object.entries(ga[g]||{}).sort((x,y)=>y[1]-x[1]).slice(0,GROUPF===g?12:3);
+    $('group-rows').innerHTML=(DATA.groups||[]).filter(g=>gc[g]||GROUPF===g).map(g=>{ const n=gc[g]||0; const tops=Object.entries(ga[g]||{}).sort((x,y)=>y[1]-x[1]).slice(0,GROUPF===g?12:3);
       return `<div class="grow${GROUPF===g?' on':''}"><button type="button" class="gname" data-group="${esc(g)}" aria-pressed="${GROUPF===g}" aria-label="${esc(g)}: ${plural(n,'event')}. Filter by this group">${gBadge(g)}${esc(g)}</button>
         <span class="track"><span class="fill" style="width:${n?Math.max(2,n/gmax*100):0}%"></span></span><span class="v">${n}</span>
         <span class="acts">${tops.map(([a,c])=>`<button type="button" class="actor" data-actor="${esc(a)}" title="${esc(actorName(a))}">${esc(a)} <span style="color:var(--muted)">${c}</span></button>`).join('')||'<span class="sub">None recorded</span>'}</span></div>`; }).join('');
@@ -1095,7 +1074,7 @@ function renderGovernance(){
     $('icards').innerHTML=iss.map(i=>{ const recs=R.all.filter(r=>(r.issues||[]).includes(i)); const per=recs.filter(inPeriod).length; const last=recs.length?recs[recs.length-1].date:null;
       const bym={}; recs.forEach(r=>{const k=r.date.slice(0,7); bym[k]=(bym[k]||0)+1;}); const mx=Math.max(1,...Object.values(bym)); const w=100/allKeys.length;
       const bars=allKeys.map((k,j)=>{const v=bym[k]||0; const h=v?Math.max(2,18*v/mx):0; return `<rect x="${(j*w).toFixed(2)}" y="${(20-h).toFixed(1)}" width="${(w*0.7).toFixed(2)}" height="${h.toFixed(1)}" style="fill:${k>=FROM&&k<=TO?'var(--accent)':'var(--muted)'};opacity:${k>=FROM&&k<=TO?1:.45}"/>`;}).join('');
-      return `<button type="button" class="icard" data-isscard="${esc(i)}" aria-pressed="${ISSUE===i}"><b>${esc(i)}</b><span class="n">${per}<small>of ${recs.length} records</small></span>
+      return `<button type="button" class="icard" data-isscard="${esc(i)}" aria-pressed="${ISSUE===i}"><b>${esc(i)}</b><span class="n">${per}<small>${per===recs.length?(per===1?'record':'records'):'of '+recs.length+' in all months'}</small></span>
         <svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">${bars}</svg><span class="meta">${last?'Latest '+esc(dLong(last)):'No records yet'}</span></button>`; }).join('')||'<p class="empty">No issues set up yet.</p>';
     V.querySelectorAll('[data-isscard]').forEach(b=>b.addEventListener('click',()=>{ ISSUE=ISSUE===b.dataset.isscard?null:b.dataset.isscard; writeHash(); window._drawIssues(true); }));
     const v=$('issue-view');
@@ -1135,7 +1114,7 @@ function renderGovernance(){
       if(par&&isAA(par)) holders=acts; else if(!r.respondsTo&&(r.actors||[]).slice(1).includes('ULA/AA')&&r.actors[0]!=='ULA/AA') holders=[r.actors[0]];
       if(!holders) return; holders.forEach(a=>add(r.position==='Objects'?obj:sup,a,r)); });
     const col=(t,o,cls)=>`<h4>${t}</h4>${Object.keys(o).length?Object.entries(o).sort((x,y)=>y[1].length-x[1].length).map(([a,rs])=>`<div class="row"><span><button type="button" class="actor" data-actor="${esc(a)}">${gBadge(groupOf(a))}${esc(a)}</button></span><span class="pos ${cls}">${rs.length}</span></div>`).join(''):`<p class="sub">None recorded ${PER()}.</p>`}`;
-    $('aa-resp').innerHTML=col('Objected or disputed',obj,'objects')+col('Allied or cooperated',sup,'supports')+`<p class="sub" style="margin-top:8px">Number of records ${PER()}, as coded by CCPR.</p>`; };
+    $('aa-resp').innerHTML=col('Objected or disputed',obj,'objects')+col('Allied or cooperated',sup,'supports')+``; };
 
   // processes
   const end=monthEnd(MONTH), procs=Object.entries(DATA.processes||{});
@@ -1192,7 +1171,7 @@ function renderGovernance(){
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor)&&(ffam==='all'||famOf(e.type)===ffam)&&(fissue==='all'||(e.issues||[]).includes(fissue))&&(!GROUPF||evGroups(e).includes(GROUPF))&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
-    list.forEach(e=>{ const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))} ${e.respondsTo?posPill(e.position):''}</td><td>${esc(famOf(e.type))}</td><td>${actorChips(e)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); }
+    const P=logPage(list,selected); P.vis.forEach(e=>{ const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))} ${e.date.slice(2,4)}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))} ${e.respondsTo?posPill(e.position):''}</td><td>${esc(famOf(e.type))}</td><td>${actorChips(e)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); logMoreRow(tb,P.more,drawLog); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
@@ -1230,25 +1209,19 @@ function renderHumanitarian(){
   V.innerHTML=`
   <section class="tile intro">
     <h1>Humanitarian needs and livelihoods</h1>
-    <p>Displacement, aid, disasters, food security and market prices affecting people from Chinland, inside Chin State and in Mizoram.</p>
-    <p>Showing ${esc(m.label)}. Blank means no data was available, not zero.</p>
+    <p>Displacement, aid, disease, disasters and livelihoods, in Chin State and among people from Chinland in Mizoram.</p>
   </section>
   <section class="tile kpi"><h2>Humanitarian events</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.length}</div>
-    <p class="cap">Displacement, evictions, aid, access, disasters and reported shortages.</p>
-    <div class="foot">${topTypes(hum)}</div></section>
-  <section class="tile kpi"><h2>Displacement figures</h2><div class="num">${sitesWith.length?`<i style="background:var(--c-site)"></i>${sitesWith.length}`:`<span class="na">None ${PER()}</span>`}</div>
-    <p class="cap">${sitesWith.length?`${sitesWith.length===1?'Site':'Sites'} with figures reported. Figures are listed by site and source below and are not added together.`:'Other groups track IDP numbers in detail; CCPR records figures when the briefing reports them.'}</p></section>
-  <section class="tile kpi"><h2>Market prices</h2><div class="num">${prices.length?`<i style="background:var(--c-livelihood)"></i>${prices.length}`:'<span class="na">Not collected yet</span>'}</div>
-    <p class="cap">${prices.length?`Prices from ${plural(nMk,'market')} for ${plural(nCm,'item')}.`:'Monthly price collection for 10 essential items starts once the team begins reporting.'}</p>
-    <div class="foot">${liv.length?`${plural(liv.length,'livelihood event')} recorded`:`No livelihood events recorded ${PER()}`}</div></section>
+    <p class="cap">Displacement, aid, disease, disasters and shortages.</p></section>
+  <section class="tile kpi"><h2>Displacement and evictions</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.filter(e=>/displacement|evict|relocat|return/i.test(e.type)).length}</div>
+    <p class="cap">New displacement, evictions and returns.</p></section>
+  <section class="tile kpi"><h2>Livelihood events</h2><div class="num"><i style="background:var(--c-livelihood)"></i>${liv.length}</div>
+    <p class="cap">Prices, markets, crops and trade.</p></section>
 
   ${trendTile('Humanitarian trends',[{label:'Humanitarian events',color:'var(--c-humanitarian)',fn:m=>(m.events||[]).filter(e=>e.cat==='humanitarian').length},
      {label:'Livelihood events',color:'var(--c-livelihood)',fn:m=>(m.events||[]).filter(e=>e.cat==='livelihood').length}])}
-  <section class="tile span7"><h2>Displacement by site <span class="src">as reported, by source</span></h2>
-    <p class="sub">Each row is one figure from one source. Households and people are different units and are never converted or added.</p>
-    <div class="tblwrap" id="disp"></div></section>
-
-  <section class="tile maptile span5 rows2"><h2>Where it happened <span class="src">MIMU and MIRSAC boundaries</span></h2>
+  <section class="tile span7"><h2>What was reported</h2><p class="sub">Click a bar to filter the event log.</p><div id="htypes"></div></section>
+<section class="tile maptile span5${disp.length?' rows2':''}"><h2>Where it happened</h2>
     <div class="layers" role="group" aria-label="Map layers">
       <button type="button" aria-pressed="true" data-cat="humanitarian"><span class="sw" style="background:var(--c-humanitarian)"></span>Humanitarian</button>
       <button type="button" aria-pressed="true" data-cat="livelihood"><span class="sw sq" style="background:var(--c-livelihood)"></span>Livelihood</button>
@@ -1256,10 +1229,14 @@ function renderHumanitarian(){
       <button type="button" aria-pressed="false" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i class="ring"></i>Township or Mizoram district only</span><span>IDP sites without a verified point sit at the district centre</span></div>
-    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
+    <div class="legend"><span><i class="ring"></i>Township or district only</span></div>
+    <div class="sel-card" id="sel" aria-live="polite"></div></section>
+  ${disp.length?`<section class="tile span7"><h2>Displacement figures, by site <span class="src">${esc((DATA.months[TO]||{}).label||'')}</span></h2>
+    <p class="sub">As reported. Households and people are not added together.</p>
+    <div class="tblwrap" id="disp"></div></section>`:''}
 
-  <section class="tile span7"><h2>Market prices <span class="src" id="psrc"></span></h2><div id="prices"></div></section>
+
+  ${prices.length?`<section class="tile span7"><h2>Market prices <span class="src" id="psrc"></span></h2><div id="prices"></div></section>`:''}
 
   <section class="tile span12"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="humanitarian">Humanitarian</button>
@@ -1267,7 +1244,7 @@ function renderHumanitarian(){
     <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>What happened <span class="hint" style="text-transform:none;letter-spacing:0;font-weight:400">(click a row to see more)</span></th><th>Type</th><th>Township</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
 
   // displacement
-  $('disp').innerHTML = disp.length ? `<table class="t"><thead><tr><th>Site</th><th>Location</th><th>Origin</th><th class="r">Households</th><th class="r">People</th><th>Source</th></tr></thead><tbody>${
+  if($('disp')) $('disp').innerHTML = disp.length ? `<table class="t"><thead><tr><th>Site</th><th>Location</th><th>Origin</th><th class="r">Households</th><th class="r">People</th><th>Source</th></tr></thead><tbody>${
     disp.map(d=>{const s=(DATA.sites||{})[d.site]||{}; return `<tr><td><b>${esc(d.site)}</b><span class="tag">${esc(s.type||'')}${s.status?' · '+esc(s.status):''}</span></td><td>${esc(s.place||s.ts||'')}</td><td>${esc(s.origin||'')}</td><td class="n r">${d.households==null?'–':fmt(d.households)}</td><td class="n r">${d.people==null?'–':fmt(d.people)}</td><td class="n">${esc(d.source)}${d.note?`<span class="tag">${esc(d.note)}</span>`:''}</td></tr>`;}).join('')}</tbody></table>`
     : `<p class="empty">No displacement figures recorded ${PER()}.</p>`;
 
@@ -1286,22 +1263,26 @@ function renderHumanitarian(){
   function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
     const pts=all.filter(e=>layers[e.cat]&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(whereOf(e))}`,aria:`${dShort(e.date)}, ${e.type}`}));
     map.draw({counts:c,selected,onSelect:select,points:pts.concat(layers.site?sitePts:[])}); }
+  let ftype=null;
+  const drawTypes=()=>{ const c={}; all.forEach(e=>{c[e.type]=(c[e.type]||0)+1;}); const ent=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,10); const mx=Math.max(1,...ent.map(x=>x[1]));
+    $('htypes').innerHTML=ent.length?ent.map(([t,n])=>`<button type="button" class="kbar" data-htype="${esc(t)}" aria-pressed="${ftype===t}"><span>${esc(t)}</span><span class="track"><span class="fill" style="width:${Math.max(3,n/mx*100)}%;background:${all.find(e=>e.type===t).cat==='livelihood'?'var(--c-livelihood)':'var(--c-humanitarian)'}"></span></span><span class="v">${n}</span></button>`).join(''):`<p class="empty">Nothing recorded ${PER()}.</p>`;
+    V.querySelectorAll('[data-htype]').forEach(b=>b.addEventListener('click',()=>{ ftype=ftype===b.dataset.htype?null:b.dataset.htype; drawTypes(); drawLog(); })); };
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
-    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&inPlace(e));
+    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(!ftype||e.type===ftype)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
-    list.forEach(e=>{ const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}</td><td>${esc(e.type)}</td><td>${esc(e.ts||'Chinland-wide')}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); }
+    const P=logPage(list,selected); P.vis.forEach(e=>{ const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))} ${e.date.slice(2,4)}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}</td><td>${esc(e.type)}</td><td>${esc(e.ts||'Chinland-wide')}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); logMoreRow(tb,P.more,drawLog); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
   $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
   if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,11.6); } if(map.place) map.place(PLACE);
   chipCounts(all,{site:sitesWith.length});
-  drawMap(); drawLog();
+  drawTypes(); drawMap(); drawLog();
   if(SELID&&all.some(x=>x.id===SELID)) select(SELID);
 }
 
 function renderPrices(prices, prevPrices){
-  const box=$('prices');
+  const box=$('prices'); if(!box) return;
   if(!prices.length){ box.innerHTML=`<p class="empty">No market prices recorded ${PER()}. Once the team reports prices, this panel shows each item by market with the change from the previous month, and a trend line after two months.</p>`; return; }
   $('psrc').textContent='retail prices as collected';
   const key=p=>p.market+'|'+p.commodity+'|'+p.unit+'|'+p.currency;
@@ -1355,28 +1336,25 @@ function renderAbout(){
   </ul>
   <p>Human rights documentation is left to specialist organizations such as the Chin Human Rights Organization. Civilian harm from attacks is recorded under Security.</p>
 
-  <h3>How records are made and checked</h3>
+  <h3>How records are made</h3>
   <ol>
-    <li>A CCPR data officer records each item from the news, organizations' statements and local contacts, with its source.</li>
-    <li>A second staff member verifies it against another source where possible, removes duplicates and sets a confidence level.</li>
-    <li>Descriptions are written in Burmese and translated into English.</li>
-    <li>Monthly totals are checked against the individual records. Differences are explained, not hidden.</li>
-    <li>Each month is reviewed and approved within CCPR before publication. Only approved records are published.</li>
+    <li>CCPR's monitoring team gathers each item for the monthly briefing from news reports, organizations' statements and local contacts.</li>
+    <li>Each item in the briefing becomes one record, with its date, place, actors, type and the briefing page it comes from.</li>
+    <li>Most briefings were published in English and Burmese, and their records were entered from the English edition. Seven briefings exist only in Burmese (December 2025, and January, February, April, June, July and August 2026). CCPR translated their records into English.</li>
+    <li>Each month is reviewed within CCPR before it is published here.</li>
   </ol>
 
   <h3>How to read the numbers</h3>
   <ul>
-    <li><b>Recorded, not total.</b> Counts show what CCPR could record. Actual figures on the ground may be higher.</li>
-    <li><b>Blank is not zero.</b> "Not reported" or a dash means no data was available. Zero is shown only when a source reports none.</li>
-    <li><b>Headline figures</b> are the totals published in each briefing. The map and logs show individual records, so they may not add up to every total.</li>
-    <li><b>Actor groups.</b> Each actor belongs to one group based on reported membership: the Chinland Council and its members; the ICNCC and Chin Brotherhood and their members; other Chin forces; the Union revolution and its allies; the junta and its allies; the ULA/AA; India and Mizoram; and civil society and diaspora. The groups describe membership, not CCPR's view of any actor.</li>
-    <li><b>Issues and links.</b> Records on the same subject share an issue tag, so one issue can be followed across months and across the security and governance pages. When a record responds to an earlier one, it carries a link and a position: supports, objects, responds or follows up. A position with no link describes how the first actor relates to the second actor named in the record. CCPR codes these from the briefing.</li>
-    <li><b>Kinds of event.</b> The governance page groups 30 detailed event types into nine kinds, such as laws and orders, talks and agreements, and disputes. The detailed type is kept and shown in the event log.</li>
-    <li><b>Earlier months.</b> Briefings before 2026 have no "In Figures" page. For those months, civilian casualties and drug seizures are counted from the incident log, and the source line says so. Records from past briefings were entered from the English editions.</li>
-    <li><b>Nothing is estimated.</b> Displacement figures are shown per site and source and are never added together. Prices are never converted between currencies.</li>
-    <li><b>Confidence:</b> confirmed by two or more sources, one source, or unconfirmed.</li>
-    <li><b>Choosing several months</b> adds the monthly counts together. Year-to-date figures, displacement figures, market prices and the briefing shown come from the latest month in the period.</li>
-    <li><b>Searching for a village</b> shows records at that village and within 5 km of it. Records known only at township level are included when you search for the township.</li>
+    <li><b>Recorded, not total.</b> Counts show what CCPR recorded. Actual figures may be higher.</li>
+    <li><b>Every number is counted from the records.</b> Headline figures, charts, township bars and the map all come from the same records, so they always agree. Where a printed briefing gave a different total, the difference is explained below.</li>
+    <li><b>Several months</b> are added together. Displacement figures and the briefing shown are from the latest month in the period.</li>
+    <li><b>Actor groups</b> describe reported membership, not CCPR's view of any actor: the Chinland Council and its members; the ICNCC and Chin Brotherhood and their members; other Chin forces; the Union revolution and its allies; the junta and its allies; the ULA/AA; India and Mizoram; and civil society and diaspora. A body that belonged to no coalition at the time has no group.</li>
+    <li><b>Issues and positions.</b> Records on the same subject share an issue tag, so it can be followed across months. When a record responds to an earlier one, it is linked and given a position: supports, objects, responds or follows up.</li>
+    <li><b>Kinds of event.</b> The governance page groups 30 detailed event types into nine kinds. The detailed type is shown when a record is opened.</li>
+    <li><b>Methamphetamine</b> tablets are converted to weight at 0.1 g each. Heroin is shown separately.</li>
+    <li><b>Displacement</b> figures are shown per site as reported. Households and people are never converted or added together.</li>
+    <li><b>Searching for a village</b> shows records at that village and within 5 km of it.</li>
   </ul>
 
   <h3 id="airstrikes">How airstrikes are counted</h3>
@@ -1387,11 +1365,9 @@ function renderAbout(){
     <li><b>Chin State only.</b> Strikes outside Chin State are not counted.</li>
     <li><b>Date of the attack</b>, not the date it was reported.</li>
     <li><b>Casualties</b> are civilians and combatants counted separately, as known at the time of recording, and updated if later information changes them.</li>
-    <li><b>When sources disagree</b>, the best-confirmed figure is used, higher claims are noted in the description, and each record carries a confidence level.</li>
-    <li><b>The headline is the sum of the individual records</b>, so the totals, the township bars and the map always agree.</li>
-    <li><b>Figures from other organizations</b>, such as children killed by airstrikes year to date, are shown with their source and are not mixed with CCPR's counts.</li>
+    <li><b>When sources disagree</b>, the best-confirmed figure is used and higher claims are noted in the description.</li>
   </ul>
-  <p>The printed September 2026 briefing reported 12 airstrikes because it counted individual bombs. Counted by attack, as above, September had 6. This site uses the counting rule for every month.</p>
+  <p>The printed September 2026 briefing reported 12 airstrikes because it counted individual bombs. Counted by attack, September had 6. This site uses the same rule for every month. All other September totals match the printed briefing.</p>
 
   <h3>Locations</h3>
   <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Chin State township boundaries are from MIMU. Mizoram district boundaries are from the Mizoram Remote Sensing Application Centre (MIRSAC), Government of Mizoram. Lines from the two sources can differ slightly along the border. All boundaries are for reference only and do not imply endorsement.</p>
@@ -1416,7 +1392,7 @@ function writeHash(){ const {v,anchor}=parseHash(); const q=new URLSearchParams(
 
 /* ---------- routing ---------- */
 const VIEWS={security:renderSecurity,governance:renderGovernance,humanitarian:renderHumanitarian,about:renderAbout};
-function render(){
+function render(){ LOGALL=false;
   const P=parseHash(); const hv=P.v; VIEW = VIEWS[hv] ? hv : 'security';
   document.querySelectorAll('nav.views a').forEach(a=>a.setAttribute('aria-current',a.dataset.v===VIEW?'page':'false'));
   document.querySelector('.month').style.visibility = VIEW==='about'?'hidden':'visible';
