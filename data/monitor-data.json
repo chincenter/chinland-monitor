@@ -2,7 +2,7 @@
  "title": "Chinland Conflict Monitor",
  "publisher": "Chin Center for Peace and Reconciliation",
  "source": "Chinland Monitoring Briefing",
- "generated": "2026-10-21T15:21:58.149Z",
+ "generated": "2026-10-21T16:31:21.395Z",
  "latest": "2026-09",
  "months": {
   "2025-01": {
@@ -29838,6 +29838,21 @@
     "pdf_my": null,
     "cover": "cmb-2026-09-cover.jpg",
     "published": null
+   },
+   "humHead": {
+    "figures": [
+     {
+      "value": "Nearly 200,000",
+      "counts": "Chin people displaced inside and outside Chin State",
+      "source": "Chinland Government, Ministry of Social Development, press conference 28 Aug 2026"
+     },
+     {
+      "value": "28,312",
+      "counts": "Refugees from Myanmar in Mizoram",
+      "source": "Mizoram Home Minister to the state assembly, Aug 2026"
+     }
+    ],
+    "summary": "In September, pressure grew on families from Matupi Township sheltering in Mizoram: 45 households at Seimawl camp were told to move within seven days, and about 800 people at Thiak Rawl camp could not afford shelter materials and basic needs. Lawngtlai District also tightened rules for refugees, with an 8 pm curfew and work permits."
    }
   }
  },

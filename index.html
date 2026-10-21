@@ -12,12 +12,12 @@
 <style>
 /* Layout: IISS-style bento board per page; one header with page tabs and a shared month selector. */
 :root{
-  --bg:#EEF0F4; --panel:#FFFFFF; --ink:#1B2440; --muted:#5A6177; --line:#D9DDE6; --soft:#F4F5F8;
+  --bg:#EFF4F4; --panel:#FFFFFF; --ink:#16283A; --muted:#536370; --line:#D3DEDD; --soft:#EDF3F3;
   --land:#E4E7EE; --land-mz:#F1F2F6; --land-edge:#FFFFFF; --navy:#1B2440;
   /* security */ --c-conflict:#A3123E; --c-landmine:#C97A12; --c-drug:#2B5BAE;
   /* governance page */ --c-governance:#0E8A6A; --c-political:#7C3AED; --c-border:#B45309;
   /* humanitarian page */ --c-humanitarian:#D9480F; --c-site:#1D6FB8; --c-livelihood:#5B8C1E;
-  --accent:#A3123E; --accent-soft:#F3DCE3;
+  --accent:#A3123E; --accent-soft:#F3DCE3; --teal:#0B6A66; --teal-soft:#D6ECEA;
   --good:#1F7A45; --good-soft:#DDF1E4; --warn:#9C5A00; --warn-soft:#FCEBD0; --bad:#A3123E; --bad-soft:#F3DCE3;
   --f-display:Arial, "Helvetica Neue", Helvetica, sans-serif;
   --f-body:Arial, "Helvetica Neue", Helvetica, sans-serif;
@@ -30,7 +30,7 @@
   --c-conflict:#E2557B; --c-landmine:#BF7A1C; --c-drug:#5A8DE0;
   --c-governance:#1FA27E; --c-political:#8F6EEB; --c-border:#CF7C14;
   --c-humanitarian:#E8672A; --c-site:#4F86DC; --c-livelihood:#3FA65A;
-  --accent:#E2557B; --accent-soft:#3A1D2A;
+  --accent:#E2557B; --accent-soft:#3A1D2A; --teal:#45B8AE; --teal-soft:#12302E;
   --good:#5CC48A; --good-soft:#173326; --warn:#E6A345; --warn-soft:#3A2D18; --bad:#E2557B; --bad-soft:#3A1D2A;
   color-scheme:dark}}
 :root[data-theme="dark"]{
@@ -39,7 +39,7 @@
   --c-conflict:#E2557B; --c-landmine:#BF7A1C; --c-drug:#5A8DE0;
   --c-governance:#1FA27E; --c-political:#8F6EEB; --c-border:#CF7C14;
   --c-humanitarian:#E8672A; --c-site:#4F86DC; --c-livelihood:#3FA65A;
-  --accent:#E2557B; --accent-soft:#3A1D2A;
+  --accent:#E2557B; --accent-soft:#3A1D2A; --teal:#45B8AE; --teal-soft:#12302E;
   --good:#5CC48A; --good-soft:#173326; --warn:#E6A345; --warn-soft:#3A2D18; --bad:#E2557B; --bad-soft:#3A1D2A;
   color-scheme:dark}
 
@@ -48,6 +48,7 @@ body{font-variant-numeric:tabular-nums;background:var(--bg);color:var(--ink);fon
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 a{color:inherit}
+.about a,.archive a,.note a{color:var(--teal)}
 .wrap{max-width:1360px;margin:0 auto}
 header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding-block:12px;border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
@@ -57,7 +58,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 nav.views{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
 nav.views a{font-size:13.5px;text-decoration:none;padding:7px 11px;border-radius:6px;color:var(--muted)}
 nav.views a:hover{color:var(--ink)}
-nav.views a[aria-current="page"]{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);font-weight:700}
+nav.views a[aria-current="page"]{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line),inset 0 -3px 0 var(--teal);font-weight:700}
 .month{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .sharebtn{font:inherit;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer}
 .month select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
@@ -70,9 +71,11 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .sub{margin:0 0 10px;font-size:13px;color:var(--muted)}
 .intro{grid-column:span 3;background:transparent;border:none;padding:4px 4px 0}
 .intro.wide{grid-column:span 12;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 28px}.intro.wide h1{margin:0}.intro.wide p{margin:0;max-width:70ch}
+.intro .lede{font-size:15.5px;line-height:1.5;margin:0}
 .intro h1{font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.15;margin:0 0 10px;text-wrap:balance}
 .intro p{margin:0 0 10px;color:var(--muted);font-size:14px;max-width:46ch}
 .kpi{grid-column:span 3;display:flex;flex-direction:column}
+.kpi .num.numtxt{font-size:34px}
 .kpi .num{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1;margin:8px 0 6px;font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
 .kpi .num small{font-size:20px;margin-left:2px}
 .kpi .num i{display:inline-block;width:6px;align-self:stretch;border-radius:3px;margin:6px 0}
@@ -212,7 +215,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 #airsize .hbar{grid-template-columns:minmax(0,210px) 1fr 40px}
 .edu-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
 .edu-k button{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;color:inherit}
-.edu-k button[aria-pressed="true"]{border-color:var(--ink);background:var(--soft)}
+.edu-k button[aria-pressed="true"]{border-color:var(--teal);background:var(--teal-soft)}
 .edu-k b{display:block;font-family:var(--f-display);font-size:26px;line-height:1.1;font-weight:700}
 .edu-k span{font-size:12.5px;color:var(--muted);line-height:1.3;display:block}
 .edu-k i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
@@ -232,7 +235,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 .cat i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
 .filters{display:flex;gap:6px;flex-wrap:wrap;text-transform:none;letter-spacing:0}
 .filters button,.filters select{font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}
-.filters button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+.filters button[aria-pressed="true"]{color:var(--ink);border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
 
 /* process tracker */
 .proc{padding:12px 0;border-bottom:1px solid var(--line)}
@@ -285,12 +288,12 @@ button.actor{font:inherit;font-family:var(--f-body);font-size:12px;color:var(--i
 .grow .gname{background:none;border:0;padding:0;font:inherit;color:var(--ink);text-align:left;cursor:pointer;display:flex;align-items:center;gap:6px}
 .grow .gname:hover{text-decoration:underline}
 .grow.on{background:var(--accent-soft);border-radius:6px}
-.grow .track{height:8px;background:var(--soft);border-radius:4px;overflow:hidden;display:block}.grow .fill{display:block;height:100%;background:var(--ink);border-radius:4px}
+.grow .track{height:8px;background:var(--soft);border-radius:4px;overflow:hidden;display:block}.grow .fill{display:block;height:100%;background:var(--teal);border-radius:4px}
 .grow .v{font-family:var(--f-data);font-size:12.5px;text-align:right}
 .grow .acts{min-width:0}
 .icards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:8px}
 .icard{text-align:left;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
-.icard:hover{border-color:var(--ink)}.icard[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--panel)}
+.icard:hover{border-color:var(--ink)}.icard[aria-pressed="true"]{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal);background:var(--panel)}
 .icard b{font-size:13.5px;line-height:1.3}.icard .n{font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1}.icard .n small{font:12px var(--f-body);color:var(--muted);margin-left:4px}
 .icard .meta{font-size:11.5px;color:var(--muted)}.icard svg{width:100%;height:20px;display:block}
 .iview{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
@@ -323,7 +326,7 @@ details.rec[open]>summary{background:var(--soft)}
 .aa-grid .thread-list{max-height:640px;overflow:auto;padding-right:6px}
 #htypes .kbar{grid-template-columns:minmax(0,230px) 1fr 30px}
 .kbar{width:100%;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;padding:3px 4px;margin:3px 0;border-radius:6px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) 60px 26px;gap:8px;align-items:center;text-align:left}
-.kbar[aria-pressed="true"]{background:var(--accent-soft)}.kbar .track{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}.kbar .fill{display:block;height:100%;background:var(--accent)}.kbar .v{font-family:var(--f-data);font-size:12px;text-align:right}
+.kbar[aria-pressed="true"]{background:var(--teal-soft)}.kbar .track{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}.kbar .fill{display:block;height:100%;background:var(--teal)}.kbar .v{font-family:var(--f-data);font-size:12px;text-align:right}
 .resp-col h4{margin:8px 0 4px;font-size:13px;color:var(--muted)}
 .resp-col .row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)}
 dialog.actor-dlg{border:1px solid var(--line);border-radius:14px;padding:0;max-width:760px;width:calc(100% - 32px);max-height:86vh;background:var(--panel);color:var(--ink)}
@@ -720,18 +723,22 @@ function threadHTML(list){ const R=recIndex(), ids=new Set(list.map(r=>r.id)); c
 function ensureDlg(){ let d=$('actor-dlg'); if(d) return d; d=document.createElement('dialog'); d.id='actor-dlg'; d.className='actor-dlg'; document.body.appendChild(d);
   d.addEventListener('close',()=>{ ACTOR=null; writeHash(); }); d.addEventListener('click',e=>{ if(e.target===d) d.close(); }); return d; }
 function openActor(a){ ACTOR=a; writeHash(); const d=ensureDlg(), info=DATA.actors[a]||{name:a}; let scope='all';
-  const recs=actorRecs(a).slice().reverse(); const per=recs.filter(inPeriod);
-  const iss={}; recs.forEach(r=>(r.issues||[]).forEach(i=>{iss[i]=(iss[i]||0)+1;}));
-  const fam={}; recs.filter(r=>r.kind==='event').forEach(r=>{const f=famOf(r.type); fam[f]=(fam[f]||0)+1;});
-  const draw=()=>{ const list=scope==='all'?recs:per; $('dlg-list').innerHTML=list.length?list.slice(0,150).map(r=>`<div class="thread">${recLine(r)}</div>`).join('')+(list.length>150?`<p class="sub">Showing the latest 150 of ${list.length}.</p>`:''):`<p class="empty">No records ${scope==='all'?'yet':PER()}.</p>`;
-    d.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===scope)); };
+  const allR=actorRecs(a).slice().reverse(), nEv=allR.filter(r=>r.kind==='event').length, nIn=allR.length-nEv;
+  let kind=(VIEW==='security'&&nIn)||!nEv?'incident':'event';
+  const pick=()=>allR.filter(r=>r.kind===kind); let recs=pick(), per=recs.filter(inPeriod);
+  const iss={}; allR.forEach(r=>(r.issues||[]).forEach(i=>{iss[i]=(iss[i]||0)+1;}));
+  const fam={}; allR.filter(r=>r.kind==='event').forEach(r=>{const f=famOf(r.type); fam[f]=(fam[f]||0)+1;});
+  const draw=()=>{ recs=pick(); per=recs.filter(inPeriod); const list=scope==='all'?recs:per;
+    d.querySelectorAll('.kseg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===kind)); $('dlg-list').innerHTML=list.length?list.slice(0,150).map(r=>`<div class="thread">${recLine(r)}</div>`).join('')+(list.length>150?`<p class="sub">Showing the latest 150 of ${list.length}.</p>`:''):`<p class="empty">No records ${scope==='all'?'yet':PER()}.</p>`;
+    d.querySelectorAll('.seg:not(.kseg) button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===scope)); };
   d.innerHTML=`<div class="dlg-h"><div><div class="meta" style="font-size:12px;color:var(--muted)">${info.group?gBadge(info.group)+esc(info.group):''}${info.group&&info.type?' · ':''}${esc(info.type||'')}</div><h2>${esc(a)}</h2>${info.name&&info.name!==a?`<div class="sub" style="margin:2px 0 0">${esc(info.name)}</div>`:''}</div><button type="button" class="dlg-x" data-close>Close</button></div>
-    <div class="dlg-b"><p class="sub" style="margin-top:0">${plural(recs.length,'record')} in all months, ${per.length} ${PER()}. ${a==='ULA/AA'?'Includes security incidents that name the Arakan Army.':'Security incidents are matched by the name in the Actors field.'}</p>
+    <div class="dlg-b">${nEv&&nIn?`<div class="seg kseg" role="group" aria-label="Type of record" style="margin-top:0"><button type="button" data-k="event">Governance and politics (${nEv})</button><button type="button" data-k="incident">Security incidents (${nIn})</button></div>`:''}
     ${Object.keys(fam).length?`<div class="k">What it did</div><div class="chips" style="margin:4px 0 8px">${Object.entries(fam).sort((x,y)=>y[1]-x[1]).map(([f,n])=>`<span class="chip"><b>${n}</b> ${esc(f)}</span>`).join('')}</div>`:''}
     ${Object.keys(iss).length?`<div class="k">Issues</div><div style="margin:4px 0 8px">${Object.entries(iss).sort((x,y)=>y[1]-x[1]).map(([i,n])=>`<button type="button" class="ichip" data-issue="${esc(i)}">${esc(i)} (${n})</button>`).join('')}</div>`:''}
     <div class="seg" role="group" aria-label="Which records"><button type="button" data-s="all">All months</button><button type="button" data-s="per">${esc(mon().label)}</button></div><div id="dlg-list"></div></div>`;
   d.querySelector('[data-close]').addEventListener('click',()=>d.close());
-  d.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{scope=b.dataset.s; draw();}));
+  d.querySelectorAll('.seg:not(.kseg) button').forEach(b=>b.addEventListener('click',()=>{scope=b.dataset.s; draw();}));
+  d.querySelectorAll('.kseg button').forEach(b=>b.addEventListener('click',()=>{kind=b.dataset.k; draw();}));
   draw(); if(!d.open) d.showModal(); }
 function openIssue(i){ ISSUE=ISSUE===i?null:i; if(VIEW!=='governance'){ VIEW='governance'; const d=$('actor-dlg'); if(d&&d.open) d.close(); location.hash='#governance'; writeHash(); return; }
   const d=$('actor-dlg'); if(d&&d.open) d.close(); writeHash(); if(typeof window._drawIssues==='function') window._drawIssues(true); }
@@ -1093,7 +1100,7 @@ function renderGovernance(){
   window._drawIssues=(scroll)=>{ const iss=Object.keys(DATA.issues||{});
     $('icards').innerHTML=iss.map(i=>{ const recs=R.all.filter(r=>(r.issues||[]).includes(i)); const per=recs.filter(inPeriod).length; const last=recs.length?recs[recs.length-1].date:null;
       const bym={}; recs.forEach(r=>{const k=r.date.slice(0,7); bym[k]=(bym[k]||0)+1;}); const mx=Math.max(1,...Object.values(bym)); const w=100/allKeys.length;
-      const bars=allKeys.map((k,j)=>{const v=bym[k]||0; const h=v?Math.max(2,18*v/mx):0; return `<rect x="${(j*w).toFixed(2)}" y="${(20-h).toFixed(1)}" width="${(w*0.7).toFixed(2)}" height="${h.toFixed(1)}" style="fill:${k>=FROM&&k<=TO?'var(--accent)':'var(--muted)'};opacity:${k>=FROM&&k<=TO?1:.45}"/>`;}).join('');
+      const bars=allKeys.map((k,j)=>{const v=bym[k]||0; const h=v?Math.max(2,18*v/mx):0; return `<rect x="${(j*w).toFixed(2)}" y="${(20-h).toFixed(1)}" width="${(w*0.7).toFixed(2)}" height="${h.toFixed(1)}" style="fill:${k>=FROM&&k<=TO?'var(--teal)':'var(--muted)'};opacity:${k>=FROM&&k<=TO?1:.45}"/>`;}).join('');
       return `<button type="button" class="icard" data-isscard="${esc(i)}" aria-pressed="${ISSUE===i}"><b>${esc(i)}</b><span class="n">${per}<small>${per===recs.length?(per===1?'record':'records'):'of '+recs.length+' in all months'}</small></span>
         <svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">${bars}</svg><span class="meta">${last?'Latest '+esc(dLong(last)):'No records yet'}</span></button>`; }).join('')||'<p class="empty">No issues set up yet.</p>';
     V.querySelectorAll('[data-isscard]').forEach(b=>b.addEventListener('click',()=>{ ISSUE=ISSUE===b.dataset.isscard?null:b.dataset.isscard; writeHash(); window._drawIssues(true); }));
@@ -1225,18 +1232,20 @@ function renderHumanitarian(){
   const byType={}; hum.forEach(e=>{byType[e.type]=(byType[e.type]||0)+1;});
   const sitesWith=[...new Set(disp.map(d=>d.site))];
   const nMk=new Set(prices.map(p=>p.market)).size, nCm=new Set(prices.map(p=>p.commodity)).size;
+  const hhK=Object.keys(DATA.months).sort().filter(k=>k<=TO&&DATA.months[k].humHead).pop(), HH=hhK?Object.assign({label:'As of '+DATA.months[hhK].label},DATA.months[hhK].humHead):null;
 
   V.innerHTML=`
   <section class="tile intro">
     <h1>Humanitarian needs and livelihoods</h1>
-    <p>Displacement, aid, disease, disasters and livelihoods, in Chin State and among people from Chinland in Mizoram.</p>
+    ${HH?`<p class="lede">${esc(HH.summary||'')}</p><p class="sub" style="margin:6px 0 0">${esc(HH.label)} · CCPR Chinland Monitoring Briefing</p>`:`<p>Displacement, aid, disease, disasters and livelihoods, in Chin State and among people from Chinland in Mizoram.</p>`}
   </section>
+  ${HH?HH.figures.map(f=>`<section class="tile kpi"><h2>${esc(f.counts)}</h2><div class="num${/^[\d,.]+$/.test(f.value)?'':' numtxt'}"><i style="background:var(--c-humanitarian)"></i>${esc(f.value)}</div><p class="cap">${esc(f.source)}</p></section>`).join(''):''}
   <section class="tile kpi"><h2>Humanitarian events</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.length}</div>
-    <p class="cap">Displacement, aid, disease, disasters and shortages.</p></section>
-  <section class="tile kpi"><h2>Displacement and evictions</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.filter(e=>/displacement|evict|relocat|return/i.test(e.type)).length}</div>
+    <p class="cap">${HH?`In ${esc(m.label)}${liv.length?`, plus ${plural(liv.length,'livelihood event')}`:''}.`:'Displacement, aid, disease, disasters and shortages.'}</p></section>
+  ${HH?'':`<section class="tile kpi"><h2>Displacement and evictions</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.filter(e=>/displacement|evict|relocat|return/i.test(e.type)).length}</div>
     <p class="cap">New displacement, evictions and returns.</p></section>
   <section class="tile kpi"><h2>Livelihood events</h2><div class="num"><i style="background:var(--c-livelihood)"></i>${liv.length}</div>
-    <p class="cap">Prices, markets, crops and trade.</p></section>
+    <p class="cap">Prices, markets, crops and trade.</p></section>`}
 
   ${trendTile('Humanitarian trends',[{label:'Humanitarian events',color:'var(--c-humanitarian)',fn:m=>(m.events||[]).filter(e=>e.cat==='humanitarian').length},
      {label:'Livelihood events',color:'var(--c-livelihood)',fn:m=>(m.events||[]).filter(e=>e.cat==='livelihood').length}])}
@@ -1367,6 +1376,7 @@ function renderAbout(){
   <h3>How to read the numbers</h3>
   <ul>
     <li><b>Recorded, not total.</b> Counts show what CCPR recorded. Actual figures may be higher.</li>
+    <li><b>Coverage follows what is public.</b> Bodies that publish more statements, orders and news appear more often in the records. The Chinland Council and its government publish a great deal, so they may appear more active than bodies that publish less, such as the ICNCC and Chin Brotherhood. A higher count is not a judgement of who governs more.</li>
     <li><b>Every number is counted from the records.</b> Headline figures, charts, township bars and the map all come from the same records, so they always agree. Where a printed briefing gave a different total, the difference is explained below.</li>
     <li><b>Several months</b> are added together. Displacement figures and the briefing shown are from the latest month in the period.</li>
     <li><b>Actor groups</b> describe reported membership, not CCPR's view of any actor: the Chinland Council and its members; the ICNCC and Chin Brotherhood and their members; other Chin forces; the Union revolution and its allies; the junta and its allies; the ULA/AA; India and Mizoram; and civil society and diaspora. A body that belonged to no coalition at the time has no group.</li>
@@ -1388,11 +1398,9 @@ function renderAbout(){
     <li><b>Date of the attack</b>, not the date it was reported.</li>
     <li><b>Casualties</b> are civilians and combatants counted separately, as known at the time of recording, and updated if later information changes them.</li>
     <li><b>When sources disagree</b>, the best-confirmed figure is used and higher claims are noted in the description.</li>
+    <li><b>Other trackers may count differently</b>, for example one event per township per day, so totals from different sources are not directly comparable.</li>
   </ul>
   <p>The printed September 2026 briefing reported 12 airstrikes because it counted individual bombs. Counted by attack, September had 6. This site uses the same rule for every month. All other September totals match the printed briefing.</p>
-
-  <h3>Comparing with other trackers</h3>
-  <p>The Myanmar Peace Monitor of Burma News International records one airstrike event per township per day. This site counts each attack on each place separately, so the same reports can give a higher count here. Neither method records aircraft or bombs that were not reported, and actual numbers may be higher in both.</p>
 
   <h3>Locations</h3>
   <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Chin State township boundaries are from MIMU. Mizoram district boundaries are from the Mizoram Remote Sensing Application Centre (MIRSAC), Government of Mizoram. Lines from the two sources can differ slightly along the border. All boundaries are for reference only and do not imply endorsement.</p>
