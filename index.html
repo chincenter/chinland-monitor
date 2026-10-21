@@ -1,8 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Chinland Conflict Monitor</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta charset="utf-8">
 <meta name="description" content="Monthly monitoring of security, governance, politics, humanitarian conditions and livelihoods in Chinland, compiled by the Chin Center for Peace and Reconciliation.">
 <link rel="icon" type="image/png" href="data/ccpr-mark.png">
@@ -207,6 +208,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 .t td.r,.t th.r{text-align:right}
 .t.click tbody tr{cursor:pointer} .t.click tbody tr:hover td{background:var(--soft)} .t tr.sel td{background:var(--accent-soft)}
 .log{min-width:860px}
+@media (max-width:640px){.log{min-width:0;table-layout:fixed;width:100%}.log th:first-child{width:60px}.log th:nth-child(2){width:auto}.log tr:not(.more)>th:nth-child(n+3),.log tr:not(.more)>td:nth-child(n+3){width:0;padding:0;font-size:0;overflow:hidden;visibility:hidden;border:0}.log tr:not(.more)>td:nth-child(n+3) *{display:none}.log tr.more>td:first-child{display:none}.log tr.more>td{padding-left:10px}.log th .hint{display:none}.log td{overflow-wrap:anywhere}.log td.d{padding-right:4px}.log tr.more *{max-width:100%;white-space:normal}}
 .log td.txt{min-width:300px;max-width:520px}
 .cat{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap;border:1px solid var(--line);background:var(--soft)}
 .cat i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
@@ -276,7 +278,22 @@ button.actor{font:inherit;font-family:var(--f-body);font-size:12px;color:var(--i
 .iview{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
 .iview h3{margin:0 0 4px;font-size:16px}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:6px 0 8px}.seg button{font:inherit;font-size:12px;border:0;background:none;padding:3px 10px;cursor:pointer;color:var(--muted)}.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
-.thread{border-bottom:1px solid var(--line);padding:8px 0}
+.thread{border-bottom:1px solid var(--line);padding:2px 0}
+details.rec>summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:baseline;padding:7px 4px;border-radius:6px}
+details.rec>summary::-webkit-details-marker{display:none}
+details.rec>summary:hover{background:var(--soft)}
+details.rec>summary .sd{font-family:var(--f-data);font-size:11.5px;color:var(--muted);white-space:nowrap;min-width:84px}
+details.rec>summary .st{flex:1;min-width:0}
+details.rec>summary .st i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+details.rec>summary::after{content:"+";font-family:var(--f-data);color:var(--muted);font-size:14px;margin-left:auto;padding-left:8px}
+details.rec[open]>summary::after{content:"–"}
+details.rec[open]>summary{background:var(--soft)}
+.recbody{padding:4px 4px 10px 98px;font-size:13.5px}
+.log td.ttl{min-width:260px;max-width:560px}
+.log td.ttl i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.log tr.more td{background:var(--soft);border-top:none;padding:6px 10px 12px}
+.log tr.more .full{font-size:13.5px;max-width:880px}
+@media (max-width:760px){.recbody{padding-left:4px}details.rec>summary{flex-wrap:wrap}details.rec>summary .sd{min-width:0}}
 .rec{font-size:13.5px}.rec .meta{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin:2px 0}
 .rec .src{font-family:var(--f-data);font-size:11px}
 .rec .resp{font-size:12px;color:var(--muted);margin-top:2px}
@@ -653,11 +670,27 @@ function actorRecs(a){ const R=recIndex(), info=DATA.actors[a]||{};
   const rx = a==='ULA/AA' ? AARX : new RegExp('(^|[^\\w-])('+[a,info.name].filter(Boolean).map(escRx).join('|')+')(?![\\w-])');
   return R.all.filter(r=>r.kind==='event' ? ((r.actors||[]).includes(a)||r.facilitator===a) : rx.test(r.actors||'')); }
 const posPill = p => p?`<span class="pos ${esc(p.toLowerCase().replace(/\s+/g,'-'))}">${esc(p)}</span>`:'';
-function recLine(r,opt){ opt=opt||{}; const R=recIndex();
-  const who = r.kind==='event' ? actorChips(r) : (r.actors?`<span>${esc(r.actors)}</span>`:'');
-  const par = r.respondsTo&&!opt.child&&R.byId[r.respondsTo] ? `<div class="resp">${posPill(r.position)} responds to ${esc(dLong(R.byId[r.respondsTo].date))}: ${esc(R.byId[r.respondsTo].text.slice(0,110))}…</div>` : '';
-  return `<div class="rec" id="r-${esc(r.id)}"><div class="meta"><span>${esc(dLong(r.date))}</span>${catTag(r.cat)}<span>${esc(r.kind==='event'?famOf(r.type):r.type)}</span>${opt.child?posPill(r.position):''}${(r.issues||[]).map(i=>`<button type="button" class="ichip" data-issue="${esc(i)}">${esc(i)}</button>`).join('')}</div>
-    <div>${esc(r.text)}</div>${par}<div class="meta">${who}<span class="src">${esc(r.source)}</span></div></div>`; }
+const clip=(t,n)=>{ t=String(t||''); if(t.length<=n) return t; const k=t.lastIndexOf(' ',n-1); return t.slice(0,k>40?k:n-1).replace(/[,;:]$/,'')+'…'; };
+const titleOf = r => r.title || clip(String(r.text||'').split(/(?<=[a-z0-9)]\.)\s/)[0].replace(/\.$/,''),92);
+const dotOf = c => `<i style="background:${(CATS[c]||{}).color||'var(--muted)'}"></i>`;
+const casualtyText = e => { const p=[]; if(e.civK)p.push(`${e.civK} civilian${e.civK>1?'s':''} killed`); if(e.civI)p.push(`${e.civI} civilian${e.civI>1?'s':''} injured`); if(e.cbK)p.push(`${e.cbK} combatant${e.cbK>1?'s':''} killed`); if(e.cbI)p.push(`${e.cbI} combatant${e.cbI>1?'s':''} injured`);
+  if(e.cat==='drug'){ if(e.arrests)p.push(`${e.arrests} arrested`); if(e.methKg)p.push(`${fmtDec(e.methKg)} kg meth`); if(e.methTablets)p.push(`${fmt(e.methTablets)} meth tablets`); if(e.heroinG)p.push(`${fmt(e.heroinG)} g heroin`);} return p.join(' · '); };
+function fullHTML(r){ const R=recIndex(), ev=r.kind==='event'||Array.isArray(r.actors);
+  const par=r.respondsTo&&R.byId[r.respondsTo], kids=R.kids[r.id]||[];
+  const meta=[ev?((r.actors||[]).length?'':''):(r.actors||''), whereOf(r), ev?(r.type||''):(r.type||''), ev?'':casualtyText(r), r.process?'Process: '+r.process+(r.stage?' ('+r.stage+')':''):'', r.outcome?'Outcome: '+r.outcome:''].filter(Boolean);
+  return `<div class="full"><div>${esc(r.text)}</div>
+    <div class="meta" style="margin-top:6px">${ev?actorChips(r):''}${r.facilitator?`<span>Facilitator: ${esc(r.facilitator)}</span>`:''}${r.others?`<span>Also: ${esc(r.others)}</span>`:''}</div>
+    <div class="meta">${meta.map(esc).join(' · ')}${meta.length?' · ':''}<span class="src">${esc(r.source)}</span></div>
+    ${(r.issues||[]).length?`<div style="margin-top:4px">${r.issues.map(i=>`<button type="button" class="ichip" data-issue="${esc(i)}">${esc(i)}</button>`).join('')}</div>`:''}
+    ${par?`<div class="meta" style="margin-top:4px">${posPill(r.position)} Responds to ${esc(dLong(par.date))}: ${esc(titleOf(par))}</div>`:''}
+    ${kids.length?`<div class="meta" style="margin-top:4px">${plural(kids.length,'response')}: ${kids.map(k=>`${posPill(k.position)} ${esc(dShort(k.date))} ${esc(titleOf(k))}`).join(' · ')}</div>`:''}</div>`; }
+function logRow(tb,e,cells,sel){ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0; tr.setAttribute('aria-expanded','false'); tr.innerHTML=cells;
+  const toggle=()=>{ sel(e.id); const nx=tr.nextElementSibling; if(nx&&nx.classList.contains('more')){ nx.remove(); tr.setAttribute('aria-expanded','false'); return; }
+    tb.querySelectorAll('tr.more').forEach(x=>{ x.previousElementSibling&&x.previousElementSibling.setAttribute('aria-expanded','false'); x.remove(); });
+    const m=document.createElement('tr'); m.className='more'; m.innerHTML=`<td></td><td colspan="${tr.children.length-1}">${fullHTML(e)}</td>`; tr.after(m); tr.setAttribute('aria-expanded','true'); };
+  tr.addEventListener('click',toggle); tr.addEventListener('keydown',x=>{if(x.key==='Enter')toggle();}); tb.appendChild(tr); return tr; }
+function recLine(r,opt){ opt=opt||{};
+  return `<details class="rec" id="r-${esc(r.id)}"><summary><span class="sd">${esc(dShort(r.date))} ${r.date.slice(2,4)}</span><span class="st">${dotOf(r.cat)}${esc(titleOf(r))} ${opt.child||!r.respondsTo?(opt.child?posPill(r.position):''):posPill(r.position)}</span></summary><div class="recbody">${fullHTML(r)}</div></details>`; }
 function threadHTML(list){ const R=recIndex(), ids=new Set(list.map(r=>r.id)); const tops=list.filter(r=>!(r.respondsTo&&ids.has(r.respondsTo)));
   const rend=(r,d)=>recLine(r,{child:d>0})+(d<3?(R.kids[r.id]||[]).map(k=>`<div class="kid">${rend(k,d+1)}</div>`).join(''):'');
   return tops.map(r=>`<div class="thread">${rend(r,0)}</div>`).join(''); }
@@ -858,7 +891,7 @@ function renderSecurity(){
   <section class="tile span12"><h2>Incident log <span class="filters" role="group" aria-label="Filter incidents" id="filters">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="conflict">Conflict</button>
       <button type="button" aria-pressed="false" data-f="landmine">Landmines</button><button type="button" aria-pressed="false" data-f="drug">Drugs</button></span></h2>
-    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Township</th><th>Location</th><th>What happened</th><th>Civilians</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>What happened <span class="hint" style="text-transform:none;letter-spacing:0;font-weight:400">(click a row to see more)</span></th><th>Township</th><th>Civilians</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
 
   const setNum=(id,v,html,color)=>{ const el=$(id); el.classList.toggle('na',v===null); el.innerHTML = v===null?'Not reported':(color?`<i style="background:${color}"></i>`:'')+(html||esc(v)); };
   /* Airstrikes are counted from the incident log: one attack on one place at one time = 1, inside Chin State only. */
@@ -939,10 +972,9 @@ function renderSecurity(){
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=ev.filter(e=>(filter==='all'||e.cat===filter)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No incidents recorded for this selection.</p></td></tr>'; return; }
-    list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
+    list.forEach(e=>{
       const civ=(e.civK||e.civI)?`${e.civK||0} killed, ${e.civI||0} injured`:(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'None reported');
-      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}${e.attacks>1?`<span class="tag">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td>${esc([e.place,e.detail].filter(Boolean).join(', '))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(civ)}</td><td class="n">${esc(e.source)}</td>`;
-      tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
+      const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}${e.attacks>1?` <span class="pill neutral">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td class="n">${esc(civ)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
@@ -987,13 +1019,13 @@ function renderGovernance(){
      {label:'Political events',color:'var(--c-political)',fn:m=>(m.events||[]).filter(e=>e.cat==='political').length},
      {label:'Border events',color:'var(--c-border)',fn:m=>(m.events||[]).filter(e=>e.cat==='border').length}])}
   <section class="tile span12" id="groups"><h2>Who acted <span class="src">governance, political and border events by actor group, ${esc(m.label)}</span></h2>
-    <p class="sub">Groups follow reported membership, not CCPR's view of any actor. An event counts once for each group taking part, so the rows add up to more than the total. Select a group to filter the map and the event log. Select a name to see everything that actor did.</p>
+    <p class="sub">Select a group to filter the map and log. Select a name to see what that actor did.</p>
     <div id="group-rows"></div></section>
   <section class="tile span12" id="issues"><h2>Issues to follow <span class="src">records in all months; the large number is ${esc(m.label)}</span></h2>
-    <p class="sub">Each issue gathers governance, political, border and security records on one subject, with responses linked to what they respond to. Select an issue to follow it.</p>
+    <p class="sub">Select an issue to follow it over time.</p>
     <div class="icards" id="icards"></div><div id="issue-view"></div></section>
   <section class="tile span12" id="aa"><h2>The Arakan Army in Chinland <span class="src">${esc(m.label)}</span></h2>
-    <p class="sub">Records that involve the ULA/AA, mostly in Paletwa and Matupi Townships, and how Chin bodies responded. Objections and alliances are both shown, each with its source.</p>
+    <p class="sub">What the ULA/AA did in Chinland, and how Chin bodies responded.</p>
     <div class="aa-grid"><div><div class="k">What the records show</div><div id="aa-kinds"></div></div>
       <div><div class="k">Records <span id="aa-n" style="text-transform:none;letter-spacing:0"></span></div><div class="thread-list" id="aa-list"></div></div>
       <div class="resp-col"><div class="k">How Chin bodies responded</div><div id="aa-resp"></div></div></div></section>
@@ -1032,13 +1064,13 @@ function renderGovernance(){
       <select id="fissue" aria-label="Filter by issue"><option value="all">All issues</option></select>
       <select id="farea" aria-label="Filter by policy area"><option value="all">All policy areas</option></select>
       <select id="factor" aria-label="Filter by actor"><option value="all">All actors</option></select></span></h2>
-    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Kind</th><th>Actors</th><th>Where</th><th>What happened</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>What happened <span class="hint" style="text-transform:none;letter-spacing:0;font-weight:400">(click a row to see more)</span></th><th>Kind</th><th>Actors</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
 
   /* ---- who acted: groups ---- */
   let ffam='all', fissue='all';
   const drawGroups=()=>{ const gc={}, ga={}; all.forEach(e=>{ evGroups(e).forEach(g=>{gc[g]=(gc[g]||0)+1;}); (e.actors||[]).concat(e.facilitator?[e.facilitator]:[]).forEach(a=>{const g=groupOf(a); if(!g) return; ga[g]=ga[g]||{}; ga[g][a]=(ga[g][a]||0)+1;}); });
     const gmax=Math.max(1,...Object.values(gc));
-    $('group-rows').innerHTML=(DATA.groups||[]).map(g=>{ const n=gc[g]||0; const tops=Object.entries(ga[g]||{}).sort((x,y)=>y[1]-x[1]).slice(0,5);
+    $('group-rows').innerHTML=(DATA.groups||[]).map(g=>{ const n=gc[g]||0; const tops=Object.entries(ga[g]||{}).sort((x,y)=>y[1]-x[1]).slice(0,GROUPF===g?12:3);
       return `<div class="grow${GROUPF===g?' on':''}"><button type="button" class="gname" data-group="${esc(g)}" aria-pressed="${GROUPF===g}" aria-label="${esc(g)}: ${plural(n,'event')}. Filter by this group">${gBadge(g)}${esc(g)}</button>
         <span class="track"><span class="fill" style="width:${n?Math.max(2,n/gmax*100):0}%"></span></span><span class="v">${n}</span>
         <span class="acts">${tops.map(([a,c])=>`<button type="button" class="actor" data-actor="${esc(a)}" title="${esc(actorName(a))}">${esc(a)} <span style="color:var(--muted)">${c}</span></button>`).join('')||'<span class="sub">None recorded</span>'}</span></div>`; }).join('');
@@ -1061,7 +1093,7 @@ function renderGovernance(){
     v.innerHTML=`<div class="iview"><h3>${esc(ISSUE)}</h3>${info.about?`<p class="sub" style="margin:0 0 6px">${esc(info.about)}</p>`:''}
       <div class="chips" style="margin:4px 0">${Object.entries(grp).sort((x,y)=>y[1]-x[1]).map(([g,n])=>`<span class="chip">${gBadge(g)}<b>${n}</b> ${esc(g)}</span>`).join('')}</div>
       <div class="seg" role="group" aria-label="Which records"><button type="button" data-s="all" aria-pressed="${iscope==='all'}">All months (${recs.length})</button><button type="button" data-s="per" aria-pressed="${iscope==='per'}">${esc(m.label)} (${recs.filter(inPeriod).length})</button></div>
-      <p class="sub" style="margin:0 0 4px">Newest first. Responses are indented under the record they respond to.</p>
+      <p class="sub" style="margin:0 0 4px">Newest first. Select a line to read more.</p>
       <div>${list.length?threadHTML(list):`<p class="empty">No records ${PER()}.</p>`}</div></div>`;
     v.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ iscope=b.dataset.s; window._drawIssues(false); }));
     if(scroll) v.scrollIntoView({behavior:'smooth',block:'start'}); };
@@ -1091,7 +1123,7 @@ function renderGovernance(){
       if(par&&isAA(par)) holders=acts; else if(!r.respondsTo&&(r.actors||[]).slice(1).includes('ULA/AA')&&r.actors[0]!=='ULA/AA') holders=[r.actors[0]];
       if(!holders) return; holders.forEach(a=>add(r.position==='Objects'?obj:sup,a,r)); });
     const col=(t,o,cls)=>`<h4>${t}</h4>${Object.keys(o).length?Object.entries(o).sort((x,y)=>y[1].length-x[1].length).map(([a,rs])=>`<div class="row"><span><button type="button" class="actor" data-actor="${esc(a)}">${gBadge(groupOf(a))}${esc(a)}</button></span><span class="pos ${cls}">${rs.length}</span></div>`).join(''):`<p class="sub">None recorded ${PER()}.</p>`}`;
-    $('aa-resp').innerHTML=col('Objected or disputed',obj,'objects')+col('Allied or cooperated',sup,'supports')+`<p class="sub" style="margin-top:8px">Counts records ${PER()} in which a Chin body objected to, or allied or cooperated with, the ULA/AA, as coded by CCPR from the briefing. Select a name to see that actor's records.</p>`; };
+    $('aa-resp').innerHTML=col('Objected or disputed',obj,'objects')+col('Allied or cooperated',sup,'supports')+`<p class="sub" style="margin-top:8px">Number of records ${PER()}, as coded by CCPR.</p>`; };
 
   // processes
   const end=monthEnd(MONTH), procs=Object.entries(DATA.processes||{});
@@ -1132,9 +1164,7 @@ function renderGovernance(){
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor)&&(ffam==='all'||famOf(e.type)===ffam)&&(fissue==='all'||(e.issues||[]).includes(fissue))&&(!GROUPF||evGroups(e).includes(GROUPF))&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
-    list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
-      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(famOf(e.type))}<span class="tag">${esc(e.type)}</span>${e.respondsTo?`<span class="tag">${posPill(e.position)} response</span>`:''}${e.outcome&&e.cat==='political'?`<br>${outcomePill(e.outcome)}`:''}</td><td>${actorChips(e)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(e.source)}</td>`;
-      tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
+    list.forEach(e=>{ const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))} ${e.respondsTo?posPill(e.position):''}</td><td>${esc(famOf(e.type))}</td><td>${actorChips(e)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
@@ -1206,7 +1236,7 @@ function renderHumanitarian(){
   <section class="tile span12"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="humanitarian">Humanitarian</button>
       <button type="button" aria-pressed="false" data-f="livelihood">Livelihood</button></span></h2>
-    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Where</th><th>What happened</th><th>Who</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>What happened <span class="hint" style="text-transform:none;letter-spacing:0;font-weight:400">(click a row to see more)</span></th><th>Type</th><th>Township</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
 
   // displacement
   $('disp').innerHTML = disp.length ? `<table class="t"><thead><tr><th>Site</th><th>Location</th><th>Origin</th><th class="r">Households</th><th class="r">People</th><th>Source</th></tr></thead><tbody>${
@@ -1231,10 +1261,7 @@ function renderHumanitarian(){
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
-    list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
-      const who=[...(e.actors||[]),e.others].filter(Boolean).join(', ');
-      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td>${esc(who)}</td><td class="n">${esc(e.source)}</td>`;
-      tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
+    list.forEach(e=>{ const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}</td><td>${esc(e.type)}</td><td>${esc(e.ts||'Chinland-wide')}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
