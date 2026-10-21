@@ -13,7 +13,7 @@
 /* Layout: IISS-style bento board per page; one header with page tabs and a shared month selector. */
 :root{
   --bg:#EEF0F4; --panel:#FFFFFF; --ink:#1B2440; --muted:#5A6177; --line:#D9DDE6; --soft:#F4F5F8;
-  --land:#E4E7EE; --land-edge:#FFFFFF; --navy:#1B2440;
+  --land:#E4E7EE; --land-mz:#F1F2F6; --land-edge:#FFFFFF; --navy:#1B2440;
   /* security */ --c-conflict:#A3123E; --c-landmine:#C97A12; --c-drug:#2B5BAE;
   /* governance page */ --c-governance:#0E8A6A; --c-political:#7C3AED; --c-border:#B45309;
   /* humanitarian page */ --c-humanitarian:#D9480F; --c-site:#1D6FB8; --c-livelihood:#5B8C1E;
@@ -26,7 +26,7 @@
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0F1320; --panel:#171C2B; --ink:#E6E9F2; --muted:#9AA1B6; --line:#2A3147; --soft:#1D2335;
-  --land:#252B3D; --land-edge:#171C2B; --navy:#0B0F19;
+  --land:#252B3D; --land-mz:#1E2333; --land-edge:#171C2B; --navy:#0B0F19;
   --c-conflict:#E2557B; --c-landmine:#BF7A1C; --c-drug:#5A8DE0;
   --c-governance:#1FA27E; --c-political:#8F6EEB; --c-border:#CF7C14;
   --c-humanitarian:#E8672A; --c-site:#4F86DC; --c-livelihood:#3FA65A;
@@ -35,7 +35,7 @@
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F1320; --panel:#171C2B; --ink:#E6E9F2; --muted:#9AA1B6; --line:#2A3147; --soft:#1D2335;
-  --land:#252B3D; --land-edge:#171C2B; --navy:#0B0F19;
+  --land:#252B3D; --land-mz:#1E2333; --land-edge:#171C2B; --navy:#0B0F19;
   --c-conflict:#E2557B; --c-landmine:#BF7A1C; --c-drug:#5A8DE0;
   --c-governance:#1FA27E; --c-political:#8F6EEB; --c-border:#CF7C14;
   --c-humanitarian:#E8672A; --c-site:#4F86DC; --c-livelihood:#3FA65A;
@@ -84,7 +84,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .empty{font-size:13.5px;color:var(--muted);padding:14px;border:1px dashed var(--line);border-radius:8px;background:var(--soft)}
 
 .span12{grid-column:span 12}.span8{grid-column:span 8}.span7{grid-column:span 7}.span6{grid-column:span 6}.span5{grid-column:span 5}.span4{grid-column:span 4}.span3{grid-column:span 3}
-.rows2{grid-row:span 2}
+.rows2{grid-row:span 2}.rows3{grid-row:span 3}
 
 /* briefing */
 .brief{display:flex;flex-direction:column}
@@ -114,6 +114,9 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .mapbox{position:relative;flex:1;min-height:440px}
 .map{width:100%;height:100%;display:block}
 .map .ts{fill:var(--land);stroke:var(--land-edge);stroke-width:1.4}
+.map .mz{fill:var(--land-mz);stroke:var(--land-edge);stroke-width:1.1}
+.map .mzlabel{font-family:var(--f-body);font-size:8.5px;fill:var(--muted);text-anchor:middle;pointer-events:none;opacity:.85}
+.map .country{font-family:var(--f-body);font-size:10px;font-weight:700;fill:var(--muted);letter-spacing:.2em;text-transform:uppercase}
 .map .tslabel{font-family:var(--f-body);font-size:10px;fill:var(--muted);text-anchor:middle;pointer-events:none;letter-spacing:.06em;text-transform:uppercase}
 .map .ctx{font-family:var(--f-body);font-size:10px;fill:var(--muted);letter-spacing:.18em;text-transform:uppercase;opacity:.75}
 .map .town{fill:var(--ink)} .map .townl{font-family:var(--f-body);font-size:9.5px;fill:var(--ink)}
@@ -131,6 +134,8 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 /* bars */
 .hbar{display:grid;grid-template-columns:96px minmax(0,1fr) 46px;align-items:center;gap:8px;font-size:13px;margin:7px 0}
 .hbar .track,.hbar .fill{display:block}
+button.hbar{width:100%;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;padding:3px 4px;margin:4px 0;border-radius:6px;cursor:pointer;text-align:left;grid-template-columns:minmax(120px,38%) minmax(0,1fr) 34px}
+button.hbar:hover{background:var(--soft)}
 .hbar .track{height:14px;background:var(--soft);border-radius:3px;overflow:hidden}
 .hbar .fill{height:100%;border-radius:0 3px 3px 0}
 .hbar .v{font-family:var(--f-data);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
@@ -203,7 +208,7 @@ table.mx{border-collapse:separate;border-spacing:2px;font-size:12.5px;width:100%
 .chart .lbl{font-family:var(--f-body);font-size:11px;fill:var(--ink)}
 
 .about{max-width:76ch}
-.about h3{font-family:var(--f-display);font-size:19px;margin:22px 0 6px}
+.about h3{font-family:var(--f-display);font-size:19px;margin:22px 0 6px;scroll-margin-top:96px}
 .about p,.about li{font-size:14.5px}
 .about code{font-family:var(--f-data);font-size:12.5px;background:var(--soft);padding:1px 5px;border-radius:4px}
 
@@ -216,7 +221,7 @@ footer p{margin:0 0 6px;max-width:80ch}
   .intro,.kpi,.span3{grid-column:span 6}
   .span4,.span5{grid-column:span 6}
   .span7,.span8{grid-column:span 12}
-  .rows2{grid-row:auto}
+  .rows2,.rows3{grid-row:auto}
 }
 @media (max-width:760px){
   .board{grid-template-columns:minmax(0,1fr)}
@@ -258,7 +263,7 @@ footer p{margin:0 0 6px;max-width:80ch}
 <footer>
   <div>
     <p><b>About the data.</b> Compiled from CCPR's Chinland Monitoring Briefing, which draws, as far as accessible, on news media reports, statements of the relevant organizations and information from local residents. Actual figures on the ground may be higher. Counts show what was recorded, not complete totals.</p>
-    <p>Locations use MIMU Place Codes; boundaries are MIMU township boundaries and do not imply endorsement. <a href="#about">How the data is collected and checked</a>.</p>
+    <p>Locations use MIMU Place Codes and the India Post directory for Mizoram. Boundaries from MIMU (Chin State) and MIRSAC (Mizoram) are for reference only and do not imply endorsement. <a href="#about">How the data is collected and checked</a>.</p>
     <p id="updated"></p>
   </div>
   <div>
@@ -269,6 +274,7 @@ footer p{margin:0 0 6px;max-width:80ch}
 </div>
 
 <script src="data/townships.js"></script>
+<script src="data/mizoram.js"></script>
 <script>
 (function(){
 'use strict';
@@ -300,9 +306,13 @@ const catTag = c => `<span class="cat"><i style="background:${CATS[c].color}${CA
 const PREC = {village:'Village (MIMU place code)',town:'Town (MIMU town code)',township:'Township only; exact site not confirmed',approx:'District centre in Mizoram (exact point not yet verified)',verified:'Verified point in Mizoram (India Post place)',gps:'GPS coordinates',none:'Not mapped (Chinland-wide or place not stated)',unknown:''};
 
 /* ---------- map ---------- */
-const cent = {};
-TS.forEach(t=>{let a=0,cx=0,cy=0;const c=t.c;for(let i=0;i<c.length-1;i++){const[x0,y0]=c[i],[x1,y1]=c[i+1];const f=x0*y1-x1*y0;a+=f;cx+=(x0+x1)*f;cy+=(y0+y1)*f;}a/=2;cent[t.n]=[cx/(6*a),cy/(6*a)];});
-const B = {w:92.55,e:94.25,s:20.6,n:24.15}, K = Math.cos(22.4*Math.PI/180);
+const cent = {}, MZ = window.MZ_DISTRICTS||[], mzCent = {};
+const centroid = c=>{let a=0,cx=0,cy=0;for(let i=0;i<c.length-1;i++){const[x0,y0]=c[i],[x1,y1]=c[i+1];const f=x0*y1-x1*y0;a+=f;cx+=(x0+x1)*f;cy+=(y0+y1)*f;}a/=2;return [cx/(6*a),cy/(6*a)];};
+TS.forEach(t=>{cent[t.n]=centroid(t.c);});
+MZ.forEach(d=>{mzCent[d.n]=centroid(d.r.reduce((a,b)=>b.length>a.length?b:a));});
+/* Mizoram district of a record, from its place name, e.g. 'Zokhawthar, Champhai (Mizoram)' or 'Champhai District (Mizoram)' */
+const mzDistrict = p => { const m=/(?:,\s*|^)([A-Za-z]+)(?: District)? \(Mizoram\)/.exec(p||''); return m?m[1]:null; };
+const B = {w:92.22,e:94.3,s:20.6,n:24.55}, K = Math.cos(22.4*Math.PI/180);
 const W = 400, H = Math.round(W*(B.n-B.s)/((B.e-B.w)*K));
 const px = (lon,lat)=>[ (lon-B.w)/(B.e-B.w)*W, (B.n-lat)/(B.n-B.s)*H ];
 const NS='http://www.w3.org/2000/svg';
@@ -315,6 +325,12 @@ function makeMap(host, shadeVar){
   return { draw({points, counts, onSelect, selected}){
     svg.innerHTML='';
     const max = Math.max(1,...Object.values(counts||{}));
+    MZ.forEach(dd=>{
+      const d=dd.r.map(r=>'M'+r.map(p=>px(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join('L')+'Z').join('');
+      const p=mk('path',{d,class:'mz'},svg); const n=(counts||{})['MZ:'+dd.n]||0;
+      if(n) p.style.fill=`color-mix(in srgb, ${shadeVar} ${Math.round(10+32*n/max)}%, var(--land-mz))`;
+      const tt=document.createElementNS(NS,'title'); tt.textContent=`${dd.n} District, Mizoram (India): ${plural(n,'record')} shown`; p.appendChild(tt);
+    });
     TS.forEach(t=>{
       const d='M'+t.c.map(p=>px(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join('L')+'Z';
       const p=mk('path',{d,class:'ts'},svg); const n=(counts||{})[t.n]||0;
@@ -322,9 +338,10 @@ function makeMap(host, shadeVar){
       const tt=document.createElementNS(NS,'title'); tt.textContent=`${t.n} Township: ${plural(n,'record')} shown`; p.appendChild(tt);
     });
     TS.forEach(t=>{const [x,y]=px(...cent[t.n]); const l=mk('text',{x:x.toFixed(1),y:(y+(t.n==='Kanpetlet'?14:t.n==='Paletwa'?-24:t.n==='Tedim'?-16:0)).toFixed(1),class:'tslabel'},svg); l.textContent=t.n;});
-    [['MIZORAM','(INDIA)',92.72,23.9],['SAGAING',null,94.12,22.75],['MAGWAY',null,94.14,21.75],['RAKHINE',null,93.0,20.75]].forEach(([a,b,lon,lat])=>{
-      const [x,y]=px(lon,lat); mk('text',{x,y,class:'ctx','text-anchor':'middle'},svg).textContent=a;
-      if(b) mk('text',{x,y:y+12,class:'ctx','text-anchor':'middle'},svg).textContent=b;
+    MZ.forEach(dd=>{const [x,y]=px(...mzCent[dd.n]); mk('text',{x:x.toFixed(1),y:(y+(dd.n==='Lawngtlai'?-18:dd.n==='Saitual'?6:0)).toFixed(1),class:'mzlabel'},svg).textContent=dd.n;});
+    [['MIZORAM','INDIA',92.47,24.42,'country'],['BANGLADESH',null,92.45,21.62,'ctx'],['SAGAING',null,94.12,22.75,'ctx'],['MAGWAY',null,94.14,21.75,'ctx'],['RAKHINE',null,93.0,20.75,'ctx'],['CHIN STATE','MYANMAR',93.95,24.3,'country']].forEach(([a,b,lon,lat,cl])=>{
+      const [x,y]=px(lon,lat); mk('text',{x,y,class:cl,'text-anchor':'middle'},svg).textContent=a;
+      if(b) mk('text',{x,y:y+12,class:cl,'text-anchor':'middle'},svg).textContent=b;
     });
     [['Hakha',93.60483,22.64011],['Tedim',93.65619,23.37058],['Falam',93.68034,22.91105],['Mindat',93.97365,21.37176],['Matupi',93.44086,21.60475],['Kalay',94.02977,23.1933]].forEach(([n,lon,lat])=>{
       const [x,y]=px(lon,lat); mk('rect',{x:x-2,y:y-2,width:4,height:4,class:'town'},svg); mk('text',{x:x+6,y:y+3,class:'townl'},svg).textContent=n;
@@ -393,7 +410,7 @@ function renderSecurity(){
     <p>Incidents recorded in CCPR's Chinland Monitoring Briefing. Figures cover Chin State, with drug seizures on the Mizoram and Kalay borders where they concern trafficking into Chinland.</p>
     <p>Showing ${esc(m.label)}.</p>
   </section>
-  <section class="tile kpi"><h2>Airstrikes <span class="src" id="src-air"></span></h2><div class="num" id="k-air"></div><p class="cap" id="k-air-cap"></p><div class="foot" id="k-air-foot"></div></section>
+  <section class="tile kpi"><h2>Airstrikes on civilian areas <a class="src" href="#about/airstrikes">How we count</a></h2><div class="num" id="k-air"></div><p class="cap" id="k-air-cap"></p><div class="foot" id="k-air-foot"></div></section>
   <section class="tile kpi"><h2>Civilian casualties <span class="src" id="src-civ"></span></h2>
     <div class="split"><div><span>Killed</span><b class="num" id="k-civk"></b></div><div><span>Injured</span><b class="num" id="k-civi"></b></div></div>
     <p class="cap">Airstrikes, heavy weapons, landmines and other armed violence.</p><div class="foot" id="k-civ-foot"></div></section>
@@ -404,21 +421,21 @@ function renderSecurity(){
     <div class="dl" id="downloads"></div><ul class="stats" id="brief-stats"></ul>
     <p class="note">Published monthly in Burmese and English for diplomats, donors and researchers.</p></section>
 
-  <section class="tile maptile span5 rows2"><h2>Incident map <span class="src">MIMU boundaries and place codes</span></h2>
+  <section class="tile maptile span5 rows2"><h2>Incident map <span class="src">MIMU and MIRSAC boundaries</span></h2>
     <div class="layers" role="group" aria-label="Map layers">
       <button type="button" aria-pressed="true" data-cat="conflict"><span class="sw" style="background:var(--c-conflict)"></span>Conflict</button>
       <button type="button" aria-pressed="true" data-cat="landmine"><span class="sw" style="background:var(--c-landmine)"></span>Landmines</button>
       <button type="button" aria-pressed="true" data-cat="drug"><span class="sw sq" style="background:var(--c-drug)"></span>Drug seizures</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i style="background:var(--muted)"></i>Village or town</span><span><i class="ring"></i>Township or Mizoram district only (exact site not confirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township</span></div>
+    <div class="legend"><span><i style="background:var(--muted)"></i>Village or town</span><span><i class="ring"></i>Township or Mizoram district only (exact site not confirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township or Mizoram district</span></div>
     <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row in the incident log to see details.</span></div></section>
 
   <section class="tile span4"><h2>Airstrikes by township <span class="src" id="src-bars"></span></h2>
-    <p class="sub">Strikes targeting civilians. The figure after the slash is civilians injured.</p>
+    <p class="sub">Separate attacks on civilian areas. The figure after the slash is civilians injured.</p>
     <div id="air-bars"></div><div class="chips" id="damage"></div>
     <div class="duo"><div><div class="k">Landmine casualties</div><div id="lm-bars"></div></div>
-      <div><div class="k">Children killed by airstrikes, year to date</div><b class="big" id="k-child"></b><p class="sub" id="k-child-cap" style="margin:0"></p></div></div></section>
+      <div><div class="k">Children killed by airstrikes, year to date (other source)</div><b class="big" id="k-child"></b><p class="sub" id="k-child-cap" style="margin:0"></p></div></div></section>
 
   <section class="tile span4"><h2>Seizures on Chinland's borders <span class="src" id="src-drugs"></span></h2>
     <p class="sub">Arrests of traffickers on routes into and out of Chinland.</p><div class="rowlist" id="drug-rows"></div></section>
@@ -429,12 +446,25 @@ function renderSecurity(){
     <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Township</th><th>Location</th><th>What happened</th><th>Civilians</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
 
   const setNum=(id,v,html,color)=>{ const el=$(id); el.classList.toggle('na',v===null); el.innerHTML = v===null?'Not reported':(color?`<i style="background:${color}"></i>`:'')+(html||esc(v)); };
-  const air=fVal('Airstrikes'), airTs=fBy('Airstrikes'), nTs=Object.keys(airTs).filter(k=>k!=='All').length;
-  setNum('k-air',air,null,'var(--c-conflict)'); $('src-air').textContent=fSrc('Airstrikes');
-  $('k-air-cap').textContent = air===null?'':`Airstrikes targeting civilians${nTs?` in ${plural(nTs,'township')}`:''}.`;
-  const parts=[]; if(fHas('Civilians injured in airstrikes')) parts.push(`${fSum('Civilians injured in airstrikes')} civilians injured`); if(fHas('Civilians killed in airstrikes')) parts.push(`${fSum('Civilians killed in airstrikes')} killed`);
+  /* Airstrikes are counted from the incident log: one attack on one place at one time = 1, inside Chin State only. */
+  const strikes=ev.filter(e=>e.inChin&&(e.type==='Airstrike'||e.type==='Drone strike'));
+  const civAir=strikes.filter(e=>e.type==='Airstrike'&&e.hit==='Civilian area');
+  const nAtt=list=>list.reduce((a,e)=>a+(e.attacks||1),0);
+  const air=nAtt(civAir), airTs={}, airInj={};
+  civAir.forEach(e=>{airTs[e.ts]=(airTs[e.ts]||0)+(e.attacks||1);});
+  strikes.filter(e=>e.type==='Airstrike').forEach(e=>{ if(e.civI) airInj[e.ts]=(airInj[e.ts]||0)+e.civI; });
+  const nTs=Object.keys(airTs).length;
+  setNum('k-air',air,null,'var(--c-conflict)');
+  $('k-air-cap').textContent = air?`Separate attacks on villages, towns and other civilian places in ${plural(nTs,'township')}. Counted by attack, not by bomb.`:'No airstrikes on civilian areas recorded this month.';
+  const aK=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civK||0),0), aI=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civI||0),0);
+  const parts=[]; if(strikes.length) parts.push(`${aK} civilians killed, ${aI} injured`);
   const dm=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`${fSum(i)} ${l}`);
-  if(dm.length) parts.push(dm.join(', ')+' damaged'); $('k-air-foot').textContent=parts.join(' · ');
+  if(dm.length) parts.push(dm.join(', ')+' damaged');
+  const armed=nAtt(strikes.filter(e=>e.type==='Airstrike'&&e.hit!=='Civilian area')), drone=nAtt(strikes.filter(e=>e.type==='Drone strike'));
+  parts.push(drone?`${plural(drone,'drone strike')}`:'No drone strikes recorded'); if(armed) parts.push(`${plural(armed,'airstrike')} on armed positions or unclear targets`);
+  const printed=fVal('Airstrikes as printed in the briefing');
+  if(printed!==null&&printed!==air) parts.push(`The printed briefing reported ${printed}, counting individual bombs`);
+  $('k-air-foot').textContent=parts.join(' · ');
   const groups=[['Landmines','Landmines: civilians killed','Landmines: civilians injured'],['Heavy weapons','Heavy weapons: civilians killed','Heavy weapons: civilians injured'],['Airstrikes','Civilians killed in airstrikes','Civilians injured in airstrikes'],['Other armed violence','Other armed violence: civilians killed','Other armed violence: civilians injured']];
   let ck=null,ci=null; const cf=[];
   groups.forEach(([l,kk,ii])=>{ if(fHas(kk)||fHas(ii)){ const a=fVal(kk)||0,b=fVal(ii)||0; ck=(ck||0)+a; ci=(ci||0)+b; cf.push(`${l} ${a} killed, ${b} injured`);} });
@@ -453,9 +483,9 @@ function renderSecurity(){
   const cnt=c=>ev.filter(e=>e.cat===c).length;
   $('brief-stats').innerHTML=`<li>Conflict incidents logged<b>${cnt('conflict')}</b></li><li>Landmine incidents logged<b>${cnt('landmine')}</b></li><li>Drug seizures logged<b>${cnt('drug')}</b></li><li>Governance and political events<b>${(m.events||[]).filter(e=>['governance','political','border'].includes(e.cat)).length}</b></li><li>Humanitarian and livelihood events<b>${(m.events||[]).filter(e=>['humanitarian','livelihood'].includes(e.cat)).length}</b></li>`;
 
-  const ai=fBy('Civilians injured in airstrikes'), amax=Math.max(1,...Object.values(airTs));
-  $('src-bars').textContent=fSrc('Airstrikes');
-  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t==='All'?'All townships':t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):'<p class="empty">No airstrike figures for this month.</p>';
+  const ai=airInj, amax=Math.max(1,...Object.values(airTs));
+  $('src-bars').textContent='counted from the incident log';
+  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):'<p class="empty">No airstrikes on civilian areas recorded this month.</p>';
   $('damage').innerHTML=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`<span class="chip"><b>${fSum(i)}</b>${l} damaged</span>`).join('');
   const lk=fVal('Landmines: civilians killed'), li=fVal('Landmines: civilians injured'), lmax=Math.max(1,lk||0,li||0);
   $('lm-bars').innerHTML=(lk===null&&li===null)?'<p class="sub">Not reported</p>':hbar('Killed',lk||0,lmax,'var(--c-conflict)')+hbar('Injured',li||0,lmax,'var(--c-landmine)');
@@ -475,8 +505,8 @@ function renderSecurity(){
   function select(id){ selected=id; const e=ev.find(x=>x.id===id); if(!e) return; map.mark(id);
     document.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
     $('sel').innerHTML=`<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts)} · ${esc(e.source)}</span><b>${esc(e.type)}: ${esc([e.place,e.detail].filter(Boolean).join(', ')||e.ts)}</b>${esc(e.text)}
-      <div class="meta" style="margin-top:4px">${[e.actors,casualty(e),'Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''),e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`; }
-  function drawMap(){ const counts={}; ev.forEach(e=>{if(e.inChin&&layers[e.cat]) counts[e.ts]=(counts[e.ts]||0)+1;});
+      <div class="meta" style="margin-top:4px">${[e.actors,e.attacks?`${plural(e.attacks,'separate attack')}`:'',e.hit?'Hit: '+e.hit:'',e.aircraft&&e.aircraft!=='Not stated'?'Aircraft: '+e.aircraft:'',casualty(e),'Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''),e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`; }
+  function drawMap(){ const counts={}; ev.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) counts[k]=(counts[k]||0)+1;});
     map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',big:!!(e.civK||e.civI),
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(e.place||e.detail||e.ts)}`,aria:`${dShort(e.date)}, ${e.type}, ${e.place||e.detail||e.ts}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
@@ -484,7 +514,7 @@ function renderSecurity(){
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No incidents recorded for this selection.</p></td></tr>'; return; }
     list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
       const civ=(e.civK||e.civI)?`${e.civK||0} killed, ${e.civI||0} injured`:(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'None reported');
-      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.ts)}</td><td>${esc([e.place,e.detail].filter(Boolean).join(', '))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(civ)}</td><td class="n">${esc(e.source)}</td>`;
+      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}${e.attacks>1?`<span class="tag">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td>${esc([e.place,e.detail].filter(Boolean).join(', '))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(civ)}</td><td class="n">${esc(e.source)}</td>`;
       tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
   V.querySelectorAll('.layers button').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
@@ -500,16 +530,15 @@ const outcomePill = o => !o?'':`<span class="pill ${o==='Agreement reached'?'goo
 function renderGovernance(){
   const m=mon(), all=evs('governance','political','border'), gov=evs('governance'), pol=evs('political'), bor=evs('border');
   const edu=(m.events||[]).filter(e=>e.area==='Education');
-  const layers={governance:true,political:true,border:true}; let fcat='all', farea='all', selected=null;
+  const layers={governance:true,political:true,border:true}; let fcat='all', farea='all', factor='all', selected=null;
   const byLevel={}; gov.forEach(e=>{const l=e.level||'Not stated'; byLevel[l]=(byLevel[l]||0)+1;});
-  const byOutcome={}; pol.forEach(e=>{const o=e.outcome||'Not stated'; byOutcome[o]=(byOutcome[o]||0)+1;});
   const school=fVal('Schools damaged in airstrikes');
   const unmapped=all.filter(e=>e.lat==null).length;
 
   V.innerHTML=`
   <section class="tile intro">
     <h1>Governance, politics and the border</h1>
-    <p>What Chin authorities decided and delivered, how political actors related to each other, and what changed on the India border. Recorded from the Chinland Monitoring Briefing.</p>
+    <p>What Chin authorities decided and delivered, how political actors engaged with each other, and what changed on the India border. Recorded from the Chinland Monitoring Briefing.</p>
     <p>Showing ${esc(m.label)}. Counts are events recorded, not every action taken.</p>
   </section>
   <section class="tile kpi"><h2>Governance actions</h2><div class="num"><i style="background:var(--c-governance)"></i>${gov.length}</div>
@@ -517,7 +546,7 @@ function renderGovernance(){
     <div class="foot">${Object.entries(byLevel).map(([l,n])=>`${esc(l)} ${n}`).join(' · ')||'None recorded'}</div></section>
   <section class="tile kpi"><h2>Political events</h2><div class="num"><i style="background:var(--c-political)"></i>${pol.length}</div>
     <p class="cap">Meetings, agreements, statements and disputes between actors.</p>
-    <div class="foot">${Object.entries(byOutcome).map(([o,n])=>`${esc(o)} ${n}`).join(' · ')||'None recorded'}</div></section>
+    <div class="foot">${pol.length?Object.entries(pol.reduce((o,e)=>(o[e.type]=(o[e.type]||0)+1,o),{})).map(([t,n])=>`${esc(t)} ${n}`).join(' · '):'None recorded'}</div></section>
   <section class="tile kpi"><h2>Border events</h2><div class="num"><i style="background:var(--c-border)"></i>${bor.length}</div>
     <p class="cap">Orders by Indian and Mizoram authorities, and road and trade route closures.</p>
     <div class="foot">${bor.length?esc([...new Set(bor.map(e=>e.type))].join(' · ')):'None recorded'}</div></section>
@@ -526,7 +555,21 @@ function renderGovernance(){
     <p class="sub">Long-running processes and the latest stage the briefing reported. A stage only moves when a recorded event shows it.</p>
     <div id="proc-list"></div></section>
 
-  <section class="tile span5" id="edu"><h2>Education <span class="src">a less-watched sector</span></h2>
+  <section class="tile maptile span5 rows3"><h2>Where it happened <span class="src">MIMU and MIRSAC boundaries</span></h2>
+    <div class="layers" role="group" aria-label="Map layers">
+      <button type="button" aria-pressed="true" data-cat="governance"><span class="sw" style="background:var(--c-governance)"></span>Governance</button>
+      <button type="button" aria-pressed="true" data-cat="political"><span class="sw sq" style="background:var(--c-political)"></span>Political</button>
+      <button type="button" aria-pressed="true" data-cat="border"><span class="sw dia" style="background:var(--c-border)"></span>Border</button>
+    </div>
+    <div id="map"></div>
+    <div class="legend"><span><i class="ring"></i>Township or Mizoram district only</span><span>Shading: events per township or district</span>${unmapped?`<span>${plural(unmapped,'event')} Chinland-wide or without a place, listed below but not mapped</span>`:''}</div>
+    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
+
+  <section class="tile span7" id="areas"><h2>What Chin authorities worked on <span class="src">governance actions by policy area</span></h2>
+    <p class="sub">Each bar counts recorded governance actions this month. Select a bar to list those actions below.</p>
+    <div id="area-bars"></div></section>
+
+  <section class="tile span7" id="edu"><h2>Education <span class="src">a less-watched sector</span></h2>
     <p class="sub">Education decisions, disputes and damage this month, in one place.</p>
     <div class="duo" style="margin-top:0">
       <div><div class="k">Education events recorded</div><b class="big">${edu.length}</b></div>
@@ -534,27 +577,11 @@ function renderGovernance(){
     </div>
     <div class="rowlist" id="edu-list" style="margin-top:8px"></div></section>
 
-  <section class="tile span7" id="matrix"><h2>Who acted on what <span class="src">events naming each actor, by policy area</span></h2>
-    <p class="sub">Each cell counts recorded events that name the actor. Darker means more events. Hover a cell for details.</p>
-    <div class="tblwrap" id="mx"></div></section>
-
-  <section class="tile maptile span5 rows2"><h2>Where it happened <span class="src">MIMU boundaries and place codes</span></h2>
-    <div class="layers" role="group" aria-label="Map layers">
-      <button type="button" aria-pressed="true" data-cat="governance"><span class="sw" style="background:var(--c-governance)"></span>Governance</button>
-      <button type="button" aria-pressed="true" data-cat="political"><span class="sw sq" style="background:var(--c-political)"></span>Political</button>
-      <button type="button" aria-pressed="true" data-cat="border"><span class="sw dia" style="background:var(--c-border)"></span>Border</button>
-    </div>
-    <div id="map"></div>
-    <div class="legend"><span><i class="ring"></i>Township or Mizoram district only</span><span>Shading: events per township</span>${unmapped?`<span>${plural(unmapped,'event')} Chinland-wide or without a place, listed below but not mapped</span>`:''}</div>
-    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
-
-  <section class="tile span7" id="relations"><h2>Political relations</h2>
-    <p class="sub">Who engaged with whom, and how it ended.</p><div id="rel-list"></div></section>
-
-  <section class="tile span12"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
+  <section class="tile span12" id="log"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="governance">Governance</button>
       <button type="button" aria-pressed="false" data-f="political">Political</button><button type="button" aria-pressed="false" data-f="border">Border</button>
-      <select id="farea" aria-label="Filter by policy area"><option value="all">All policy areas</option></select></span></h2>
+      <select id="farea" aria-label="Filter by policy area"><option value="all">All policy areas</option></select>
+      <select id="factor" aria-label="Filter by actor"><option value="all">All actors</option></select></span></h2>
     <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Actors</th><th>Where</th><th>What happened</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
 
   // processes
@@ -574,28 +601,22 @@ function renderGovernance(){
   // education list
   $('edu-list').innerHTML = edu.length ? edu.map(e=>`<div class="row"><span>${esc(e.type)}<span class="tag">${esc((e.actors||[]).join(', ')||e.ts||'')} · ${esc(dShort(e.date))}</span></span><span>${catTag(e.cat)}</span></div>`).join('') : '<p class="empty">No education events recorded this month.</p>';
 
-  // matrix
-  const mxEv=all; const areas=[...new Set(mxEv.map(e=>e.area).filter(Boolean))].sort();
-  const counts={}; mxEv.forEach(e=>(e.actors||[]).forEach(a=>{counts[a]=counts[a]||{_t:0}; const k=e.area||'Not stated'; counts[a][k]=(counts[a][k]||0)+1; counts[a]._t++;}));
-  let actors=Object.keys(counts).sort((a,b)=>counts[b]._t-counts[a]._t||a.localeCompare(b));
-  const cols=areas.concat(mxEv.some(e=>!e.area)?['Not stated']:[]);
-  const mmax=Math.max(1,...actors.flatMap(a=>cols.map(c=>counts[a][c]||0)));
-  const short=c=>c.replace(' (roads, power, telecoms)','').replace(' and rule of law','').replace(' and environment','').replace(' and accountability','').replace('Revenue, economy and trade','Revenue and trade').replace('Border and cross-border','Border');
-  $('mx').innerHTML = actors.length ? `<table class="mx"><thead><tr><th></th>${cols.map(c=>`<th title="${esc(c)}">${esc(short(c))}</th>`).join('')}<th>Total</th></tr></thead><tbody>${
-    actors.map(a=>`<tr><th class="a" title="${esc(actorName(a))}">${esc(a)}</th>${cols.map(c=>{const n=counts[a][c]||0; return `<td class="${n?'':'z'}" style="${n?`background:color-mix(in srgb, var(--c-governance) ${Math.round(18+62*n/mmax)}%, var(--panel));color:${n/mmax>0.55?'#fff':'var(--ink)'}`:''}" title="${esc(a)} · ${esc(c)}: ${plural(n,'event')}">${n||'·'}</td>`;}).join('')}<td class="tot">${counts[a]._t}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No actors recorded this month.</p>';
-
-  // relations
-  $('rel-list').innerHTML = pol.length ? pol.map(e=>`<div class="rel"><span class="meta">${esc(dShort(e.date))}</span><span>${actorChips(e)}${e.facilitator?` <span class="meta">facilitated by</span> <span class="actor">${esc(e.facilitator)}</span>`:''}<span class="tag">${esc(e.type)}</span></span><span>${outcomePill(e.outcome)}</span></div>`).join('') : '<p class="empty">No political events recorded this month.</p>';
+  // policy areas (governance actions only)
+  const byArea={}; gov.forEach(e=>{const k=e.area||'Not stated'; byArea[k]=(byArea[k]||0)+1;});
+  const amax2=Math.max(1,...Object.values(byArea));
+  $('area-bars').innerHTML = gov.length ? Object.entries(byArea).sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).map(([k,v])=>
+    `<button type="button" class="hbar areabar" data-area="${esc(k)}" aria-label="${esc(k)}: ${plural(v,'action')}. Show in the event log"><span>${esc(k)}</span><span class="track"><span class="fill" style="width:${Math.max(2,v/amax2*100)}%;background:var(--c-governance)"></span></span><span class="v">${v}</span></button>`).join('')
+    : '<p class="empty">No governance actions recorded this month.</p>';
 
   // map + log
   const map=makeMap($('map'),'var(--c-governance)');
   const areaSel=$('farea'); [...new Set(all.map(e=>e.area).filter(Boolean))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
   function select(id){ selected=id; const e=all.find(x=>x.id===id); if(!e) return; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); $('sel').innerHTML=eventCard(e); }
-  function drawMap(){ const c={}; all.forEach(e=>{if(e.inChin&&e.ts&&layers[e.cat]) c[e.ts]=(c[e.ts]||0)+1;});
+  function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
     map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc((e.actors||[]).join(', '))}`,aria:`${dShort(e.date)}, ${e.type}, ${(e.actors||[]).join(', ')}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
-    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea));
+    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
     list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
       tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}${e.outcome&&e.cat==='political'?`<br>${outcomePill(e.outcome)}`:''}</td><td>${actorChips(e)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(e.source)}</td>`;
@@ -603,6 +624,10 @@ function renderGovernance(){
   V.querySelectorAll('.layers button').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
   areaSel.addEventListener('change',()=>{farea=areaSel.value; drawLog();});
+  const actSel=$('factor'); [...new Set(all.flatMap(e=>(e.actors||[]).concat(e.facilitator?[e.facilitator]:[])))].sort((x,y)=>x.localeCompare(y)).forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;actSel.appendChild(o);});
+  actSel.addEventListener('change',()=>{factor=actSel.value; drawLog();});
+  V.querySelectorAll('.areabar').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.area; farea=[...areaSel.options].some(o=>o.value===k)?k:'all'; areaSel.value=farea;
+    fcat='governance'; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.f==='governance')); drawLog(); $('log').scrollIntoView({behavior:'smooth',block:'start'}); }));
   drawMap(); drawLog();
 }
 
@@ -637,7 +662,7 @@ function renderHumanitarian(){
     <p class="sub">Each row is one figure from one source. Households and people are different units and are never converted or added.</p>
     <div class="tblwrap" id="disp"></div></section>
 
-  <section class="tile maptile span5 rows2"><h2>Where it happened <span class="src">MIMU boundaries and place codes</span></h2>
+  <section class="tile maptile span5 rows2"><h2>Where it happened <span class="src">MIMU and MIRSAC boundaries</span></h2>
     <div class="layers" role="group" aria-label="Map layers">
       <button type="button" aria-pressed="true" data-cat="humanitarian"><span class="sw" style="background:var(--c-humanitarian)"></span>Humanitarian</button>
       <button type="button" aria-pressed="true" data-cat="livelihood"><span class="sw sq" style="background:var(--c-livelihood)"></span>Livelihood</button>
@@ -671,7 +696,7 @@ function renderHumanitarian(){
       $('sel').innerHTML=`<span class="meta">${esc(m.label)} · ${esc(x.place||x.ts||'')}</span><b>${esc(s)}</b>${esc([x.type,x.origin?'residents from '+x.origin:'',x.status].filter(Boolean).join(' · '))}
       <div class="meta" style="margin-top:6px">${rows.map(r=>esc([r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':'',r.source,r.note].filter(Boolean).join(' · '))).join('<br>')}</div>`; return; }
     const e=all.find(x=>x.id===id); if(e) $('sel').innerHTML=eventCard(e); }
-  function drawMap(){ const c={}; all.forEach(e=>{if(e.inChin&&e.ts&&layers[e.cat]) c[e.ts]=(c[e.ts]||0)+1;});
+  function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
     const pts=all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(whereOf(e))}`,aria:`${dShort(e.date)}, ${e.type}`}));
     map.draw({counts:c,selected,onSelect:select,points:pts.concat(layers.site?sitePts:[])}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
@@ -759,8 +784,22 @@ function renderAbout(){
     <li><b>Confidence:</b> confirmed by two or more sources, one source, or unconfirmed.</li>
   </ul>
 
+  <h3 id="airstrikes">How airstrikes are counted</h3>
+  <ul>
+    <li><b>One airstrike is one attack on one place at one time</b>, however many bombs were dropped. If the same place is attacked again later, that is a second airstrike. Attacks on different villages are counted separately.</li>
+    <li><b>What was hit, not what was intended.</b> The headline counts airstrikes on civilian areas: villages, towns, schools, churches, clinics and IDP sites. Strikes on armed positions, or where the target is unclear, are recorded but counted separately.</li>
+    <li><b>Drone strikes are shown separately</b> from airstrikes by jet fighters and helicopters.</li>
+    <li><b>Chin State only.</b> Strikes outside Chin State are not counted.</li>
+    <li><b>Date of the attack</b>, not the date it was reported.</li>
+    <li><b>Casualties</b> are civilians and combatants counted separately, as known at the time of recording, and updated if later information changes them.</li>
+    <li><b>When sources disagree</b>, the best-confirmed figure is used, higher claims are noted in the description, and each record carries a confidence level.</li>
+    <li><b>The headline is the sum of the individual records</b>, so the totals, the township bars and the map always agree.</li>
+    <li><b>Figures from other organizations</b>, such as children killed by airstrikes year to date, are shown with their source and are not mixed with CCPR's counts.</li>
+  </ul>
+  <p>The printed September 2026 briefing reported 12 airstrikes because it counted individual bombs. Counted by attack, as above, September had 6. This site uses the counting rule for every month.</p>
+
   <h3>Locations</h3>
-  <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Boundaries are MIMU township boundaries and do not imply endorsement of any boundary.</p>
+  <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Chin State township boundaries are from MIMU. Mizoram district boundaries are from the Mizoram Remote Sensing Application Centre (MIRSAC), Government of Mizoram. Lines from the two sources can differ slightly along the border. All boundaries are for reference only and do not imply endorsement.</p>
 
   <h3>Corrections</h3>
   <p>If a published record is wrong, CCPR corrects it in the next update. Earlier versions are kept in the site's public history.</p>
@@ -774,7 +813,7 @@ function renderAbout(){
 /* ---------- routing ---------- */
 const VIEWS={security:renderSecurity,governance:renderGovernance,humanitarian:renderHumanitarian,about:renderAbout};
 function render(){
-  VIEW = VIEWS[location.hash.slice(1)] ? location.hash.slice(1) : 'security';
+  const [hv]=location.hash.slice(1).split('/'); VIEW = VIEWS[hv] ? hv : 'security';
   document.querySelectorAll('nav.views a').forEach(a=>a.setAttribute('aria-current',a.dataset.v===VIEW?'page':'false'));
   $('month').closest('.month').style.visibility = VIEW==='about'?'hidden':'visible';
   VIEWS[VIEW]();
@@ -784,8 +823,9 @@ fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new
   const sel=$('month'); Object.keys(d.months).sort().reverse().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=d.months[k].label;sel.appendChild(o);});
   MONTH=d.latest; sel.value=MONTH; sel.addEventListener('change',()=>{MONTH=sel.value; render();});
   if(d.generated) $('updated').textContent='Data last published '+new Date(d.generated).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'.';
-  window.addEventListener('hashchange',()=>{ render(); window.scrollTo(0,0); });
-  render();
+  const toAnchor=()=>{ const a=location.hash.split('/')[1]; const el=a&&document.getElementById(a); if(el) el.scrollIntoView(); else window.scrollTo(0,0); };
+  window.addEventListener('hashchange',()=>{ render(); toAnchor(); });
+  render(); toAnchor();
 }).catch(()=>{ $('state').textContent='The data file could not be loaded. Please try again later.'; });
 })();
 </script>
