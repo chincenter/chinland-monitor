@@ -812,7 +812,7 @@ function renderSecurity(){
   $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):`<p class="empty">No airstrikes on civilian areas recorded ${PER()}.</p>`;
   $('damage').innerHTML=!allPrinted?'':[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`<span class="chip"><b>${fSum(i)}</b>${l} damaged</span>`).join('');
   const LG=CG.Landmines, lk=LG?LG[0]:(PS.civ.log?0:null), li=LG?LG[1]:(PS.civ.log?0:null), lmax=Math.max(1,lk||0,li||0);
-  const lmEv=ev.filter(e=>e.cat==='landmine'&&e.inChin), lmTs={}; lmEv.forEach(e=>{lmTs[e.ts]=(lmTs[e.ts]||0)+1;});
+  const lmEv=ev.filter(e=>e.cat==='landmine'&&e.inChin&&e.type!=='Clearance or EORE activity'), lmTs={}; lmEv.forEach(e=>{lmTs[e.ts]=(lmTs[e.ts]||0)+1;});
   const lmMax=Math.max(1,...Object.values(lmTs));
   $('lm-bars').innerHTML=lmEv.length?Object.entries(lmTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,lmMax,'var(--c-landmine)')).join(''):`<p class="sub">None recorded ${PER()}</p>`;
   setNum('k-lmk',lk,null,'var(--c-landmine)'); setNum('k-lmi',li); $('src-lm').textContent=PS.civ.src;
