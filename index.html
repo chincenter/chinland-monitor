@@ -207,6 +207,21 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 .t td.d,.t td.n{font-family:var(--f-data);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .t td.r,.t th.r{text-align:right}
 .t.click tbody tr{cursor:pointer} .t.click tbody tr:hover td{background:var(--soft)} .t tr.sel td{background:var(--accent-soft)}
+.edu-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
+.edu-k button{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;color:inherit}
+.edu-k button[aria-pressed="true"]{border-color:var(--ink);background:var(--soft)}
+.edu-k b{display:block;font-family:var(--f-display);font-size:26px;line-height:1.1;font-weight:400}
+.edu-k span{font-size:12.5px;color:var(--muted);line-height:1.3;display:block}
+.edu-k i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+.edu-strip{display:flex;align-items:flex-end;gap:3px;margin:14px 0 3px;border-bottom:1px solid var(--line);padding-bottom:2px;min-height:40px}
+.edu-strip .col{flex:1;display:flex;flex-direction:column-reverse;gap:2px;align-items:center;min-width:0}
+.edu-strip .sq{width:100%;max-width:18px;height:11px;border:0;border-radius:2px;padding:0;cursor:pointer}
+.edu-strip .sq:hover,.edu-strip .sq:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.edu-strip .sq.dim{opacity:.15}
+.edu-ax{display:flex;gap:3px;font-family:var(--f-data);font-size:10.5px;color:var(--muted)}
+.edu-ax span{flex:1;min-width:0;display:flex;justify-content:center;white-space:nowrap}
+.edu-ax span:first-child{justify-content:flex-start}.edu-ax span:last-child{justify-content:flex-end}
+@media (max-width:640px){.edu-k{grid-template-columns:repeat(2,1fr)}}
 .log{min-width:860px}
 @media (max-width:640px){.log{min-width:0;table-layout:fixed;width:100%}.log th:first-child{width:60px}.log th:nth-child(2){width:auto}.log tr:not(.more)>th:nth-child(n+3),.log tr:not(.more)>td:nth-child(n+3){width:0;padding:0;font-size:0;overflow:hidden;visibility:hidden;border:0}.log tr:not(.more)>td:nth-child(n+3) *{display:none}.log tr.more>td:first-child{display:none}.log tr.more>td{padding-left:10px}.log th .hint{display:none}.log td{overflow-wrap:anywhere}.log td.d{padding-right:4px}.log tr.more *{max-width:100%;white-space:normal}}
 .log td.txt{min-width:300px;max-width:520px}
@@ -690,7 +705,7 @@ function logRow(tb,e,cells,sel){ const tr=document.createElement('tr'); tr.datas
     const m=document.createElement('tr'); m.className='more'; m.innerHTML=`<td></td><td colspan="${tr.children.length-1}">${fullHTML(e)}</td>`; tr.after(m); tr.setAttribute('aria-expanded','true'); };
   tr.addEventListener('click',toggle); tr.addEventListener('keydown',x=>{if(x.key==='Enter')toggle();}); tb.appendChild(tr); return tr; }
 function recLine(r,opt){ opt=opt||{};
-  return `<details class="rec" id="r-${esc(r.id)}"><summary><span class="sd">${esc(dShort(r.date))} ${r.date.slice(2,4)}</span><span class="st">${dotOf(r.cat)}${esc(titleOf(r))} ${opt.child||!r.respondsTo?(opt.child?posPill(r.position):''):posPill(r.position)}</span></summary><div class="recbody">${fullHTML(r)}</div></details>`; }
+  return `<details class="rec" id="r-${esc(r.id)}"><summary><span class="sd">${esc(dShort(r.date))} ${r.date.slice(2,4)}</span><span class="st">${opt.dot||dotOf(r.cat)}${esc(titleOf(r))} ${opt.child||!r.respondsTo?(opt.child?posPill(r.position):''):posPill(r.position)}</span></summary><div class="recbody">${fullHTML(r)}</div></details>`; }
 function threadHTML(list){ const R=recIndex(), ids=new Set(list.map(r=>r.id)); const tops=list.filter(r=>!(r.respondsTo&&ids.has(r.respondsTo)));
   const rend=(r,d)=>recLine(r,{child:d>0})+(d<3?(R.kids[r.id]||[]).map(k=>`<div class="kid">${rend(k,d+1)}</div>`).join(''):'');
   return tops.map(r=>`<div class="thread">${rend(r,0)}</div>`).join(''); }
@@ -1048,13 +1063,10 @@ function renderGovernance(){
     <p class="sub">Each bar counts recorded governance actions ${PER()}. Select a bar to list those actions below.</p>
     <div id="area-bars"></div></section>
 
-  <section class="tile span7" id="edu"><h2>Education <span class="src">a less-watched sector</span></h2>
-    <p class="sub">Education decisions, disputes and damage ${PER()}, in one place.</p>
-    <div class="duo" style="margin-top:0">
-      <div><div class="k">Education events recorded</div><b class="big">${edu.length}</b></div>
-      <div><div class="k">Schools damaged by airstrikes</div><b class="big">${school===null?'–':school}</b><p class="sub" style="margin:0">${school===null?'Not reported':esc(fSrc('Schools damaged in airstrikes'))}</p></div>
-    </div>
-    <div class="rowlist" id="edu-list" style="margin-top:8px"></div></section>
+  <section class="tile span7" id="edu"><h2>Education <span class="src">${esc(m.label)}</span></h2>
+    <div class="edu-k" id="edu-k"></div>
+    <div id="edu-chart"></div>
+    <div id="edu-list" style="margin-top:10px"></div></section>
 
   <section class="tile span12" id="log"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="governance">Governance</button>
@@ -1116,7 +1128,7 @@ function renderGovernance(){
     $('aa-list').innerHTML=list.length?threadHTML(list):'<p class="empty">None.</p>';
     V.querySelectorAll('[data-akind]').forEach(b=>b.addEventListener('click',()=>{ akind=akind===b.dataset.akind?null:b.dataset.akind; drawAA(); }));
     /* responses: objections and alliances by Chin bodies */
-    const obj={}, sup={}, add=(o,a,r)=>{ if(a==='ULA/AA') return; const g=groupOf(a); if(!g||g==='ULA/AA'||g==='Junta and allies'||g==='India and Mizoram') return; (o[a]=o[a]||[]).push(r); };
+    const obj={}, sup={}, add=(o,a,r)=>{ if(a==='ULA/AA') return; const g=groupOf(a); if(g==='ULA/AA'||g==='Junta and allies'||g==='India and Mizoram') return; (o[a]=o[a]||[]).push(r); };
     R.all.filter(r=>r.kind==='event'&&inPeriod(r)&&(r.position==='Objects'||r.position==='Supports')).forEach(r=>{ const par=r.respondsTo&&R.byId[r.respondsTo];
       const acts=(r.actors||[]).filter(a=>a!=='ULA/AA');
       let holders=null;
@@ -1139,12 +1151,28 @@ function renderGovernance(){
       ${cur&&ci<0&&!side?`<p class="sub">Current stage: ${esc(cur)}</p>`:''}</div>`;
   }).join('') : '<p class="empty">No process events recorded yet.</p>';
 
-  // education list
-  const eduAll=edu.slice().reverse(); let eduMore=false;
-  const drawEdu=()=>{ const list=eduMore?eduAll:eduAll.slice(0,8);
-  $('edu-list').innerHTML = (list.length ? list.map(e=>`<div class="row"><span>${esc(e.type)}<span class="tag">${esc((e.actors||[]).join(', ')||e.ts||'')} · ${esc(dShort(e.date))}</span></span><span>${catTag(e.cat)}</span></div>`).join('') : `<p class="empty">No education events recorded ${PER()}.</p>`)
-    + (eduAll.length>8?`<p style="margin:8px 0 0"><button type="button" class="dlg-x" id="edu-more">${eduMore?'Show the latest 8':'Show all '+eduAll.length}</button></p>`:'');
-    const b=$('edu-more'); if(b) b.addEventListener('click',()=>{eduMore=!eduMore; drawEdu();}); };
+  // education panel: kinds, month strip, headline list
+  const EDK=[['hit','Schools hit by airstrikes','var(--c-conflict)'],['course','Universities and courses','var(--c-governance)'],['run','Running schools','var(--c-site)'],['rule','Rules, warnings and disputes','var(--c-political)']];
+  const eduKind=r=>{ if(r.kind==='incident') return 'hit'; const t=r.type||'', x=(r.title||'')+' '+r.text;
+    if(/Higher education|Teacher recruitment/.test(t)||/universit|diploma|scholarship|course|faculty/i.test(x)) return 'course';
+    if(/Dispute|Order|Law|Regulation|Curriculum/.test(t)||/\b(warn|condemn|ban|bans|object)/i.test(x)) return 'rule'; return 'run'; };
+  const schoolHit=r=>r.kind==='incident'&&r.cat==='conflict'&&/Airstrike|Drone|Heavy weapons|Arson/i.test(r.type||'')&&/\bschools?\b/i.test(String(r.text).replace(/school junction/ig,''));
+  const eduRecs=recIndex().all.filter(r=>inPeriod(r)&&((r.kind==='event'&&r.area==='Education')||schoolHit(r))).map(r=>Object.assign({ek:eduKind(r)},r));
+  let ek=null, eduMore=false;
+  const drawEdu=()=>{ const cnt={}; eduRecs.forEach(r=>{cnt[r.ek]=(cnt[r.ek]||0)+1;});
+    $('edu-k').innerHTML=EDK.map(([k,l,c])=>`<button type="button" data-ek="${k}" aria-pressed="${ek===k}"><b>${cnt[k]||0}</b><span><i style="background:${c}"></i>${esc(l)}</span></button>`).join('');
+    const ms=Object.keys(DATA.months).sort().filter(k=>k>=FROM&&k<=TO);
+    if(ms.length>=3&&eduRecs.length){ const lab=k=>['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+k.slice(5,7)-1]+' '+k.slice(2,4); const step=($('edu').clientWidth||600)<480?6:3;
+      $('edu-chart').innerHTML=`<div class="edu-strip" role="img" aria-label="Education records by month">${ms.map(m=>`<div class="col">${eduRecs.filter(r=>r.date.slice(0,7)===m).map(r=>`<button type="button" class="sq${ek&&r.ek!==ek?' dim':''}" style="background:${EDK.find(x=>x[0]===r.ek)[2]}" data-rid="${esc(r.id)}" title="${esc(dShort(r.date)+': '+titleOf(r))}" aria-label="${esc(dShort(r.date)+': '+titleOf(r))}"></button>`).join('')}</div>`).join('')}</div>
+        <div class="edu-ax">${ms.map((m,i)=>`<span>${(ms.length<=7||(i%step===0&&i<ms.length-step)||i===ms.length-1)?esc(lab(m)):''}</span>`).join('')}</div>
+        <p class="sub" style="margin:4px 0 0">One square per record. Click a square to read it.</p>`; }
+    else $('edu-chart').innerHTML='';
+    const list=eduRecs.filter(r=>!ek||r.ek===ek).slice().reverse(); const show=eduMore?list:list.slice(0,6);
+    $('edu-list').innerHTML=(show.length?show.map(r=>`<div class="thread">${recLine(r,{dot:`<i style="background:${EDK.find(x=>x[0]===r.ek)[2]}"></i>`})}</div>`).join(''):`<p class="empty">Nothing recorded ${PER()}.</p>`)
+      +(list.length>6?`<p style="margin:8px 0 0"><button type="button" class="dlg-x" id="edu-more">${eduMore?'Show fewer':'Show all '+list.length}</button></p>`:'');
+    V.querySelectorAll('[data-ek]').forEach(b=>b.addEventListener('click',()=>{ ek=ek===b.dataset.ek?null:b.dataset.ek; eduMore=false; drawEdu(); }));
+    V.querySelectorAll('.edu-strip [data-rid]').forEach(b=>b.addEventListener('click',()=>{ const id=b.dataset.rid; const r=eduRecs.find(x=>x.id===id); if(ek&&r.ek!==ek) ek=null; eduMore=true; drawEdu(); const d=document.getElementById('r-'+id); if(d){ d.open=true; d.scrollIntoView({block:'nearest',behavior:'smooth'}); } }));
+    const mb=$('edu-more'); if(mb) mb.addEventListener('click',()=>{eduMore=!eduMore; drawEdu();}); };
   drawEdu();
 
   // policy areas (governance actions only)
