@@ -258,6 +258,43 @@ table.mx{border-collapse:separate;border-spacing:2px;font-size:12.5px;width:100%
 .about code{font-family:var(--f-data);font-size:12.5px;background:var(--soft);padding:1px 5px;border-radius:4px}
 
 .state{grid-column:1/-1;padding:40px 18px;text-align:center;color:var(--muted)}
+.gb{display:inline-block;font:700 9.5px/1.2 var(--f-data);letter-spacing:.03em;padding:2px 4px;border-radius:3px;background:var(--ink);color:var(--panel);margin-right:5px;vertical-align:1px}
+button.actor{font:inherit;font-family:var(--f-body);font-size:12px;color:var(--ink);cursor:pointer;line-height:1.5}button.actor:hover{border-color:var(--ink)}
+.grow{display:grid;grid-template-columns:minmax(150px,24%) minmax(80px,1fr) 34px minmax(0,46%);gap:10px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line);font-size:13.5px}
+.grow:last-child{border-bottom:none}
+.grow .gname{background:none;border:0;padding:0;font:inherit;color:var(--ink);text-align:left;cursor:pointer;display:flex;align-items:center;gap:6px}
+.grow .gname:hover{text-decoration:underline}
+.grow.on{background:var(--accent-soft);border-radius:6px}
+.grow .track{height:8px;background:var(--soft);border-radius:4px;overflow:hidden;display:block}.grow .fill{display:block;height:100%;background:var(--ink);border-radius:4px}
+.grow .v{font-family:var(--f-data);font-size:12.5px;text-align:right}
+.grow .acts{min-width:0}
+.icards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:8px}
+.icard{text-align:left;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.icard:hover{border-color:var(--ink)}.icard[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--panel)}
+.icard b{font-size:13.5px;line-height:1.3}.icard .n{font-family:var(--f-display);font-size:26px;line-height:1}.icard .n small{font:12px var(--f-body);color:var(--muted);margin-left:4px}
+.icard .meta{font-size:11.5px;color:var(--muted)}.icard svg{width:100%;height:20px;display:block}
+.iview{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.iview h3{margin:0 0 4px;font-size:16px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:6px 0 8px}.seg button{font:inherit;font-size:12px;border:0;background:none;padding:3px 10px;cursor:pointer;color:var(--muted)}.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.thread{border-bottom:1px solid var(--line);padding:8px 0}
+.rec{font-size:13.5px}.rec .meta{font-size:11.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin:2px 0}
+.rec .src{font-family:var(--f-data);font-size:11px}
+.rec .resp{font-size:12px;color:var(--muted);margin-top:2px}
+.kid{margin:6px 0 0 14px;padding-left:10px;border-left:2px solid var(--line)}
+.pos{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:var(--soft);border:1px solid var(--line);color:var(--muted)}
+.pos.objects{background:var(--bad-soft);color:var(--bad);border-color:transparent}.pos.supports{background:var(--good-soft);color:var(--good);border-color:transparent}
+.aa-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);gap:18px;margin-top:6px}
+.aa-grid .thread-list{max-height:640px;overflow:auto;padding-right:6px}
+.kbar{width:100%;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;padding:3px 4px;margin:3px 0;border-radius:6px;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) 60px 26px;gap:8px;align-items:center;text-align:left}
+.kbar[aria-pressed="true"]{background:var(--accent-soft)}.kbar .track{height:8px;background:var(--soft);border-radius:4px;overflow:hidden}.kbar .fill{display:block;height:100%;background:var(--accent)}.kbar .v{font-family:var(--f-data);font-size:12px;text-align:right}
+.resp-col h4{margin:8px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.resp-col .row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid var(--line)}
+dialog.actor-dlg{border:1px solid var(--line);border-radius:14px;padding:0;max-width:760px;width:calc(100% - 32px);max-height:86vh;background:var(--panel);color:var(--ink)}
+dialog.actor-dlg::backdrop{background:rgba(15,19,32,.45)}
+.dlg-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:16px 18px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.dlg-h h2{margin:0;font-family:var(--f-display);font-size:22px}.dlg-b{padding:10px 18px 18px;overflow:auto}
+.dlg-x{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:4px 12px;cursor:pointer;color:var(--ink)}
+.ichip{font:inherit;font-family:var(--f-body);font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;margin:2px 4px 2px 0}.ichip:hover{border-color:var(--ink)}
 footer{margin-top:20px;display:grid;grid-template-columns:2fr 1fr;gap:20px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
 footer b{color:var(--ink)}
 footer p{margin:0 0 6px;max-width:80ch}
@@ -269,7 +306,8 @@ footer p{margin:0 0 6px;max-width:80ch}
   .span7,.span8{grid-column:span 12}
   .rows2,.rows3{grid-row:auto}
 }
-@media (max-width:760px){
+@media (max-width:1100px){.icards{grid-template-columns:repeat(2,minmax(0,1fr))}.aa-grid{grid-template-columns:1fr 1fr}.aa-grid>div:nth-child(2){grid-column:1/-1;order:3}}
+@media (max-width:760px){.grow{grid-template-columns:1fr 34px}.grow .track{display:none}.grow .acts{grid-column:1/-1}.aa-grid{grid-template-columns:1fr}.icards{grid-template-columns:1fr}
   header.top{position:static}
   .month select{max-width:42vw;font-size:13px}
   .board{grid-template-columns:minmax(0,1fr)}
@@ -344,7 +382,7 @@ const plural = (n,w,p) => `${n} ${n===1?w:(p||w+'s')}`;
 const monthEnd = m => { const [y,mo]=m.split('-').map(Number); return new Date(Date.UTC(y,mo,0)).toISOString().slice(0,10); };
 const prevMonth = m => { const [y,mo]=m.split('-').map(Number); const d=new Date(Date.UTC(y,mo-2,1)); return d.toISOString().slice(0,7); };
 
-let DATA=null, MONTH=null, FROM=null, TO=null, VIEW='security', PLACE=null, SELID=null, _monCache={};
+let DATA=null, MONTH=null, FROM=null, TO=null, VIEW='security', PLACE=null, SELID=null, _monCache={}, ACTOR=null, ISSUE=null, GROUPF=null;
 const CATS = {
   conflict:{label:'Conflict',color:'var(--c-conflict)',shape:'circle'},
   landmine:{label:'Landmine',color:'var(--c-landmine)',shape:'circle'},
@@ -585,7 +623,64 @@ const fNote = ind => (figRows(ind).find(f=>f.note)||{}).note||'';
 const evs = (...cats) => (mon().events||[]).filter(e=>cats.includes(e.cat));
 const whereOf = e => [e.place, e.detail].filter(Boolean).join(', ') || e.ts || 'Chinland-wide or not stated';
 const actorName = a => (DATA.actors&&DATA.actors[a]&&DATA.actors[a].name) || a;
-const actorChips = e => (e.actors||[]).map(a=>`<span class="actor" title="${esc(actorName(a))}">${esc(a)}</span>`).join('');
+const actorChips = e => (e.actors||[]).map(a=>`<button type="button" class="actor" data-actor="${esc(a)}" title="${esc(actorName(a))}. Select to see everything this actor did">${esc(a)}</button>`).join('');
+/* ---------- groups, families, links ---------- */
+const GSHORT={'Chinland Council and members':'CC','ICNCC / Chin Brotherhood and members':'ICNCC/CB','Other Chin forces':'OTHER CHIN','Union revolution and allies':'UNION','Junta and allies':'JUNTA','ULA/AA':'ULA/AA','India and Mizoram':'INDIA','Civil society and diaspora':'CSO'};
+const groupOf = a => (DATA.actors[a]||{}).group||null;
+const gBadge = g => g?`<span class="gb" title="${esc(g)}">${esc(GSHORT[g]||g)}</span>`:'';
+const evGroups = e => [...new Set((e.actors||[]).concat(e.facilitator?[e.facilitator]:[]).map(groupOf).filter(Boolean))];
+const FAMILY = {
+  'Law drafted, enacted or amended':'Laws and orders','Order or directive issued':'Laws and orders','Regulation enforced or penalty imposed':'Laws and orders','Revenue or trade decision':'Laws and orders','Curriculum, language or exam decision':'Laws and orders','Order or policy by border authority':'Laws and orders',
+  'Public service delivered':'Services and programmes','School opened or reopened':'Services and programmes','School closed, suspended or relocated':'Services and programmes','Teacher recruitment, training or pay':'Services and programmes','Higher education or vocational course':'Services and programmes','Training or capacity building':'Services and programmes','Justice activity (court, case, training)':'Services and programmes',
+  'Institution set up or reorganised':'Institutions and leaders','Appointment or leadership change':'Institutions and leaders','Election or leadership change':'Institutions and leaders','Alliance, merger or new body formed':'Institutions and leaders','Conference or congress':'Institutions and leaders',
+  'Meeting or dialogue':'Talks and agreements','Negotiation':'Talks and agreements','Agreement signed':'Talks and agreements','Mediation or facilitation':'Talks and agreements','Meeting or agreement between border authorities':'Talks and agreements','Public consultation or meeting with the public':'Talks and agreements',
+  'Dispute or public accusation':'Disputes and splits','Split, withdrawal or suspension':'Disputes and splits',
+  'Checkpoint, raid or security operation':'Security measures',
+  'Refugee or IDP policy':'Border and refugees','Road or trade route closed or reopened':'Border and refugees','Cross-border incident':'Border and refugees','Other border event':'Border and refugees',
+  'Public statement or message':'Statements','Joint statement':'Statements','Statement or warning':'Statements'};
+const FAMS=['Laws and orders','Services and programmes','Institutions and leaders','Talks and agreements','Disputes and splits','Security measures','Border and refugees','Statements','Other'];
+const famOf = t => FAMILY[t]||'Other';
+let REC=null;
+function recIndex(){ if(REC) return REC; const all=[],byId={},kids={};
+  Object.keys(DATA.months).sort().forEach(m=>{ const x=DATA.months[m]; (x.events||[]).forEach(e=>all.push(Object.assign({kind:'event'},e))); (x.incidents||[]).forEach(e=>all.push(Object.assign({kind:'incident'},e))); });
+  all.sort((a,b)=>a.date.localeCompare(b.date)); all.forEach(r=>{byId[r.id]=r;}); all.forEach(r=>{ if(r.respondsTo&&byId[r.respondsTo]) (kids[r.respondsTo]=kids[r.respondsTo]||[]).push(r); });
+  REC={all,byId,kids}; return REC; }
+const inPeriod = r => r.date.slice(0,7)>=FROM && r.date.slice(0,7)<=TO;
+const AARX=/Arakan|\bULA\b|\bAA\b/;
+const isAA = r => r.kind==='event' ? ((r.actors||[]).includes('ULA/AA')||r.facilitator==='ULA/AA'||AARX.test(r.text)) : AARX.test((r.actors||'')+' '+r.text);
+const escRx = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function actorRecs(a){ const R=recIndex(), info=DATA.actors[a]||{};
+  const rx = a==='ULA/AA' ? AARX : new RegExp('(^|[^\\w-])('+[a,info.name].filter(Boolean).map(escRx).join('|')+')(?![\\w-])');
+  return R.all.filter(r=>r.kind==='event' ? ((r.actors||[]).includes(a)||r.facilitator===a) : rx.test(r.actors||'')); }
+const posPill = p => p?`<span class="pos ${esc(p.toLowerCase().replace(/\s+/g,'-'))}">${esc(p)}</span>`:'';
+function recLine(r,opt){ opt=opt||{}; const R=recIndex();
+  const who = r.kind==='event' ? actorChips(r) : (r.actors?`<span>${esc(r.actors)}</span>`:'');
+  const par = r.respondsTo&&!opt.child&&R.byId[r.respondsTo] ? `<div class="resp">${posPill(r.position)} responds to ${esc(dLong(R.byId[r.respondsTo].date))}: ${esc(R.byId[r.respondsTo].text.slice(0,110))}…</div>` : '';
+  return `<div class="rec" id="r-${esc(r.id)}"><div class="meta"><span>${esc(dLong(r.date))}</span>${catTag(r.cat)}<span>${esc(r.kind==='event'?famOf(r.type):r.type)}</span>${opt.child?posPill(r.position):''}${(r.issues||[]).map(i=>`<button type="button" class="ichip" data-issue="${esc(i)}">${esc(i)}</button>`).join('')}</div>
+    <div>${esc(r.text)}</div>${par}<div class="meta">${who}<span class="src">${esc(r.source)}</span></div></div>`; }
+function threadHTML(list){ const R=recIndex(), ids=new Set(list.map(r=>r.id)); const tops=list.filter(r=>!(r.respondsTo&&ids.has(r.respondsTo)));
+  const rend=(r,d)=>recLine(r,{child:d>0})+(d<3?(R.kids[r.id]||[]).map(k=>`<div class="kid">${rend(k,d+1)}</div>`).join(''):'');
+  return tops.map(r=>`<div class="thread">${rend(r,0)}</div>`).join(''); }
+function ensureDlg(){ let d=$('actor-dlg'); if(d) return d; d=document.createElement('dialog'); d.id='actor-dlg'; d.className='actor-dlg'; document.body.appendChild(d);
+  d.addEventListener('close',()=>{ ACTOR=null; writeHash(); }); d.addEventListener('click',e=>{ if(e.target===d) d.close(); }); return d; }
+function openActor(a){ ACTOR=a; writeHash(); const d=ensureDlg(), info=DATA.actors[a]||{name:a}; let scope='all';
+  const recs=actorRecs(a).slice().reverse(); const per=recs.filter(inPeriod);
+  const iss={}; recs.forEach(r=>(r.issues||[]).forEach(i=>{iss[i]=(iss[i]||0)+1;}));
+  const fam={}; recs.filter(r=>r.kind==='event').forEach(r=>{const f=famOf(r.type); fam[f]=(fam[f]||0)+1;});
+  const draw=()=>{ const list=scope==='all'?recs:per; $('dlg-list').innerHTML=list.length?list.slice(0,150).map(r=>`<div class="thread">${recLine(r)}</div>`).join('')+(list.length>150?`<p class="sub">Showing the latest 150 of ${list.length}.</p>`:''):`<p class="empty">No records ${scope==='all'?'yet':PER()}.</p>`;
+    d.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===scope)); };
+  d.innerHTML=`<div class="dlg-h"><div><div class="meta" style="font-size:12px;color:var(--muted)">${gBadge(info.group)}${esc(info.group||'Group not set')}${info.type?' · '+esc(info.type):''}</div><h2>${esc(a)}</h2>${info.name&&info.name!==a?`<div class="sub" style="margin:2px 0 0">${esc(info.name)}</div>`:''}</div><button type="button" class="dlg-x" data-close>Close</button></div>
+    <div class="dlg-b"><p class="sub" style="margin-top:0">${plural(recs.length,'record')} in all months, ${per.length} ${PER()}. ${a==='ULA/AA'?'Includes security incidents that name the Arakan Army.':'Security incidents are matched by the name in the Actors field.'}</p>
+    ${Object.keys(fam).length?`<div class="k">What it did</div><div class="chips" style="margin:4px 0 8px">${Object.entries(fam).sort((x,y)=>y[1]-x[1]).map(([f,n])=>`<span class="chip"><b>${n}</b> ${esc(f)}</span>`).join('')}</div>`:''}
+    ${Object.keys(iss).length?`<div class="k">Issues</div><div style="margin:4px 0 8px">${Object.entries(iss).sort((x,y)=>y[1]-x[1]).map(([i,n])=>`<button type="button" class="ichip" data-issue="${esc(i)}">${esc(i)} (${n})</button>`).join('')}</div>`:''}
+    <div class="seg" role="group" aria-label="Which records"><button type="button" data-s="all">All months</button><button type="button" data-s="per">${esc(mon().label)}</button></div><div id="dlg-list"></div></div>`;
+  d.querySelector('[data-close]').addEventListener('click',()=>d.close());
+  d.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{scope=b.dataset.s; draw();}));
+  draw(); if(!d.open) d.showModal(); }
+function openIssue(i){ ISSUE=ISSUE===i?null:i; if(VIEW!=='governance'){ VIEW='governance'; const d=$('actor-dlg'); if(d&&d.open) d.close(); location.hash='#governance'; writeHash(); return; }
+  const d=$('actor-dlg'); if(d&&d.open) d.close(); writeHash(); if(typeof window._drawIssues==='function') window._drawIssues(true); }
+document.addEventListener('click',e=>{ const a=e.target.closest('[data-actor]'); if(a){ e.stopPropagation(); e.preventDefault(); openActor(a.dataset.actor); return; }
+  const i=e.target.closest('[data-issue]'); if(i){ e.stopPropagation(); e.preventDefault(); openIssue(i.dataset.issue); } },true);
 
 
 /* ---------- place search (village, township, Mizoram district) ---------- */
@@ -638,7 +733,7 @@ function trendTile(title, series){
   const charts=series.map(se=>{ const vals=ks.map(k=>se.fn(DATA.months[k])); const max=Math.max(1,...vals.filter(v=>v!=null));
     const bars=vals.map((v,i)=>{ const x=6+i*((w-12)/ks.length)+((w-12)/ks.length-bw)/2, bh=v==null?0:Math.max(v>0?2:0,(h-pad-16)*v/max), y=h-pad-bh;
       const lab=v==null?'–':fmtDec(v); const show=ks.length<=8||i===ks.length-1||v===max;
-      return `<g><rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" style="fill:${se.color}"><title>${esc(DATA.months[ks[i]].label)}: ${v==null?'not reported':lab}</title></rect>${show?`<text class="tv" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${lab}</text>`:''}${ks.length<=7||(i%3===0&&i<ks.length-2)||i===ks.length-1?`<text class="axis" x="${x+bw/2}" y="${h-4}" text-anchor="middle">${esc(shortM(ks[i]).replace(' 20',' ’'))}</text>`:''}</g>`; }).join('');
+      return `<g><rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" style="fill:${se.color}"><title>${esc(DATA.months[ks[i]].label)}: ${v==null?'not reported':lab}</title></rect>${show?`<text class="tv" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${lab}</text>`:''}${ks.length<=7||(i%3===0&&i<ks.length-3)||i===ks.length-1?`<text class="axis" x="${x+bw/2}" y="${h-4}" text-anchor="middle">${esc(shortM(ks[i]).replace(' 20',' ’'))}</text>`:''}</g>`; }).join('');
     return `<figure class="trend"><figcaption>${esc(se.label)}</figcaption><svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(se.label)} by month">${bars}<line x1="0" x2="${w}" y1="${h-pad}" y2="${h-pad}" class="grid"/></svg></figure>`; }).join('');
   return `<section class="tile span12"><h2>${esc(title)} <span class="src">month by month, ${esc(mon().label)}</span></h2><div class="trends">${charts}</div></section>`;
 }
@@ -697,13 +792,17 @@ function eventCard(e){
   if(e.others) ppl.push('Also: '+e.others);
   if(e.process) ppl.push('Process: '+e.process+(e.stage?' ('+e.stage+')':''));
   if(e.outcome) ppl.push('Outcome: '+e.outcome);
+  const R=recIndex(), par=e.respondsTo&&R.byId[e.respondsTo], kids=R.kids[e.id]||[];
   if(e.area) ppl.push('Policy area: '+e.area);
   ppl.push('Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''));
   if(e.confidence) ppl.push('Confidence: '+e.confidence);
   return `<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts||'Chinland-wide')} · ${esc(e.source)}</span>
     <b>${esc(e.type)}: ${esc(whereOf(e))}</b>${esc(e.text)}
     ${e.text_my?`<div style="margin-top:4px" lang="my">${esc(e.text_my)}</div>`:''}
-    <div class="meta" style="margin-top:6px">${ppl.map(esc).join(' · ')}</div>`;
+    <div class="meta" style="margin-top:6px">${ppl.map(esc).join(' · ')}</div>
+    ${(e.issues||[]).length?`<div style="margin-top:6px">${e.issues.map(i=>`<button type="button" class="ichip" data-issue="${esc(i)}">${esc(i)}</button>`).join('')}</div>`:''}
+    ${par?`<div class="meta" style="margin-top:6px">${posPill(e.position)} Responds to ${esc(dLong(par.date))}: ${esc(par.text.slice(0,120))}…</div>`:''}
+    ${kids.length?`<div class="meta" style="margin-top:6px">${plural(kids.length,'response')}: ${kids.map(k=>`${posPill(k.position)} ${esc(dShort(k.date))} ${esc((k.actors||[]).join(', ')||k.others||'')}`).join(' · ')}</div>`:''}`;
 }
 
 /* =========================================================
@@ -887,6 +986,17 @@ function renderGovernance(){
   ${trendTile('Governance and political trends',[{label:'Governance actions',color:'var(--c-governance)',fn:m=>(m.events||[]).filter(e=>e.cat==='governance').length},
      {label:'Political events',color:'var(--c-political)',fn:m=>(m.events||[]).filter(e=>e.cat==='political').length},
      {label:'Border events',color:'var(--c-border)',fn:m=>(m.events||[]).filter(e=>e.cat==='border').length}])}
+  <section class="tile span12" id="groups"><h2>Who acted <span class="src">governance, political and border events by actor group, ${esc(m.label)}</span></h2>
+    <p class="sub">Groups follow reported membership, not CCPR's view of any actor. An event counts once for each group taking part, so the rows add up to more than the total. Select a group to filter the map and the event log. Select a name to see everything that actor did.</p>
+    <div id="group-rows"></div></section>
+  <section class="tile span12" id="issues"><h2>Issues to follow <span class="src">records in all months; the large number is ${esc(m.label)}</span></h2>
+    <p class="sub">Each issue gathers governance, political, border and security records on one subject, with responses linked to what they respond to. Select an issue to follow it.</p>
+    <div class="icards" id="icards"></div><div id="issue-view"></div></section>
+  <section class="tile span12" id="aa"><h2>The Arakan Army in Chinland <span class="src">${esc(m.label)}</span></h2>
+    <p class="sub">Records that involve the ULA/AA, mostly in Paletwa and Matupi Townships, and how Chin bodies responded. Objections and alliances are both shown, each with its source.</p>
+    <div class="aa-grid"><div><div class="k">What the records show</div><div id="aa-kinds"></div></div>
+      <div><div class="k">Records <span id="aa-n" style="text-transform:none;letter-spacing:0"></span></div><div class="thread-list" id="aa-list"></div></div>
+      <div class="resp-col"><div class="k">How Chin bodies responded</div><div id="aa-resp"></div></div></div></section>
   <section class="tile span7" id="procs"><h2>Processes to watch <span class="src">stage as of the end of ${esc(m.label)}</span></h2>
     <p class="sub">Long-running processes and the latest stage the briefing reported. A stage only moves when a recorded event shows it.</p>
     <div id="proc-list"></div></section>
@@ -917,9 +1027,71 @@ function renderGovernance(){
   <section class="tile span12" id="log"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="governance">Governance</button>
       <button type="button" aria-pressed="false" data-f="political">Political</button><button type="button" aria-pressed="false" data-f="border">Border</button>
+      <select id="ffam" aria-label="Filter by kind of event"><option value="all">All kinds</option></select>
+      <select id="fgroup" aria-label="Filter by actor group"><option value="all">All groups</option></select>
+      <select id="fissue" aria-label="Filter by issue"><option value="all">All issues</option></select>
       <select id="farea" aria-label="Filter by policy area"><option value="all">All policy areas</option></select>
       <select id="factor" aria-label="Filter by actor"><option value="all">All actors</option></select></span></h2>
-    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Actors</th><th>Where</th><th>What happened</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Kind</th><th>Actors</th><th>Where</th><th>What happened</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+
+  /* ---- who acted: groups ---- */
+  let ffam='all', fissue='all';
+  const drawGroups=()=>{ const gc={}, ga={}; all.forEach(e=>{ evGroups(e).forEach(g=>{gc[g]=(gc[g]||0)+1;}); (e.actors||[]).concat(e.facilitator?[e.facilitator]:[]).forEach(a=>{const g=groupOf(a); if(!g) return; ga[g]=ga[g]||{}; ga[g][a]=(ga[g][a]||0)+1;}); });
+    const gmax=Math.max(1,...Object.values(gc));
+    $('group-rows').innerHTML=(DATA.groups||[]).map(g=>{ const n=gc[g]||0; const tops=Object.entries(ga[g]||{}).sort((x,y)=>y[1]-x[1]).slice(0,5);
+      return `<div class="grow${GROUPF===g?' on':''}"><button type="button" class="gname" data-group="${esc(g)}" aria-pressed="${GROUPF===g}" aria-label="${esc(g)}: ${plural(n,'event')}. Filter by this group">${gBadge(g)}${esc(g)}</button>
+        <span class="track"><span class="fill" style="width:${n?Math.max(2,n/gmax*100):0}%"></span></span><span class="v">${n}</span>
+        <span class="acts">${tops.map(([a,c])=>`<button type="button" class="actor" data-actor="${esc(a)}" title="${esc(actorName(a))}">${esc(a)} <span style="color:var(--muted)">${c}</span></button>`).join('')||'<span class="sub">None recorded</span>'}</span></div>`; }).join('');
+    V.querySelectorAll('#group-rows .gname').forEach(b=>b.addEventListener('click',()=>{ GROUPF=GROUPF===b.dataset.group?null:b.dataset.group; $('fgroup').value=GROUPF||'all'; writeHash(); drawGroups(); drawMap(); drawLog(); })); };
+
+  /* ---- issues ---- */
+  const R=recIndex(), allKeys=Object.keys(DATA.months).sort();
+  let iscope='all';
+  window._drawIssues=(scroll)=>{ const iss=Object.keys(DATA.issues||{});
+    $('icards').innerHTML=iss.map(i=>{ const recs=R.all.filter(r=>(r.issues||[]).includes(i)); const per=recs.filter(inPeriod).length; const last=recs.length?recs[recs.length-1].date:null;
+      const bym={}; recs.forEach(r=>{const k=r.date.slice(0,7); bym[k]=(bym[k]||0)+1;}); const mx=Math.max(1,...Object.values(bym)); const w=100/allKeys.length;
+      const bars=allKeys.map((k,j)=>{const v=bym[k]||0; const h=v?Math.max(2,18*v/mx):0; return `<rect x="${(j*w).toFixed(2)}" y="${(20-h).toFixed(1)}" width="${(w*0.7).toFixed(2)}" height="${h.toFixed(1)}" style="fill:${k>=FROM&&k<=TO?'var(--accent)':'var(--muted)'};opacity:${k>=FROM&&k<=TO?1:.45}"/>`;}).join('');
+      return `<button type="button" class="icard" data-isscard="${esc(i)}" aria-pressed="${ISSUE===i}"><b>${esc(i)}</b><span class="n">${per}<small>of ${recs.length} records</small></span>
+        <svg viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">${bars}</svg><span class="meta">${last?'Latest '+esc(dLong(last)):'No records yet'}</span></button>`; }).join('')||'<p class="empty">No issues set up yet.</p>';
+    V.querySelectorAll('[data-isscard]').forEach(b=>b.addEventListener('click',()=>{ ISSUE=ISSUE===b.dataset.isscard?null:b.dataset.isscard; writeHash(); window._drawIssues(true); }));
+    const v=$('issue-view');
+    if(!ISSUE||!(DATA.issues||{})[ISSUE]){ v.innerHTML=''; return; }
+    const info=DATA.issues[ISSUE], recs=R.all.filter(r=>(r.issues||[]).includes(ISSUE)), list=(iscope==='all'?recs:recs.filter(inPeriod)).slice().reverse();
+    const grp={}; recs.forEach(r=>{ (r.kind==='event'?evGroups(r):[]).forEach(g=>{grp[g]=(grp[g]||0)+1;}); });
+    v.innerHTML=`<div class="iview"><h3>${esc(ISSUE)}</h3>${info.about?`<p class="sub" style="margin:0 0 6px">${esc(info.about)}</p>`:''}
+      <div class="chips" style="margin:4px 0">${Object.entries(grp).sort((x,y)=>y[1]-x[1]).map(([g,n])=>`<span class="chip">${gBadge(g)}<b>${n}</b> ${esc(g)}</span>`).join('')}</div>
+      <div class="seg" role="group" aria-label="Which records"><button type="button" data-s="all" aria-pressed="${iscope==='all'}">All months (${recs.length})</button><button type="button" data-s="per" aria-pressed="${iscope==='per'}">${esc(m.label)} (${recs.filter(inPeriod).length})</button></div>
+      <p class="sub" style="margin:0 0 4px">Newest first. Responses are indented under the record they respond to.</p>
+      <div>${list.length?threadHTML(list):`<p class="empty">No records ${PER()}.</p>`}</div></div>`;
+    v.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{ iscope=b.dataset.s; window._drawIssues(false); }));
+    if(scroll) v.scrollIntoView({behavior:'smooth',block:'start'}); };
+
+  /* ---- Arakan Army in Chinland ---- */
+  const AAK=[['Fighting and attacks in AA-held areas',r=>r.kind==='incident'&&/Airstrike|Drone|Armed clash|offensive|Attack/.test(r.type)],
+    ['Recruitment and arrests',r=>/recruit|conscript|arrest|detain|detention|military training|forcibly/i.test(r.text)],
+    ['Border, trade and movement',r=>/border|crossing|permit|trade|checkpoint|Kaladan|Starlink|internet/i.test(r.text)],
+    ['Health, aid and services',r=>/health|clinic|medic|nurse|cholera|diarrh|relief|hospital|curriculum|school/i.test(r.text)],
+    ['Rule over Paletwa',r=>/district|administ|Rakhine State|ban(ning|ned)? the entry|govern/i.test(r.text)],
+    ['Alliances and talks',r=>/alliance|stand with|anniversary|\bmet\b|meeting|thank|deputy chairman|cooperat/i.test(r.text)],
+    ['Other',()=>true]];
+  const aaKind=r=>AAK.find(([,f])=>f(r))[0];
+  const aaAll=R.all.filter(r=>inPeriod(r)&&isAA(r)&&!(r.kind==='event'&&(r.actors||[]).length===0&&!AARX.test(r.text)));
+  let akind=null;
+  const drawAA=()=>{ const kc={}; aaAll.forEach(r=>{const k=aaKind(r); kc[k]=(kc[k]||0)+1;}); const km=Math.max(1,...Object.values(kc));
+    $('aa-kinds').innerHTML=aaAll.length?AAK.map(([k])=>k).filter(k=>kc[k]).map(k=>`<button type="button" class="kbar" data-akind="${esc(k)}" aria-pressed="${akind===k}"><span>${esc(k)}</span><span class="track"><span class="fill" style="width:${Math.max(3,kc[k]/km*100)}%"></span></span><span class="v">${kc[k]}</span></button>`).join(''):`<p class="empty">No records involving the ULA/AA ${PER()}.</p>`;
+    const list=aaAll.filter(r=>!akind||aaKind(r)===akind).slice().reverse();
+    $('aa-n').textContent=`(${list.length}${akind?' · '+akind:''}, newest first)`;
+    $('aa-list').innerHTML=list.length?threadHTML(list):'<p class="empty">None.</p>';
+    V.querySelectorAll('[data-akind]').forEach(b=>b.addEventListener('click',()=>{ akind=akind===b.dataset.akind?null:b.dataset.akind; drawAA(); }));
+    /* responses: objections and alliances by Chin bodies */
+    const obj={}, sup={}, add=(o,a,r)=>{ if(a==='ULA/AA') return; const g=groupOf(a); if(!g||g==='ULA/AA'||g==='Junta and allies'||g==='India and Mizoram') return; (o[a]=o[a]||[]).push(r); };
+    R.all.filter(r=>r.kind==='event'&&inPeriod(r)&&(r.position==='Objects'||r.position==='Supports')).forEach(r=>{ const par=r.respondsTo&&R.byId[r.respondsTo];
+      const acts=(r.actors||[]).filter(a=>a!=='ULA/AA');
+      let holders=null;
+      if(par&&isAA(par)) holders=acts; else if(!r.respondsTo&&(r.actors||[]).slice(1).includes('ULA/AA')&&r.actors[0]!=='ULA/AA') holders=[r.actors[0]];
+      if(!holders) return; holders.forEach(a=>add(r.position==='Objects'?obj:sup,a,r)); });
+    const col=(t,o,cls)=>`<h4>${t}</h4>${Object.keys(o).length?Object.entries(o).sort((x,y)=>y[1].length-x[1].length).map(([a,rs])=>`<div class="row"><span><button type="button" class="actor" data-actor="${esc(a)}">${gBadge(groupOf(a))}${esc(a)}</button></span><span class="pos ${cls}">${rs.length}</span></div>`).join(''):`<p class="sub">None recorded ${PER()}.</p>`}`;
+    $('aa-resp').innerHTML=col('Objected or disputed',obj,'objects')+col('Allied or cooperated',sup,'supports')+`<p class="sub" style="margin-top:8px">Counts records ${PER()} in which a Chin body objected to, or allied or cooperated with, the ULA/AA, as coded by CCPR from the briefing. Select a name to see that actor's records.</p>`; };
 
   // processes
   const end=monthEnd(MONTH), procs=Object.entries(DATA.processes||{});
@@ -936,7 +1108,12 @@ function renderGovernance(){
   }).join('') : '<p class="empty">No process events recorded yet.</p>';
 
   // education list
-  $('edu-list').innerHTML = edu.length ? edu.map(e=>`<div class="row"><span>${esc(e.type)}<span class="tag">${esc((e.actors||[]).join(', ')||e.ts||'')} · ${esc(dShort(e.date))}</span></span><span>${catTag(e.cat)}</span></div>`).join('') : `<p class="empty">No education events recorded ${PER()}.</p>`;
+  const eduAll=edu.slice().reverse(); let eduMore=false;
+  const drawEdu=()=>{ const list=eduMore?eduAll:eduAll.slice(0,8);
+  $('edu-list').innerHTML = (list.length ? list.map(e=>`<div class="row"><span>${esc(e.type)}<span class="tag">${esc((e.actors||[]).join(', ')||e.ts||'')} · ${esc(dShort(e.date))}</span></span><span>${catTag(e.cat)}</span></div>`).join('') : `<p class="empty">No education events recorded ${PER()}.</p>`)
+    + (eduAll.length>8?`<p style="margin:8px 0 0"><button type="button" class="dlg-x" id="edu-more">${eduMore?'Show the latest 8':'Show all '+eduAll.length}</button></p>`:'');
+    const b=$('edu-more'); if(b) b.addEventListener('click',()=>{eduMore=!eduMore; drawEdu();}); };
+  drawEdu();
 
   // policy areas (governance actions only)
   const byArea={}; gov.forEach(e=>{const k=e.area||'Not stated'; byArea[k]=(byArea[k]||0)+1;});
@@ -949,14 +1126,14 @@ function renderGovernance(){
   const map=makeMap($('map'),'var(--c-governance)',{villages:false});
   const areaSel=$('farea'); [...new Set(all.map(e=>e.area).filter(Boolean))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
   function select(id){ selected=id; const e=all.find(x=>x.id===id); if(!e) return; map.mark(id); SELID=id; writeHash(); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); $('sel').innerHTML=eventCard(e); }
-  function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
-    map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',
+  function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]||(GROUPF&&!evGroups(e).includes(GROUPF))) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
+    map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]&&(!GROUPF||evGroups(e).includes(GROUPF))&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc((e.actors||[]).join(', '))}`,aria:`${dShort(e.date)}, ${e.type}, ${(e.actors||[]).join(', ')}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
-    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor)&&inPlace(e));
+    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor)&&(ffam==='all'||famOf(e.type)===ffam)&&(fissue==='all'||(e.issues||[]).includes(fissue))&&(!GROUPF||evGroups(e).includes(GROUPF))&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
     list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
-      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}${e.outcome&&e.cat==='political'?`<br>${outcomePill(e.outcome)}`:''}</td><td>${actorChips(e)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(e.source)}</td>`;
+      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(famOf(e.type))}<span class="tag">${esc(e.type)}</span>${e.respondsTo?`<span class="tag">${posPill(e.position)} response</span>`:''}${e.outcome&&e.cat==='political'?`<br>${outcomePill(e.outcome)}`:''}</td><td>${actorChips(e)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(e.source)}</td>`;
       tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
@@ -964,13 +1141,20 @@ function renderGovernance(){
   areaSel.addEventListener('change',()=>{farea=areaSel.value; drawLog();});
   const actSel=$('factor'); [...new Set(all.flatMap(e=>(e.actors||[]).concat(e.facilitator?[e.facilitator]:[])))].sort((x,y)=>x.localeCompare(y)).forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;actSel.appendChild(o);});
   actSel.addEventListener('change',()=>{factor=actSel.value; drawLog();});
+  const famSel=$('ffam'); FAMS.filter(f=>all.some(e=>famOf(e.type)===f)).forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;famSel.appendChild(o);});
+  famSel.addEventListener('change',()=>{ffam=famSel.value; drawLog();});
+  const grpSel=$('fgroup'); (DATA.groups||[]).forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;grpSel.appendChild(o);}); grpSel.value=GROUPF||'all';
+  grpSel.addEventListener('change',()=>{GROUPF=grpSel.value==='all'?null:grpSel.value; writeHash(); drawGroups(); drawMap(); drawLog();});
+  const issSel=$('fissue'); Object.keys(DATA.issues||{}).forEach(i=>{const o=document.createElement('option');o.value=i;o.textContent=i;issSel.appendChild(o);});
+  issSel.addEventListener('change',()=>{fissue=issSel.value; drawLog();});
   V.querySelectorAll('.areabar').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.area; farea=[...areaSel.options].some(o=>o.value===k)?k:'all'; areaSel.value=farea;
     fcat='governance'; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.f==='governance')); drawLog(); $('log').scrollIntoView({behavior:'smooth',block:'start'}); }));
   $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
   if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,11.6); } if(map.place) map.place(PLACE);
   chipCounts(all,null);
-  drawMap(); drawLog();
+  drawGroups(); window._drawIssues(false); drawAA(); drawMap(); drawLog();
   if(SELID&&all.some(x=>x.id===SELID)) select(SELID);
+  if(ISSUE) setTimeout(()=>{ const v=$('issue-view'); if(v&&v.firstChild) v.scrollIntoView({block:'start'}); },300);
 }
 
 /* =========================================================
@@ -1130,6 +1314,9 @@ function renderAbout(){
     <li><b>Recorded, not total.</b> Counts show what CCPR could record. Actual figures on the ground may be higher.</li>
     <li><b>Blank is not zero.</b> "Not reported" or a dash means no data was available. Zero is shown only when a source reports none.</li>
     <li><b>Headline figures</b> are the totals published in each briefing. The map and logs show individual records, so they may not add up to every total.</li>
+    <li><b>Actor groups.</b> Each actor belongs to one group based on reported membership: the Chinland Council and its members; the ICNCC and Chin Brotherhood and their members; other Chin forces; the Union revolution and its allies; the junta and its allies; the ULA/AA; India and Mizoram; and civil society and diaspora. The groups describe membership, not CCPR's view of any actor.</li>
+    <li><b>Issues and links.</b> Records on the same subject share an issue tag, so one issue can be followed across months and across the security and governance pages. When a record responds to an earlier one, it carries a link and a position: supports, objects, responds or follows up. A position with no link describes how the first actor relates to the second actor named in the record. CCPR codes these from the briefing.</li>
+    <li><b>Kinds of event.</b> The governance page groups 30 detailed event types into nine kinds, such as laws and orders, talks and agreements, and disputes. The detailed type is kept and shown in the event log.</li>
     <li><b>Earlier months.</b> Briefings before 2026 have no "In Figures" page. For those months, civilian casualties and drug seizures are counted from the incident log, and the source line says so. Records from past briefings were entered from the English editions.</li>
     <li><b>Nothing is estimated.</b> Displacement figures are shown per site and source and are never added together. Prices are never converted between currencies.</li>
     <li><b>Confidence:</b> confirmed by two or more sources, one source, or unconfirmed.</li>
@@ -1169,6 +1356,7 @@ function parseHash(){ const h=location.hash.slice(1); const [path,q]=h.split('?'
 function writeHash(){ const {v,anchor}=parseHash(); const q=new URLSearchParams();
   if(FROM!==DATA.latest||TO!==DATA.latest){ q.set('from',FROM); q.set('to',TO); }
   if(PLACE) q.set('place',PLACE.kind+':'+PLACE.name+(PLACE.ts?'@'+PLACE.ts:'')); if(SELID) q.set('id',SELID);
+  if(ISSUE&&(v||VIEW)==='governance') q.set('issue',ISSUE); if(GROUPF&&(v||VIEW)==='governance') q.set('group',GROUPF); if(ACTOR) q.set('actor',ACTOR);
   const h='#'+(v||VIEW)+(anchor?'/'+anchor:'')+(q.toString()?'?'+q.toString():''); if(h!==location.hash) history.replaceState(null,'',h); }
 
 /* ---------- routing ---------- */
@@ -1184,9 +1372,10 @@ fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new
   const ks=Object.keys(d.months).sort();
   ['pfrom','pto'].forEach(id=>ks.slice().reverse().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=d.months[k].label;$(id).appendChild(o);}));
   const P0=parseHash(); FROM=ks.includes(P0.q.get('from'))?P0.q.get('from'):d.latest; TO=ks.includes(P0.q.get('to'))?P0.q.get('to'):d.latest; if(FROM>TO){const t=FROM;FROM=TO;TO=t;}
-  MONTH=TO; SELID=P0.q.get('id')||null;
+  MONTH=TO; SELID=P0.q.get('id')||null; ISSUE=P0.q.get('issue')||null; GROUPF=P0.q.get('group')||null; ACTOR=P0.q.get('actor')||null;
   const pl=P0.q.get('place'); if(pl){ const m=/^(\w+):([^@]+)(?:@(.+))?$/.exec(pl); if(m) PLACE=findPlace(m[1],m[2],m[3]); }
   $('pfrom').value=FROM; $('pto').value=TO;
+  if(ACTOR) setTimeout(()=>{ if(DATA.actors[ACTOR]||ACTOR) openActor(ACTOR); },600);
   const onPeriod=()=>{ FROM=$('pfrom').value; TO=$('pto').value; if(FROM>TO){ const t=FROM; FROM=TO; TO=t; $('pfrom').value=FROM; $('pto').value=TO; } MONTH=TO; SELID=null; render(); writeHash(); };
   $('pfrom').addEventListener('change',onPeriod); $('pto').addEventListener('change',onPeriod);
   $('share').addEventListener('click',()=>{ writeHash(); const u=location.href; const done=()=>{ $('share').textContent='Link copied'; setTimeout(()=>{$('share').textContent='Copy link';},2000); };
