@@ -118,6 +118,18 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .map .chin-outline{fill:none;stroke:var(--ink);stroke-width:1;stroke-opacity:.45;stroke-linejoin:round;pointer-events:none}
 .map .intl{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
 .legend i.bline{width:18px;height:0;border-radius:0;border-top:2.5px solid var(--ink);vertical-align:3px}
+.map .vdot{fill:var(--muted);fill-opacity:.55;stroke:none}
+.map .vlab{font-family:var(--f-body);font-size:8px;fill:var(--muted);display:none;pointer-events:none}
+.map.zoomed .vlab{display:block}
+.map.zoomed .vdot{fill-opacity:.8}
+.map path{vector-effect:non-scaling-stroke}
+.map .pt{vector-effect:non-scaling-stroke}
+.mapbox{user-select:none;-webkit-user-select:none}
+.zoom{position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:4px;z-index:1}
+.zoom button{width:30px;height:30px;font:inherit;font-size:16px;line-height:1;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);cursor:pointer}
+.zoom button:disabled{opacity:.4;cursor:default}
+.map{touch-action:pan-y;cursor:default}
+.map.zin{touch-action:none;cursor:grab}
 .map .mzlabel{font-family:var(--f-body);font-size:8.5px;fill:var(--muted);text-anchor:middle;pointer-events:none;opacity:.85}
 .map .country{font-family:var(--f-body);font-size:10px;font-weight:700;fill:var(--muted);letter-spacing:.2em;text-transform:uppercase}
 .map .tslabel{font-family:var(--f-body);font-size:10px;fill:var(--muted);text-anchor:middle;pointer-events:none;letter-spacing:.06em;text-transform:uppercase}
@@ -279,6 +291,7 @@ footer p{margin:0 0 6px;max-width:80ch}
 <script src="data/townships.js"></script>
 <script src="data/mizoram.js"></script>
 <script src="data/chin-outline.js"></script>
+<script src="data/villages.js"></script>
 <script>
 (function(){
 'use strict';
@@ -322,11 +335,35 @@ const px = (lon,lat)=>[ (lon-B.w)/(B.e-B.w)*W, (B.n-lat)/(B.n-B.s)*H ];
 const NS='http://www.w3.org/2000/svg';
 function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const a in attrs)e.setAttribute(a,attrs[a]);parent.appendChild(e);return e;}
 
-function makeMap(host, shadeVar){
-  host.innerHTML = `<div class="mapbox"><svg class="map" role="img" aria-label="Map of Chin State townships with recorded locations" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"></svg><div class="tip" hidden></div></div>`;
+function makeMap(host, shadeVar, opts){
+  opts=opts||{};
+  host.innerHTML = `<div class="mapbox"><svg class="map" role="img" aria-label="Map of Chin State and Mizoram with recorded locations" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="zoom" role="group" aria-label="Map zoom"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="reset" aria-label="Reset map">⟲</button></div>
+    <div class="tip" hidden></div></div>`;
   const svg = host.querySelector('svg'), tip = host.querySelector('.tip'), box = host.querySelector('.mapbox');
-  function showTip(text,x,y){ const r=svg.getBoundingClientRect(), b=box.getBoundingClientRect(); const sc=Math.min(r.width/W,r.height/H), ox=(r.width-W*sc)/2+(r.left-b.left), oy=(r.height-H*sc)/2+(r.top-b.top); tip.innerHTML=text; tip.style.left=(ox+x*sc)+'px'; tip.style.top=(oy+y*sc)+'px'; tip.hidden=false; }
-  return { draw({points, counts, onSelect, selected}){
+  let vb={x:0,y:0,w:W,h:H}, villagesOn=opts.villages!==false;
+  const z=()=>W/vb.w;
+  function applyView(){ svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const k=1/z();
+    svg.querySelectorAll('.anc').forEach(g=>g.setAttribute('transform',`translate(${g.dataset.x} ${g.dataset.y}) scale(${k})`));
+    svg.classList.toggle('zoomed',z()>=3.5); svg.classList.toggle('zin',z()>1.01); host.querySelector('[data-z="out"]').disabled=z()<=1.01; host.querySelector('[data-z="in"]').disabled=z()>=12; }
+  function zoomAt(f,cx,cy){ const nw=Math.min(W,Math.max(W/12,vb.w/f)), nh=nw*H/W;
+    if(cx==null){cx=vb.x+vb.w/2; cy=vb.y+vb.h/2;}
+    vb={x:cx-(cx-vb.x)*nw/vb.w, y:cy-(cy-vb.y)*nh/vb.h, w:nw, h:nh}; clamp(); applyView(); }
+  function clamp(){ vb.x=Math.max(0,Math.min(W-vb.w,vb.x)); vb.y=Math.max(0,Math.min(H-vb.h,vb.y)); }
+  function userPt(e){ const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+  host.querySelectorAll('.zoom button').forEach(b=>b.addEventListener('click',()=>{ const d=b.dataset.z; if(d==='in') zoomAt(2); else if(d==='out') zoomAt(.5); else { vb={x:0,y:0,w:W,h:H}; applyView(); } }));
+  svg.addEventListener('wheel',e=>{ if(!(e.ctrlKey||e.metaKey)) return; e.preventDefault(); const u=userPt(e); zoomAt(e.deltaY<0?1.25:0.8,u.x,u.y); },{passive:false});
+  let drag=null, moved=false;
+  svg.addEventListener('pointerdown',e=>{ moved=false; if(z()<=1.01) return; e.preventDefault(); drag={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y}; });
+  window.addEventListener('pointermove',e=>{ if(!drag) return; const r=svg.getBoundingClientRect(), sc=Math.min(r.width/vb.w,r.height/vb.h);
+    const dx=(e.clientX-drag.x)/sc, dy=(e.clientY-drag.y)/sc; if(Math.abs(dx)+Math.abs(dy)>2) moved=true; vb.x=drag.vx-dx; vb.y=drag.vy-dy; clamp(); applyView(); });
+  window.addEventListener('pointerup',()=>{ drag=null; });
+  svg.addEventListener('click',e=>{ if(moved){ e.stopPropagation(); moved=false; } },true);
+  function showTip(text,x,y){ const pt=svg.createSVGPoint(); pt.x=x; pt.y=y; const s2=pt.matrixTransform(svg.getScreenCTM()), b=box.getBoundingClientRect();
+    tip.innerHTML=text; tip.style.left=(s2.x-b.left)+'px'; tip.style.top=(s2.y-b.top)+'px'; tip.hidden=false; }
+  const anc=(x,y,parent)=>{ const g=mk('g',{class:'anc'},parent); g.dataset.x=x.toFixed(2); g.dataset.y=y.toFixed(2); return g; };
+  let last=null;
+  const api={ draw(args){ last=args; const {points, counts, onSelect, selected}=args;
     svg.innerHTML='';
     const max = Math.max(1,...Object.values(counts||{}));
     MZ.forEach(dd=>{
@@ -344,32 +381,40 @@ function makeMap(host, shadeVar){
     const line=pts=>'M'+pts.map(p=>px(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join('L');
     if(window.CHIN_OUTLINE) mk('path',{d:line(window.CHIN_OUTLINE)+'Z',class:'chin-outline'},svg);
     (window.CHIN_INDIA_BORDER||[]).forEach(r=>{ const b=mk('path',{d:line(r),class:'intl'},svg); const tt=document.createElementNS(NS,'title'); tt.textContent='Border between Chin State (Myanmar) and Mizoram (India)'; b.appendChild(tt); });
-    TS.forEach(t=>{const [x,y]=px(...cent[t.n]); const l=mk('text',{x:x.toFixed(1),y:(y+(t.n==='Kanpetlet'?14:t.n==='Paletwa'?-24:t.n==='Tedim'?-16:0)).toFixed(1),class:'tslabel'},svg); l.textContent=t.n;});
-    MZ.forEach(dd=>{const [x,y]=px(...mzCent[dd.n]); mk('text',{x:x.toFixed(1),y:(y+(dd.n==='Lawngtlai'?-18:dd.n==='Saitual'?6:0)).toFixed(1),class:'mzlabel'},svg).textContent=dd.n;});
+    /* villages: MIMU village points, no boundaries */
+    if(villagesOn && window.CHIN_VILLAGES){ const vg=mk('g',{class:'vill'},svg);
+      window.CHIN_VILLAGES.forEach(v=>{ const [x,y]=px(v[4],v[3]); const g=anc(x,y,vg);
+        const c=mk('circle',{cx:0,cy:0,r:1.5,class:'vdot'},g); const tt=document.createElementNS(NS,'title'); tt.textContent=`${v[0]}${v[1]?' / '+v[1]:''} · ${v[2]} Township · MIMU ${v[5]}`; c.appendChild(tt);
+        mk('text',{x:3,y:3,class:'vlab'},g).textContent=v[0]; }); }
+    TS.forEach(t=>{const [x,y]=px(...cent[t.n]); mk('text',{x:0,y:0,class:'tslabel'},anc(x,y+(t.n==='Kanpetlet'?14:t.n==='Paletwa'?-24:t.n==='Tedim'?-16:0),svg)).textContent=t.n;});
+    MZ.forEach(dd=>{const [x,y]=px(...mzCent[dd.n]); mk('text',{x:0,y:0,class:'mzlabel'},anc(x,y+(dd.n==='Lawngtlai'?-18:dd.n==='Saitual'?6:0),svg)).textContent=dd.n;});
     [['MIZORAM','INDIA',92.47,24.42,'country'],['BANGLADESH',null,92.45,21.62,'ctx'],['SAGAING',null,94.12,22.75,'ctx'],['MAGWAY',null,94.14,21.75,'ctx'],['RAKHINE',null,93.0,20.75,'ctx'],['CHIN STATE','MYANMAR',93.95,24.3,'country']].forEach(([a,b,lon,lat,cl])=>{
-      const [x,y]=px(lon,lat); mk('text',{x,y,class:cl,'text-anchor':'middle'},svg).textContent=a;
-      if(b) mk('text',{x,y:y+12,class:cl,'text-anchor':'middle'},svg).textContent=b;
+      const [x,y]=px(lon,lat); const g=anc(x,y,svg); mk('text',{x:0,y:0,class:cl,'text-anchor':'middle'},g).textContent=a;
+      if(b) mk('text',{x:0,y:12,class:cl,'text-anchor':'middle'},g).textContent=b;
     });
     [['Hakha',93.60483,22.64011],['Tedim',93.65619,23.37058],['Falam',93.68034,22.91105],['Mindat',93.97365,21.37176],['Matupi',93.44086,21.60475],['Kalay',94.02977,23.1933]].forEach(([n,lon,lat])=>{
-      const [x,y]=px(lon,lat); mk('rect',{x:x-2,y:y-2,width:4,height:4,class:'town'},svg); mk('text',{x:x+6,y:y+3,class:'townl'},svg).textContent=n;
+      const [x,y]=px(lon,lat); const g=anc(x,y,svg); mk('rect',{x:-2,y:-2,width:4,height:4,class:'town'},g); mk('text',{x:6,y:3,class:'townl'},g).textContent=n;
     });
-    const g=mk('g',{},svg), seen={};
+    const pg=mk('g',{},svg), seen={};
     points.forEach(pt=>{
       if(pt.lat==null||pt.lon==null) return;
       let [x,y]=px(pt.lon,pt.lat); const key=x.toFixed(0)+','+y.toFixed(0); const n=seen[key]=(seen[key]||0)+1;
-      if(n>1){const a=(n-1)*2.1, r=7*Math.ceil((n-1)/3+0.1); x+=Math.cos(a)*r; y+=Math.sin(a)*r;}
-      let el; const s=pt.big?7:5.5;
-      if(pt.shape==='square') el=mk('rect',{x:x-5,y:y-5,width:10,height:10,rx:2,class:'pt'+(pt.approx?' approx':'')},g);
-      else if(pt.shape==='diamond') el=mk('rect',{x:x-4.5,y:y-4.5,width:9,height:9,rx:1,transform:`rotate(45 ${x} ${y})`,class:'pt'+(pt.approx?' approx':'')},g);
-      else if(pt.shape==='triangle') el=mk('path',{d:`M${x} ${y-7}L${x+6.5} ${y+5}L${x-6.5} ${y+5}Z`,class:'pt'+(pt.approx?' approx':'')},g);
-      else el=mk('circle',{cx:x,cy:y,r:s,class:'pt'+(pt.approx?' approx':'')},g);
+      if(n>1){const a=(n-1)*2.1, r=7*Math.ceil((n-1)/3+0.1)/Math.max(1,z()); x+=Math.cos(a)*r; y+=Math.sin(a)*r;}
+      const g=anc(x,y,pg); let el; const s=pt.big?7:5.5, cl='pt'+(pt.approx?' approx':'');
+      if(pt.shape==='square') el=mk('rect',{x:-5,y:-5,width:10,height:10,rx:2,class:cl},g);
+      else if(pt.shape==='diamond') el=mk('rect',{x:-4.5,y:-4.5,width:9,height:9,rx:1,transform:'rotate(45)',class:cl},g);
+      else if(pt.shape==='triangle') el=mk('path',{d:'M0 -7L6.5 5L-6.5 5Z',class:cl},g);
+      else el=mk('circle',{cx:0,cy:0,r:s,class:cl},g);
       el.style.fill=pt.color; if(pt.approx) el.style.stroke=pt.color;
       el.setAttribute('tabindex','0'); el.setAttribute('role','button'); el.setAttribute('aria-label',pt.aria);
       el.dataset.id=pt.id; if(pt.id===selected) el.classList.add('sel');
       el.addEventListener('mouseenter',()=>showTip(pt.tip,x,y)); el.addEventListener('mouseleave',()=>{tip.hidden=true;});
       if(onSelect){ el.addEventListener('click',()=>onSelect(pt.id)); el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();onSelect(pt.id);}}); }
     });
-  }, mark(id){ svg.querySelectorAll('.pt').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); } };
+    applyView();
+  }, mark(id){ svg.querySelectorAll('.pt').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); },
+    villages(on){ villagesOn=on; if(last) api.draw(last); } };
+  return api;
 }
 
 function hbar(label,v,max,color,extra){ return `<div class="hbar"><span>${esc(label)}</span><span class="track"><span class="fill" style="width:${max?Math.max(2,v/max*100):0}%;background:${color}"></span></span><span class="v">${v}${extra||''}</span></div>`; }
@@ -433,9 +478,10 @@ function renderSecurity(){
       <button type="button" aria-pressed="true" data-cat="conflict"><span class="sw" style="background:var(--c-conflict)"></span>Conflict</button>
       <button type="button" aria-pressed="true" data-cat="landmine"><span class="sw" style="background:var(--c-landmine)"></span>Landmines</button>
       <button type="button" aria-pressed="true" data-cat="drug"><span class="sw sq" style="background:var(--c-drug)"></span>Drug seizures</button>
+      <button type="button" aria-pressed="true" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
     </div>
     <div id="map"></div>
-    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i style="background:var(--muted)"></i>Village or town</span><span><i class="ring"></i>Township or Mizoram district only (exact site not confirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township or Mizoram district</span></div>
+    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i style="background:var(--muted);width:6px;height:6px;opacity:.6"></i>Village (MIMU, 1,373 in Chin State)</span><span><i style="background:var(--muted)"></i>Incident at a village or town</span><span>Zoom in to read village names</span><span><i class="ring"></i>Township or Mizoram district only (exact site not confirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township or Mizoram district</span></div>
     <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row in the incident log to see details.</span></div></section>
 
   <section class="tile span4"><h2>Airstrikes by township <span class="src" id="src-bars"></span></h2>
@@ -523,7 +569,8 @@ function renderSecurity(){
       const civ=(e.civK||e.civI)?`${e.civK||0} killed, ${e.civI||0} injured`:(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'None reported');
       tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}${e.attacks>1?`<span class="tag">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td>${esc([e.place,e.detail].filter(Boolean).join(', '))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(civ)}</td><td class="n">${esc(e.source)}</td>`;
       tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
-  V.querySelectorAll('.layers button').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
   drawMap(); drawLog();
 }
@@ -567,6 +614,7 @@ function renderGovernance(){
       <button type="button" aria-pressed="true" data-cat="governance"><span class="sw" style="background:var(--c-governance)"></span>Governance</button>
       <button type="button" aria-pressed="true" data-cat="political"><span class="sw sq" style="background:var(--c-political)"></span>Political</button>
       <button type="button" aria-pressed="true" data-cat="border"><span class="sw dia" style="background:var(--c-border)"></span>Border</button>
+      <button type="button" aria-pressed="false" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
     </div>
     <div id="map"></div>
     <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i class="ring"></i>Township or Mizoram district only</span><span>Shading: events per township or district</span>${unmapped?`<span>${plural(unmapped,'event')} Chinland-wide or without a place, listed below but not mapped</span>`:''}</div>
@@ -616,7 +664,7 @@ function renderGovernance(){
     : '<p class="empty">No governance actions recorded this month.</p>';
 
   // map + log
-  const map=makeMap($('map'),'var(--c-governance)');
+  const map=makeMap($('map'),'var(--c-governance)',{villages:false});
   const areaSel=$('farea'); [...new Set(all.map(e=>e.area).filter(Boolean))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
   function select(id){ selected=id; const e=all.find(x=>x.id===id); if(!e) return; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); $('sel').innerHTML=eventCard(e); }
   function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
@@ -628,7 +676,8 @@ function renderGovernance(){
     list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
       tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}${e.outcome&&e.cat==='political'?`<br>${outcomePill(e.outcome)}`:''}</td><td>${actorChips(e)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(e.source)}</td>`;
       tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
-  V.querySelectorAll('.layers button').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
   areaSel.addEventListener('change',()=>{farea=areaSel.value; drawLog();});
   const actSel=$('factor'); [...new Set(all.flatMap(e=>(e.actors||[]).concat(e.facilitator?[e.facilitator]:[])))].sort((x,y)=>x.localeCompare(y)).forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;actSel.appendChild(o);});
@@ -674,6 +723,7 @@ function renderHumanitarian(){
       <button type="button" aria-pressed="true" data-cat="humanitarian"><span class="sw" style="background:var(--c-humanitarian)"></span>Humanitarian</button>
       <button type="button" aria-pressed="true" data-cat="livelihood"><span class="sw sq" style="background:var(--c-livelihood)"></span>Livelihood</button>
       <button type="button" aria-pressed="true" data-cat="site"><span class="sw tri" style="color:var(--c-site)"></span>IDP sites with figures</button>
+      <button type="button" aria-pressed="false" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
     </div>
     <div id="map"></div>
     <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i class="ring"></i>Township or Mizoram district only</span><span>IDP sites without a verified point sit at the district centre</span></div>
@@ -695,7 +745,7 @@ function renderHumanitarian(){
   renderPrices(prices, prevPrices);
 
   // map + log
-  const map=makeMap($('map'),'var(--c-humanitarian)');
+  const map=makeMap($('map'),'var(--c-humanitarian)',{villages:false});
   const sitePts = sitesWith.map(s=>{const x=(DATA.sites||{})[s]||{}; const rows=disp.filter(d=>d.site===s); return {id:'site:'+s,lat:x.lat,lon:x.lon,color:'var(--c-site)',shape:'triangle',
     tip:`<b>${esc(s)}</b>${x.prec==='approx'?' <i>(district centre)</i>':''}<br>${rows.map(r=>[r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':''].filter(Boolean).join(', ')).join('<br>')}`,aria:`IDP site ${s}`};});
   function select(id){ selected=id; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
@@ -713,7 +763,8 @@ function renderHumanitarian(){
       const who=[...(e.actors||[]),e.others].filter(Boolean).join(', ');
       tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td>${esc(who)}</td><td class="n">${esc(e.source)}</td>`;
       tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
-  V.querySelectorAll('.layers button').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
   drawMap(); drawLog();
 }
