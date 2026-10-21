@@ -8,6 +8,8 @@
 <link rel="icon" type="image/png" href="data/ccpr-mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=PT+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: IISS-style bento board per page; one header with page tabs and a shared month selector. */
@@ -58,7 +60,8 @@ nav.views{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
 nav.views a{font-size:13.5px;text-decoration:none;padding:7px 11px;border-radius:6px;color:var(--muted)}
 nav.views a:hover{color:var(--ink)}
 nav.views a[aria-current="page"]{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);font-weight:700}
-.month{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.month{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.sharebtn{font:inherit;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer}
 .month select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
 a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outline:2px solid var(--c-drug);outline-offset:2px}
 
@@ -112,6 +115,16 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .sw.sq{border-radius:2px}.sw.tri{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid currentColor;border-radius:0;background:none!important}
 .sw.dia{transform:rotate(45deg);border-radius:1px;width:9px;height:9px}
 .mapbox{position:relative;flex:1;min-height:440px}
+.gl{position:relative;isolation:isolate;z-index:0;height:clamp(520px,74vh,820px);border-radius:8px;overflow:hidden;background:var(--land)}
+.gl .maplibregl-ctrl-attrib{font-size:10px}
+.gl .maplibregl-popup-content{background:var(--ink);color:var(--panel);font-family:var(--f-body);font-size:12px;padding:6px 8px;border-radius:5px;line-height:1.35;box-shadow:none}
+.gl .maplibregl-popup-tip{border-top-color:var(--ink)!important;border-bottom-color:var(--ink)!important}
+.mk{cursor:pointer;display:block;line-height:0}
+.mk svg{overflow:visible;display:block}
+.mk:focus{outline:none}.mk:focus-visible svg,.mk.sel svg{filter:drop-shadow(0 0 0 var(--ink))}
+.mk.sel svg *{stroke:var(--ink)!important;stroke-width:2.5px}
+.placemk{width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);box-shadow:0 0 0 3px rgba(255,255,255,.7);pointer-events:none}
+.glreset{position:absolute;top:84px;right:10px;z-index:2;width:29px;height:29px;border-radius:4px;border:0;background:#fff;color:#333;box-shadow:0 0 0 2px rgba(0,0,0,.1);cursor:pointer;font-size:15px}
 .map{width:100%;height:100%;display:block}
 .map .ts{fill:var(--land);stroke:var(--land-edge);stroke-width:1.4}
 .map .mz{fill:var(--land-mz);stroke:var(--land-edge);stroke-width:1.1}
@@ -148,6 +161,22 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 
 /* bars */
 .hbar{display:grid;grid-template-columns:96px minmax(0,1fr) 46px;align-items:center;gap:8px;font-size:13px;margin:7px 0}
+.psearch{position:relative;margin:0 0 8px}
+.psearch input{width:100%;font:inherit;font-size:13.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.psearch ul{position:absolute;z-index:6;left:0;right:0;top:100%;margin:4px 0 0;padding:4px;list-style:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);max-height:320px;overflow:auto}
+.psearch li{padding:6px 8px;border-radius:6px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.psearch li span{color:var(--muted);font-size:12px;text-align:right}
+.psearch li:hover,.psearch li.act{background:var(--soft)} .psearch li.none{color:var(--muted);cursor:default}
+.pchip{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:12.5px;background:var(--accent-soft);border-radius:999px;padding:3px 4px 3px 10px;width:fit-content;max-width:100%}
+.pchip[hidden]{display:none}
+.pchip button{border:0;background:var(--panel);color:var(--ink);border-radius:999px;width:20px;height:20px;cursor:pointer;line-height:1}
+.cnt{font-family:var(--f-data);font-size:11px;color:var(--muted);margin-left:4px}
+.trends{display:flex;flex-wrap:wrap;gap:18px}
+.trend{margin:0;flex:1 1 220px;max-width:440px}
+.trend figcaption{font-size:12px;color:var(--muted);margin-bottom:4px}
+.chart .tv{font-family:var(--f-data);font-size:10px;fill:var(--ink)}
+.archive{margin:12px 0 0;padding:0;list-style:none;font-size:13px}
+.archive li{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
 .hbar .track,.hbar .fill{display:block}
 button.hbar{width:100%;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;padding:3px 4px;margin:4px 0;border-radius:6px;cursor:pointer;text-align:left;grid-template-columns:minmax(120px,38%) minmax(0,1fr) 34px}
 button.hbar:hover{background:var(--soft)}
@@ -239,9 +268,12 @@ footer p{margin:0 0 6px;max-width:80ch}
   .rows2,.rows3{grid-row:auto}
 }
 @media (max-width:760px){
+  header.top{position:static}
+  .month select{max-width:42vw;font-size:13px}
   .board{grid-template-columns:minmax(0,1fr)}
   .board > *{grid-column:1/-1!important;grid-row:auto!important}
   .mapbox{min-height:560px}
+  .gl{height:560px}
   footer{grid-template-columns:1fr}
   nav.views{margin-left:0}
   .duo{grid-template-columns:1fr}
@@ -266,9 +298,11 @@ footer p{margin:0 0 6px;max-width:80ch}
     <a href="#humanitarian" data-v="humanitarian">Humanitarian and livelihood</a>
     <a href="#about" data-v="about">About the data</a>
   </nav>
-  <label class="month" for="month">Month
-    <select id="month"></select>
-  </label>
+  <div class="month" role="group" aria-label="Period shown">
+    <label for="pfrom">From</label><select id="pfrom"></select>
+    <label for="pto">to</label><select id="pto"></select>
+    <button type="button" id="share" class="sharebtn" title="Copy a link to exactly this view">Copy link</button>
+  </div>
 </header>
 
 <main class="board" id="view">
@@ -308,7 +342,7 @@ const plural = (n,w,p) => `${n} ${n===1?w:(p||w+'s')}`;
 const monthEnd = m => { const [y,mo]=m.split('-').map(Number); return new Date(Date.UTC(y,mo,0)).toISOString().slice(0,10); };
 const prevMonth = m => { const [y,mo]=m.split('-').map(Number); const d=new Date(Date.UTC(y,mo-2,1)); return d.toISOString().slice(0,7); };
 
-let DATA=null, MONTH=null, VIEW='security';
+let DATA=null, MONTH=null, FROM=null, TO=null, VIEW='security', PLACE=null, SELID=null, _monCache={};
 const CATS = {
   conflict:{label:'Conflict',color:'var(--c-conflict)',shape:'circle'},
   landmine:{label:'Landmine',color:'var(--c-landmine)',shape:'circle'},
@@ -335,7 +369,7 @@ const px = (lon,lat)=>[ (lon-B.w)/(B.e-B.w)*W, (B.n-lat)/(B.n-B.s)*H ];
 const NS='http://www.w3.org/2000/svg';
 function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const a in attrs)e.setAttribute(a,attrs[a]);parent.appendChild(e);return e;}
 
-function makeMap(host, shadeVar, opts){
+function makeSvgMap(host, shadeVar, opts){
   opts=opts||{};
   host.innerHTML = `<div class="mapbox"><svg class="map" role="img" aria-label="Map of Chin State and Mizoram with recorded locations" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="zoom" role="group" aria-label="Map zoom"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="reset" aria-label="Reset map">⟲</button></div>
@@ -417,10 +451,128 @@ function makeMap(host, shadeVar, opts){
   return api;
 }
 
+
+/* ---------- base map (MapLibre + OpenFreeMap + terrain), falls back to the SVG map ---------- */
+let LIVE_MAPS=[];
+function cssVar(v){ const m=/var\((--[^)]+)\)/.exec(v); return m?getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim():v; }
+const isDark=()=>getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0,3).reduce((a,b)=>a+ +b,0)<200;
+const ringFeature=(name,rings)=>({type:'Feature',properties:{n:name},geometry:{type:'Polygon',coordinates:rings}});
+function makeMap(host, shadeVar, opts){
+  if(!window.maplibregl) return makeSvgMap(host, shadeVar, opts);
+  opts=opts||{}; LIVE_MAPS.forEach(m=>{try{m.remove();}catch(e){}}); LIVE_MAPS=[];
+  host.innerHTML='<div class="mapbox"><div class="gl" role="region" aria-label="Map of Chin State and Mizoram with recorded locations. Use the zoom buttons or two fingers to move."></div></div>';
+  const el=host.querySelector('.gl'), dark=isDark();
+  const C={land:dark?'#1B2030':'#EFEEE9', water:dark?'#22324A':'#C7D6E4', road:dark?'#4A5168':'#C8BBA6', ink:cssVar('var(--ink)'), muted:cssVar('var(--muted)'),
+    edge:dark?'#3A4259':'#FFFFFF', halo:dark?'#1B2030':'#FFFFFF', mz:dark?'rgba(255,255,255,0.03)':'rgba(255,255,255,0.35)', shade:cssVar(shadeVar)};
+  const B0=[[92.2,20.6],[94.35,24.55]];
+  const map=new maplibregl.Map({container:el, bounds:B0, fitBoundsOptions:{padding:8}, maxBounds:[[90.8,19.6],[95.8,25.6]], minZoom:5.5, maxZoom:14,
+    attributionControl:false, cooperativeGestures:true, dragRotate:false, pitchWithRotate:false, touchPitch:false,
+    style:{version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+      sources:{}, layers:[{id:'bg',type:'background',paint:{'background-color':C.land}}]}});
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+  map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'Base map © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a>. Terrain: Mapzen terrain tiles (AWS). Chin State: MIMU. Mizoram: MIRSAC.'}),'bottom-right');
+  const reset=document.createElement('button'); reset.type='button'; reset.className='glreset'; reset.textContent='⟲'; reset.setAttribute('aria-label','Reset map'); el.appendChild(reset);
+  reset.addEventListener('click',()=>map.fitBounds(B0,{padding:8}));
+  LIVE_MAPS.push(map);
+  let placeMk=null, ready=false, pending=null, markers=[], villagesOn=opts.villages!==false, sel=null, onSel=null;
+  const pop=new maplibregl.Popup({closeButton:false,closeOnClick:false,offset:12,maxWidth:'260px'});
+  map.on('load',()=>{
+    const fc=f=>({type:'FeatureCollection',features:f});
+    map.addSource('mz',{type:'geojson',data:fc(MZ.map(d=>({type:'Feature',properties:{n:d.n},geometry:{type:'MultiPolygon',coordinates:d.r.map(r=>[r])}})))});
+    map.addSource('ts',{type:'geojson',data:fc(TS.map(t=>ringFeature(t.n,[t.c])))});
+    map.addSource('outline',{type:'geojson',data:fc(window.CHIN_OUTLINE?[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:window.CHIN_OUTLINE.concat([window.CHIN_OUTLINE[0]])}}]:[])});
+    map.addSource('intl',{type:'geojson',data:fc((window.CHIN_INDIA_BORDER||[]).map(r=>({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:r}})))});
+    map.addSource('vill',{type:'geojson',data:fc((window.CHIN_VILLAGES||[]).map(v=>({type:'Feature',properties:{n:v[0],my:v[1],ts:v[2],c:v[5]},geometry:{type:'Point',coordinates:[v[4],v[3]]}})))});
+    map.addSource('lbl',{type:'geojson',data:fc([
+      ...TS.map(t=>({type:'Feature',properties:{n:t.n.toUpperCase(),k:'ts'},geometry:{type:'Point',coordinates:cent[t.n]}})),
+      ...MZ.map(d=>({type:'Feature',properties:{n:d.n,k:'mz'},geometry:{type:'Point',coordinates:mzCent[d.n]}})),
+      ...[['MIZORAM, INDIA',92.55,24.4],['CHIN STATE, MYANMAR',93.9,24.35],['BANGLADESH',92.35,21.7],['SAGAING',94.15,22.75],['MAGWAY',94.18,21.75],['RAKHINE',93.05,20.75]].map(([n,x,y])=>({type:'Feature',properties:{n,k:'ctry'},geometry:{type:'Point',coordinates:[x,y]}}))])});
+    map.addLayer({id:'mz-fill',type:'fill',source:'mz',paint:{'fill-color':C.mz,'fill-opacity':1}});
+    map.addLayer({id:'mz-count',type:'fill',source:'mz',paint:{'fill-color':C.shade,'fill-opacity':0}});
+    map.addLayer({id:'ts-count',type:'fill',source:'ts',paint:{'fill-color':C.shade,'fill-opacity':0}});
+    map.addLayer({id:'mz-line',type:'line',source:'mz',paint:{'line-color':C.edge,'line-width':0.9,'line-opacity':0.9}});
+    map.addLayer({id:'ts-line',type:'line',source:'ts',paint:{'line-color':C.edge,'line-width':1.3}});
+    map.addLayer({id:'chin-outline',type:'line',source:'outline',paint:{'line-color':C.ink,'line-width':1,'line-opacity':0.5}});
+    map.addLayer({id:'intl',type:'line',source:'intl',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':C.ink,'line-width':2.4}});
+    map.addLayer({id:'vill-dot',type:'circle',source:'vill',layout:{visibility:villagesOn?'visible':'none'},paint:{'circle-color':C.muted,'circle-opacity':0.75,'circle-radius':['interpolate',['linear'],['zoom'],7,1.3,10,2.6,13,4],'circle-stroke-color':C.halo,'circle-stroke-width':['interpolate',['linear'],['zoom'],8,0,11,0.8]}});
+    const F=['Noto Sans Regular'], FB=['Noto Sans Bold'];
+    map.addLayer({id:'lbl-ts',type:'symbol',source:'lbl',maxzoom:10.5,filter:['==',['get','k'],'ts'],layout:{'text-field':['get','n'],'text-font':FB,'text-size':11,'text-letter-spacing':0.12,'text-allow-overlap':false},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.5}});
+    map.addLayer({id:'lbl-mz',type:'symbol',source:'lbl',maxzoom:10.5,filter:['==',['get','k'],'mz'],layout:{'text-field':['get','n'],'text-font':F,'text-size':10},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.2}});
+    map.addLayer({id:'lbl-ctry',type:'symbol',source:'lbl',maxzoom:9,filter:['==',['get','k'],'ctry'],layout:{'text-field':['get','n'],'text-font':FB,'text-size':10.5,'text-letter-spacing':0.18,'text-max-width':8},paint:{'text-color':C.muted,'text-opacity':0.85,'text-halo-color':C.halo,'text-halo-width':1.2}});
+    map.addLayer({id:'vill-lbl',type:'symbol',source:'vill',minzoom:9.2,layout:{visibility:villagesOn?'visible':'none','text-field':['get','n'],'text-font':F,'text-size':['interpolate',['linear'],['zoom'],9.2,10,13,12],'text-anchor':'left','text-offset':[0.55,0],'text-padding':1},paint:{'text-color':C.ink,'text-halo-color':C.halo,'text-halo-width':1.4}});
+    map.on('mousemove','vill-dot',e=>{ const p=e.features[0].properties; map.getCanvas().style.cursor='default';
+      pop.setLngLat(e.lngLat).setHTML(`<b>${esc(p.n)}</b>${p.my?' / '+esc(p.my):''}<br>${esc(p.ts)} Township · MIMU ${esc(p.c)}`).addTo(map); });
+    map.on('mouseleave','vill-dot',()=>pop.remove());
+    /* external base map underneath our layers; if it fails, our layers still show */
+    try{
+      map.addSource('dem',{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:12,attribution:''});
+      map.addLayer({id:'hills',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':dark?0.35:0.45,'hillshade-shadow-color':dark?'#06080F':'#7A7468','hillshade-highlight-color':dark?'#2A3045':'#FFFFFF','hillshade-accent-color':dark?'#0B0E17':'#9A9284'}},'mz-fill');
+      map.addSource('omt',{type:'vector',url:'https://tiles.openfreemap.org/planet'});
+      map.addLayer({id:'water',type:'fill',source:'omt','source-layer':'water',paint:{'fill-color':C.water}},'mz-fill');
+      map.addLayer({id:'rivers',type:'line',source:'omt','source-layer':'waterway',filter:['==',['get','class'],'river'],paint:{'line-color':C.water,'line-width':['interpolate',['linear'],['zoom'],7,0.6,12,2]}},'mz-fill');
+      map.addLayer({id:'roads-main',type:'line',source:'omt','source-layer':'transportation',filter:['match',['get','class'],['motorway','trunk','primary','secondary'],true,false],paint:{'line-color':C.road,'line-width':['interpolate',['linear'],['zoom'],7,0.7,12,2.2]}},'chin-outline');
+      map.addLayer({id:'roads-minor',type:'line',source:'omt','source-layer':'transportation',minzoom:9,filter:['match',['get','class'],['tertiary','minor','track'],true,false],paint:{'line-color':C.road,'line-opacity':0.7,'line-width':['interpolate',['linear'],['zoom'],9,0.4,13,1.4]}},'roads-main');
+      map.addLayer({id:'osm-places',type:'symbol',source:'omt','source-layer':'place',filter:['match',['get','class'],['city','town'],true,false],layout:{'text-field':['coalesce',['get','name:en'],['get','name_en'],['get','name']],'text-font':F,'text-size':11,'text-anchor':'left','text-offset':[0.5,0]},paint:{'text-color':C.ink,'text-halo-color':C.halo,'text-halo-width':1.4}},'lbl-ts');
+      map.addLayer({id:'osm-villages',type:'symbol',source:'omt','source-layer':'place',minzoom:10,filter:['all',['match',['get','class'],['village','hamlet'],true,false],['!',['within',{type:'Polygon',coordinates:[window.CHIN_OUTLINE.concat([window.CHIN_OUTLINE[0]])]}]]],layout:{'text-field':['coalesce',['get','name:en'],['get','name_en'],['get','name']],'text-font':F,'text-size':10,'text-optional':true},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.2}},'lbl-ts');
+    }catch(e){ console.warn('Base map not available',e); }
+    map.resize(); el.querySelectorAll('.maplibregl-ctrl-attrib').forEach(x=>x.classList.remove('maplibregl-compact-show'));
+    ready=true; if(pending){ api.draw(pending); pending=null; }
+  });
+  function shape(pt){ const c=pt.color, st=pt.approx?`style="fill:none;stroke:${c};stroke-width:2;stroke-dasharray:3 2"`:`style="fill:${c};stroke:var(--panel);stroke-width:1.5"`;
+    const s=pt.big?7:5.5;
+    if(pt.shape==='square') return `<svg width="14" height="14" viewBox="-7 -7 14 14"><rect x="-5" y="-5" width="10" height="10" rx="2" ${st}/></svg>`;
+    if(pt.shape==='diamond') return `<svg width="14" height="14" viewBox="-7 -7 14 14"><rect x="-4.5" y="-4.5" width="9" height="9" rx="1" transform="rotate(45)" ${st}/></svg>`;
+    if(pt.shape==='triangle') return `<svg width="16" height="16" viewBox="-8 -8 16 16"><path d="M0 -7L6.5 5L-6.5 5Z" ${st}/></svg>`;
+    return `<svg width="${2*s+4}" height="${2*s+4}" viewBox="${-s-2} ${-s-2} ${2*s+4} ${2*s+4}"><circle r="${s}" ${st}/></svg>`; }
+  const api={ draw(args){ if(!ready){ pending=args; return; } const {points,counts,onSelect,selected}=args; onSel=onSelect; sel=selected;
+      const max=Math.max(1,...Object.values(counts||{}));
+      const op=(prefix)=>{ const e=['match',['get','n']]; let any=false; Object.entries(counts||{}).forEach(([k,n])=>{ const nm=prefix?(k.startsWith('MZ:')?k.slice(3):null):(k.startsWith('MZ:')?null:k); if(nm&&n){ e.push(nm,0.12+0.38*n/max); any=true; } }); e.push(0); return any?['interpolate',['linear'],['zoom'],8,e,11,['*',0.3,e]]:0; };
+      map.setPaintProperty('ts-count','fill-opacity',op(false)); map.setPaintProperty('mz-count','fill-opacity',op(true));
+      markers.forEach(m=>m.remove()); markers=[]; const seen={};
+      points.forEach(pt=>{ if(pt.lat==null||pt.lon==null) return;
+        const key=pt.lat.toFixed(3)+','+pt.lon.toFixed(3); const n=seen[key]=(seen[key]||0)+1; let off=[0,0];
+        if(n>1){ const a=(n-1)*2.1, r=8*Math.ceil((n-1)/3+0.1); off=[Math.cos(a)*r,Math.sin(a)*r]; }
+        const d=document.createElement('div'); d.className='mk'+(pt.id===selected?' sel':''); d.innerHTML=shape(pt); d.tabIndex=0; d.setAttribute('role','button'); d.setAttribute('aria-label',pt.aria); d.dataset.id=pt.id;
+        const mk=new maplibregl.Marker({element:d,offset:off}).setLngLat([pt.lon,pt.lat]).addTo(map);
+        d.addEventListener('mouseenter',()=>pop.setLngLat([pt.lon,pt.lat]).setHTML(pt.tip).addTo(map)); d.addEventListener('mouseleave',()=>pop.remove());
+        if(onSelect){ d.addEventListener('click',ev=>{ev.stopPropagation(); onSelect(pt.id);}); d.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault(); onSelect(pt.id);}}); }
+        markers.push(mk); });
+    },
+    place(p){ if(placeMk){ placeMk.remove(); placeMk=null; } if(!p||p.bbox) return; const d=document.createElement('div'); d.className='placemk'; d.setAttribute('aria-hidden','true');
+      placeMk=new maplibregl.Marker({element:d}).setLngLat([p.lon,p.lat]).addTo(map); },
+    mark(id){ sel=id; el.querySelectorAll('.mk').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); },
+    villages(on){ villagesOn=on; if(ready){ ['vill-dot','vill-lbl'].forEach(l=>map.setLayoutProperty(l,'visibility',on?'visible':'none')); } },
+    flyTo(lon,lat,z){ map.jumpTo({center:[lon,lat],zoom:z||11}); },
+    fit(b){ map.fitBounds(b,{padding:30,maxZoom:11}); },
+    map };
+  return api;
+}
+
 function hbar(label,v,max,color,extra){ return `<div class="hbar"><span>${esc(label)}</span><span class="track"><span class="fill" style="width:${max?Math.max(2,v/max*100):0}%;background:${color}"></span></span><span class="v">${v}${extra||''}</span></div>`; }
 
 /* ---------- data helpers ---------- */
-const mon = () => DATA.months[MONTH] || {incidents:[],figures:[],events:[],prices:[],displacement:[],label:MONTH};
+const monthsIn = () => Object.keys(DATA.months).filter(k=>k>=FROM&&k<=TO).sort();
+const PER = () => mon().multi?'in this period':'this month';
+const shortM = k => { const [y,m]=k.split('-'); return new Date(Date.UTC(+y,+m-1,1)).toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'}); };
+/* The selected period: one month as published, or several months merged. Additive figures are summed;
+   year-to-date figures, displacement snapshots, prices and the briefing come from the latest month. */
+function mon(){
+  const key=FROM+'|'+TO; if(_monCache[key]) return _monCache[key];
+  const ks=monthsIn(); const empty={incidents:[],figures:[],events:[],prices:[],displacement:[],label:DATA.months[TO]?DATA.months[TO].label:TO};
+  if(!ks.length) return empty;
+  if(ks.length===1) return (_monCache[key]=DATA.months[ks[0]]);
+  const last=DATA.months[ks[ks.length-1]], out={label:`${DATA.months[ks[0]].label} to ${last.label}`, multi:true, months:ks,
+    incidents:[], events:[], figures:[], prices:last.prices||[], briefing:last.briefing, displacement:[]};
+  const figs={}, latestSite={};
+  ks.forEach(k=>{ const x=DATA.months[k];
+    out.incidents.push(...(x.incidents||[])); out.events.push(...(x.events||[]));
+    (x.figures||[]).forEach(f=>{ const id=f.indicator+'|'+f.breakdown, ytd=/year to date/i.test(f.indicator);
+      if(!figs[id]||ytd) figs[id]={...f, value: ytd?f.value:((figs[id]?figs[id].value:0)+(f.value||0)), source: ytd?f.source:`CMB ${shortM(ks[0])} to ${shortM(ks[ks.length-1])}`, note: ytd?f.note:''};
+      else figs[id].value+=(f.value||0); });
+    (x.displacement||[]).forEach(d=>{ latestSite[d.site]=latestSite[d.site]&&latestSite[d.site].k===k?latestSite[d.site]:{k,rows:[]}; latestSite[d.site].rows.push(d); }); });
+  out.figures=Object.values(figs).map(f=>({...f,value:Math.round(f.value*1000)/1000})); Object.values(latestSite).forEach(v=>out.displacement.push(...v.rows));
+  return (_monCache[key]=out);
+}
 const figRows = ind => (mon().figures||[]).filter(f=>f.indicator===ind);
 const fHas = ind => figRows(ind).length>0;
 const fSum = ind => figRows(ind).reduce((s,f)=>s+(f.value||0),0);
@@ -432,6 +584,69 @@ const evs = (...cats) => (mon().events||[]).filter(e=>cats.includes(e.cat));
 const whereOf = e => [e.place, e.detail].filter(Boolean).join(', ') || e.ts || 'Chinland-wide or not stated';
 const actorName = a => (DATA.actors&&DATA.actors[a]&&DATA.actors[a].name) || a;
 const actorChips = e => (e.actors||[]).map(a=>`<span class="actor" title="${esc(actorName(a))}">${esc(a)}</span>`).join('');
+
+
+/* ---------- place search (village, township, Mizoram district) ---------- */
+const VILL = () => window.CHIN_VILLAGES||[];
+function findPlace(kind,name,ts){
+  if(kind==='ts'){ const t=TS.find(x=>x.n===name); return t?{kind,name,lon:cent[t.n][0],lat:cent[t.n][1],bbox:bboxOf([t.c])}:null; }
+  if(kind==='mz'){ const d=MZ.find(x=>x.n===name); return d?{kind,name,lon:mzCent[d.n][0],lat:mzCent[d.n][1],bbox:bboxOf(d.r)}:null; }
+  if(kind==='v'){ const v=VILL().find(x=>x[0]===name&&(!ts||x[2]===ts)); return v?{kind,name,ts:v[2],lat:v[3],lon:v[4],code:v[5]}:null; }
+  return null;
+}
+function bboxOf(rings){ let a=[180,90,-180,-90]; rings.forEach(r=>r.forEach(([x,y])=>{a=[Math.min(a[0],x),Math.min(a[1],y),Math.max(a[2],x),Math.max(a[3],y)];})); return [[a[0],a[1]],[a[2],a[3]]]; }
+const kmBetween=(a,b,c,d)=>{ const R=6371, r=Math.PI/180, x=(d-b)*r*Math.cos((a+c)/2*r), y=(c-a)*r; return Math.sqrt(x*x+y*y)*R; };
+const NEAR_KM=5;
+/* does a record fall inside the chosen place? township: same township; district: same Mizoram district; village: same village name or within 5 km */
+function inPlace(e){ if(!PLACE) return true;
+  if(PLACE.kind==='ts') return e.ts===PLACE.name;
+  if(PLACE.kind==='mz') return mzDistrict(e.place)===PLACE.name;
+  if(PLACE.kind==='v'){ if((e.place||'').split(' (')[0].split(',')[0].trim()===PLACE.name) return true; return e.lat!=null&&(e.prec==='village'||e.prec==='town'||e.prec==='gps'||e.prec==='verified')&&kmBetween(e.lat,e.lon,PLACE.lat,PLACE.lon)<=NEAR_KM; }
+  return true; }
+function placeLabel(p){ return p.kind==='ts'?`${p.name} Township`:p.kind==='mz'?`${p.name} District, Mizoram`:`${p.name} (${p.ts} Township) and within ${NEAR_KM} km`; }
+function placeSearch(map, onChange){
+  const wrap=document.createElement('div'); wrap.className='psearch';
+  wrap.innerHTML=`<input type="search" placeholder="Find a village or township" aria-label="Find a village, township or Mizoram district" autocomplete="off"><ul role="listbox" hidden></ul>
+    <div class="pchip" ${PLACE?'':'hidden'}><span></span><button type="button" aria-label="Clear place filter">×</button></div>`;
+  const inp=wrap.querySelector('input'), ul=wrap.querySelector('ul'), chip=wrap.querySelector('.pchip');
+  const showChip=()=>{ chip.hidden=!PLACE; if(PLACE) chip.querySelector('span').textContent='Showing records in '+placeLabel(PLACE); };
+  showChip();
+  const pick=p=>{ PLACE=p; ul.hidden=true; inp.value=''; showChip(); writeHash(); onChange();
+    if(map&&map.fit){ if(p.bbox) map.fit(p.bbox); else map.flyTo(p.lon,p.lat,11.6); if(map.place) map.place(p); } };
+  inp.addEventListener('input',()=>{ const q=inp.value.trim().toLowerCase(); if(q.length<2){ ul.hidden=true; return; }
+    const res=[...TS.filter(t=>t.n.toLowerCase().startsWith(q)).map(t=>({k:'ts',n:t.n,sub:'Township, Chin State'})),
+      ...MZ.filter(d=>d.n.toLowerCase().startsWith(q)).map(d=>({k:'mz',n:d.n,sub:'District, Mizoram'})),
+      ...VILL().filter(v=>v[0].toLowerCase().includes(q)||(v[1]||'').includes(inp.value.trim())).sort((a,b)=>(a[0].toLowerCase().startsWith(q)?0:1)-(b[0].toLowerCase().startsWith(q)?0:1)||a[0].localeCompare(b[0])).slice(0,12).map(v=>({k:'v',n:v[0],ts:v[2],sub:`${v[1]?v[1]+' · ':''}${v[2]} Township`}))];
+    ul.innerHTML=res.length?res.map((r,i)=>`<li role="option" tabindex="-1" data-i="${i}"><b>${esc(r.n)}</b><span>${esc(r.sub)}</span></li>`).join(''):'<li class="none">No village or township found</li>';
+    ul.hidden=false; ul.querySelectorAll('li[data-i]').forEach(li=>li.addEventListener('mousedown',ev=>{ ev.preventDefault(); const r=res[+li.dataset.i]; pick(findPlace(r.k,r.n,r.ts)); })); });
+  inp.addEventListener('keydown',ev=>{ const items=[...ul.querySelectorAll('li[data-i]')]; if(!items.length) return;
+    let i=items.findIndex(x=>x.classList.contains('act'));
+    if(ev.key==='ArrowDown'||ev.key==='ArrowUp'){ ev.preventDefault(); i=ev.key==='ArrowDown'?Math.min(items.length-1,i+1):Math.max(0,i-1); items.forEach((x,j)=>x.classList.toggle('act',j===i)); }
+    if(ev.key==='Enter'){ ev.preventDefault(); (items[i>=0?i:0]).dispatchEvent(new MouseEvent('mousedown')); }
+    if(ev.key==='Escape'){ ul.hidden=true; } });
+  inp.addEventListener('blur',()=>setTimeout(()=>{ul.hidden=true;},150));
+  chip.querySelector('button').addEventListener('click',()=>{ PLACE=null; showChip(); writeHash(); onChange(); if(map&&map.fit) map.fit([[92.2,20.6],[94.35,24.55]]); if(map&&map.place) map.place(null); });
+  return wrap;
+}
+
+/* ---------- month-by-month trend (only when the period covers 2+ months) ---------- */
+function trendTile(title, series){
+  const ks=monthsIn(); if(ks.length<2) return '';
+  const w=Math.max(220,Math.min(420,ks.length*46)), h=120, pad=18, bw=Math.min(26,(w-10)/ks.length-6);
+  const charts=series.map(se=>{ const vals=ks.map(k=>se.fn(DATA.months[k])); const max=Math.max(1,...vals.filter(v=>v!=null));
+    const bars=vals.map((v,i)=>{ const x=6+i*((w-12)/ks.length)+((w-12)/ks.length-bw)/2, bh=v==null?0:Math.max(v>0?2:0,(h-pad-16)*v/max), y=h-pad-bh;
+      const lab=v==null?'–':fmtDec(v); const show=ks.length<=8||i===ks.length-1||v===max;
+      return `<g><rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" style="fill:${se.color}"><title>${esc(DATA.months[ks[i]].label)}: ${v==null?'not reported':lab}</title></rect>${show?`<text class="tv" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${lab}</text>`:''}<text class="axis" x="${x+bw/2}" y="${h-4}" text-anchor="middle">${esc(shortM(ks[i]).replace(' 20',' ’'))}</text></g>`; }).join('');
+    return `<figure class="trend"><figcaption>${esc(se.label)}</figcaption><svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(se.label)} by month">${bars}<line x1="0" x2="${w}" y1="${h-pad}" y2="${h-pad}" class="grid"/></svg></figure>`; }).join('');
+  return `<section class="tile span12"><h2>${esc(title)} <span class="src">month by month, ${esc(mon().label)}</span></h2><div class="trends">${charts}</div></section>`;
+}
+const strikeCount = m => (m.incidents||[]).filter(e=>e.inChin&&e.type==='Airstrike'&&e.hit==='Civilian area').reduce((a,e)=>a+(e.attacks||1),0);
+const figOf = (m,ind) => { const r=(m.figures||[]).filter(f=>f.indicator===ind); return r.length?r.reduce((a,f)=>a+(f.value||0),0):null; };
+
+/* counts on filter buttons */
+function chipCounts(list, extra){ V.querySelectorAll('.layers button[data-cat], .filters button[data-f]').forEach(b=>{ const k=b.dataset.cat||b.dataset.f;
+  const n=k==='all'?list.length:(extra&&extra[k]!=null?extra[k]:list.filter(e=>e.cat===k).length);
+  let c=b.querySelector('.cnt'); if(!c){ c=document.createElement('span'); c.className='cnt'; b.appendChild(c); } c.textContent=n; }); }
 
 /* ---------- selection card + log (shared) ---------- */
 function eventCard(e){
@@ -468,6 +683,10 @@ function renderSecurity(){
     <p class="cap">Airstrikes, heavy weapons, landmines and other armed violence.</p><div class="foot" id="k-civ-foot"></div></section>
   <section class="tile kpi"><h2>Methamphetamine seized <span class="src" id="src-drug"></span></h2><div class="num" id="k-meth"></div><p class="cap" id="k-meth-cap"></p><div class="foot" id="k-meth-foot"></div></section>
 
+  ${trendTile('Security trends',[{label:'Airstrikes on civilian areas',color:'var(--c-conflict)',fn:strikeCount},
+     {label:'Civilians killed (all causes reported)',color:'var(--c-conflict)',fn:m=>{const v=['Landmines: civilians killed','Heavy weapons: civilians killed','Civilians killed in airstrikes','Other armed violence: civilians killed'].map(i=>figOf(m,i)).filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0):null;}},
+     {label:'Landmine casualties (killed and injured)',color:'var(--c-landmine)',fn:m=>{const a=figOf(m,'Landmines: civilians killed'),b=figOf(m,'Landmines: civilians injured'); return a==null&&b==null?null:(a||0)+(b||0);}},
+     {label:'Methamphetamine seized (kg)',color:'var(--c-drug)',fn:m=>{const a=figOf(m,'Drugs, Mizoram: methamphetamine (kg)'),b=figOf(m,'Drugs, Kalay: methamphetamine (kg)'); return a==null&&b==null?null:Math.round(((a||0)+(b||0))*10)/10;}}])}
   <section class="tile brief span3 rows2" id="brief"><h2>The briefing</h2>
     <div class="cover"><img id="cover" alt="Cover photo of the Chinland Monitoring Briefing"><div class="t"><small>Monthly situation briefing</small><b>Chinland Monitoring Briefing</b><span>${esc(m.label)}</span></div></div>
     <div class="dl" id="downloads"></div><ul class="stats" id="brief-stats"></ul>
@@ -508,7 +727,7 @@ function renderSecurity(){
   strikes.filter(e=>e.type==='Airstrike').forEach(e=>{ if(e.civI) airInj[e.ts]=(airInj[e.ts]||0)+e.civI; });
   const nTs=Object.keys(airTs).length;
   setNum('k-air',air,null,'var(--c-conflict)');
-  $('k-air-cap').textContent = air?`Separate attacks on villages, towns and other civilian places in ${plural(nTs,'township')}. Counted by attack, not by bomb.`:'No airstrikes on civilian areas recorded this month.';
+  $('k-air-cap').textContent = air?`Separate attacks on villages, towns and other civilian places in ${plural(nTs,'township')}. Counted by attack, not by bomb.`:`No airstrikes on civilian areas recorded ${PER()}.`;
   const aK=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civK||0),0), aI=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civI||0),0);
   const parts=[]; if(strikes.length) parts.push(`${aK} civilians killed, ${aI} injured`);
   const dm=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`${fSum(i)} ${l}`);
@@ -516,7 +735,7 @@ function renderSecurity(){
   const armed=nAtt(strikes.filter(e=>e.type==='Airstrike'&&e.hit!=='Civilian area')), drone=nAtt(strikes.filter(e=>e.type==='Drone strike'));
   parts.push(drone?`${plural(drone,'drone strike')}`:'No drone strikes recorded'); if(armed) parts.push(`${plural(armed,'airstrike')} on armed positions or unclear targets`);
   const printed=fVal('Airstrikes as printed in the briefing');
-  if(printed!==null&&printed!==air) parts.push(`The printed briefing reported ${printed}, counting individual bombs`);
+  if(printed!==null&&printed!==air) parts.push(`The printed briefing reported ${fmtDec(printed)}, counting individual bombs`);
   $('k-air-foot').textContent=parts.join(' · ');
   const groups=[['Landmines','Landmines: civilians killed','Landmines: civilians injured'],['Heavy weapons','Heavy weapons: civilians killed','Heavy weapons: civilians injured'],['Airstrikes','Civilians killed in airstrikes','Civilians injured in airstrikes'],['Other armed violence','Other armed violence: civilians killed','Other armed violence: civilians injured']];
   let ck=null,ci=null; const cf=[];
@@ -533,37 +752,39 @@ function renderSecurity(){
   const dl=[]; if(b.pdf_en) dl.push(`<a href="data/${encodeURI(b.pdf_en)}" target="_blank" rel="noopener">Read the briefing in English <span>PDF</span></a>`);
   if(b.pdf_my) dl.push(`<a href="data/${encodeURI(b.pdf_my)}" target="_blank" rel="noopener" lang="my">မြန်မာဘာသာဖြင့် ဖတ်ရန် <span>PDF</span></a>`);
   $('downloads').innerHTML=dl.join('')||'<p class="sub">The PDF for this month is not online yet.</p>';
+  const arch=Object.keys(DATA.months).sort().reverse().filter(k=>DATA.months[k].briefing&&DATA.months[k].briefing.pdf_en&&DATA.months[k].briefing!==b);
+  if(arch.length) $('downloads').insertAdjacentHTML('afterend',`<div class="k" style="margin-top:14px">Earlier briefings</div><ul class="archive">${arch.map(k=>`<li><span>${esc(DATA.months[k].label)}</span><a href="data/${encodeURI(DATA.months[k].briefing.pdf_en)}" target="_blank" rel="noopener">English PDF</a></li>`).join('')}</ul>`);
   const cnt=c=>ev.filter(e=>e.cat===c).length;
   $('brief-stats').innerHTML=`<li>Conflict incidents logged<b>${cnt('conflict')}</b></li><li>Landmine incidents logged<b>${cnt('landmine')}</b></li><li>Drug seizures logged<b>${cnt('drug')}</b></li><li>Governance and political events<b>${(m.events||[]).filter(e=>['governance','political','border'].includes(e.cat)).length}</b></li><li>Humanitarian and livelihood events<b>${(m.events||[]).filter(e=>['humanitarian','livelihood'].includes(e.cat)).length}</b></li>`;
 
   const ai=airInj, amax=Math.max(1,...Object.values(airTs));
   $('src-bars').textContent='counted from the incident log';
-  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):'<p class="empty">No airstrikes on civilian areas recorded this month.</p>';
+  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):`<p class="empty">No airstrikes on civilian areas recorded ${PER()}.</p>`;
   $('damage').innerHTML=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`<span class="chip"><b>${fSum(i)}</b>${l} damaged</span>`).join('');
   const lk=fVal('Landmines: civilians killed'), li=fVal('Landmines: civilians injured'), lmax=Math.max(1,lk||0,li||0);
   $('lm-bars').innerHTML=(lk===null&&li===null)?'<p class="sub">Not reported</p>':hbar('Killed',lk||0,lmax,'var(--c-conflict)')+hbar('Injured',li||0,lmax,'var(--c-landmine)');
   const ch=fVal('Children killed by airstrikes in Chinland, year to date');
-  $('k-child').textContent=ch===null?'–':ch; $('k-child-cap').textContent=ch===null?'Not reported this month.':[fNote('Children killed by airstrikes in Chinland, year to date'),fSrc('Children killed by airstrikes in Chinland, year to date')].filter(Boolean).join('. ');
+  $('k-child').textContent=ch===null?'–':ch; $('k-child-cap').textContent=ch===null?`Not reported ${PER()}.`:[fNote('Children killed by airstrikes in Chinland, year to date'),fSrc('Children killed by airstrikes in Chinland, year to date')].filter(Boolean).join('. ');
 
   $('src-drugs').textContent=fSrc('Drugs, Mizoram: methamphetamine (kg)');
   const md=fBy('Drugs, Mizoram: methamphetamine (kg)'), hd=fBy('Drugs, Mizoram: heroin (g)');
   let rows=[...new Set([...Object.keys(md),...Object.keys(hd)])].map(d=>`<div class="row"><span>${esc(d==='All'?'Mizoram State':d+' District')}<span class="tag">Mizoram, India</span></span><span>${md[d]!=null?fmtDec(md[d])+' kg meth':''}${md[d]!=null&&hd[d]?' · ':''}${hd[d]?fmt(hd[d])+' g heroin':''}</span></div>`).join('');
   if(klM!==null) rows+=`<div class="row"><span>Kalay town<span class="tag">Sagaing Region, main route into Chinland</span></span><span>${fmtDec(klM)} kg meth</span></div>`;
   if(arr!==null) rows+=`<div class="row"><span>People arrested<span class="tag">Myanmar nationals in Mizoram; all arrests in Kalay</span></span><span>${mzA||0} + ${klA||0}</span></div>`;
-  $('drug-rows').innerHTML=rows||'<p class="empty">No drug figures for this month.</p>';
+  $('drug-rows').innerHTML=rows||`<p class="empty">No drug figures ${PER()}.</p>`;
 
   const map=makeMap($('map'),'var(--c-conflict)');
   const casualty=e=>{const p=[]; if(e.civK)p.push(`${e.civK} civilian${e.civK>1?'s':''} killed`); if(e.civI)p.push(`${e.civI} civilian${e.civI>1?'s':''} injured`); if(e.cbK)p.push(`${e.cbK} combatant${e.cbK>1?'s':''} killed`); if(e.cbI)p.push(`${e.cbI} combatant${e.cbI>1?'s':''} injured`);
     if(e.cat==='drug'){ if(e.arrests)p.push(`${e.arrests} arrested`); if(e.methKg)p.push(`${fmtDec(e.methKg)} kg meth`); if(e.methTablets)p.push(`${fmt(e.methTablets)} meth tablets`); if(e.heroinG)p.push(`${fmt(e.heroinG)} g heroin`);} return p.join(' · ');};
-  function select(id){ selected=id; const e=ev.find(x=>x.id===id); if(!e) return; map.mark(id);
+  function select(id){ selected=id; const e=ev.find(x=>x.id===id); if(!e) return; map.mark(id); SELID=id; writeHash();
     document.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
     $('sel').innerHTML=`<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts)} · ${esc(e.source)}</span><b>${esc(e.type)}: ${esc([e.place,e.detail].filter(Boolean).join(', ')||e.ts)}</b>${esc(e.text)}
       <div class="meta" style="margin-top:4px">${[e.actors,e.attacks?`${plural(e.attacks,'separate attack')}`:'',e.hit?'Hit: '+e.hit:'',e.aircraft&&e.aircraft!=='Not stated'?'Aircraft: '+e.aircraft:'',casualty(e),'Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''),e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`; }
   function drawMap(){ const counts={}; ev.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) counts[k]=(counts[k]||0)+1;});
-    map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',big:!!(e.civK||e.civI),
+    map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',big:!!(e.civK||e.civI),
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(e.place||e.detail||e.ts)}`,aria:`${dShort(e.date)}, ${e.type}, ${e.place||e.detail||e.ts}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
-    const list=ev.filter(e=>filter==='all'||e.cat===filter);
+    const list=ev.filter(e=>(filter==='all'||e.cat===filter)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No incidents recorded for this selection.</p></td></tr>'; return; }
     list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
       const civ=(e.civK||e.civI)?`${e.civK||0} killed, ${e.civI||0} injured`:(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'None reported');
@@ -572,7 +793,11 @@ function renderSecurity(){
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
+  $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
+  if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,11.6); } if(map.place) map.place(PLACE);
+  chipCounts(ev,null);
   drawMap(); drawLog();
+  if(SELID&&ev.some(x=>x.id===SELID)) select(SELID);
 }
 
 /* =========================================================
@@ -605,6 +830,9 @@ function renderGovernance(){
     <p class="cap">Orders by Indian and Mizoram authorities, and road and trade route closures.</p>
     <div class="foot">${bor.length?esc([...new Set(bor.map(e=>e.type))].join(' · ')):'None recorded'}</div></section>
 
+  ${trendTile('Governance and political trends',[{label:'Governance actions',color:'var(--c-governance)',fn:m=>(m.events||[]).filter(e=>e.cat==='governance').length},
+     {label:'Political events',color:'var(--c-political)',fn:m=>(m.events||[]).filter(e=>e.cat==='political').length},
+     {label:'Border events',color:'var(--c-border)',fn:m=>(m.events||[]).filter(e=>e.cat==='border').length}])}
   <section class="tile span7" id="procs"><h2>Processes to watch <span class="src">stage as of the end of ${esc(m.label)}</span></h2>
     <p class="sub">Long-running processes and the latest stage the briefing reported. A stage only moves when a recorded event shows it.</p>
     <div id="proc-list"></div></section>
@@ -621,11 +849,11 @@ function renderGovernance(){
     <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
 
   <section class="tile span7" id="areas"><h2>What Chin authorities worked on <span class="src">governance actions by policy area</span></h2>
-    <p class="sub">Each bar counts recorded governance actions this month. Select a bar to list those actions below.</p>
+    <p class="sub">Each bar counts recorded governance actions ${PER()}. Select a bar to list those actions below.</p>
     <div id="area-bars"></div></section>
 
   <section class="tile span7" id="edu"><h2>Education <span class="src">a less-watched sector</span></h2>
-    <p class="sub">Education decisions, disputes and damage this month, in one place.</p>
+    <p class="sub">Education decisions, disputes and damage ${PER()}, in one place.</p>
     <div class="duo" style="margin-top:0">
       <div><div class="k">Education events recorded</div><b class="big">${edu.length}</b></div>
       <div><div class="k">Schools damaged by airstrikes</div><b class="big">${school===null?'–':school}</b><p class="sub" style="margin:0">${school===null?'Not reported':esc(fSrc('Schools damaged in airstrikes'))}</p></div>
@@ -654,24 +882,24 @@ function renderGovernance(){
   }).join('') : '<p class="empty">No process events recorded yet.</p>';
 
   // education list
-  $('edu-list').innerHTML = edu.length ? edu.map(e=>`<div class="row"><span>${esc(e.type)}<span class="tag">${esc((e.actors||[]).join(', ')||e.ts||'')} · ${esc(dShort(e.date))}</span></span><span>${catTag(e.cat)}</span></div>`).join('') : '<p class="empty">No education events recorded this month.</p>';
+  $('edu-list').innerHTML = edu.length ? edu.map(e=>`<div class="row"><span>${esc(e.type)}<span class="tag">${esc((e.actors||[]).join(', ')||e.ts||'')} · ${esc(dShort(e.date))}</span></span><span>${catTag(e.cat)}</span></div>`).join('') : `<p class="empty">No education events recorded ${PER()}.</p>`;
 
   // policy areas (governance actions only)
   const byArea={}; gov.forEach(e=>{const k=e.area||'Not stated'; byArea[k]=(byArea[k]||0)+1;});
   const amax2=Math.max(1,...Object.values(byArea));
   $('area-bars').innerHTML = gov.length ? Object.entries(byArea).sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).map(([k,v])=>
     `<button type="button" class="hbar areabar" data-area="${esc(k)}" aria-label="${esc(k)}: ${plural(v,'action')}. Show in the event log"><span>${esc(k)}</span><span class="track"><span class="fill" style="width:${Math.max(2,v/amax2*100)}%;background:var(--c-governance)"></span></span><span class="v">${v}</span></button>`).join('')
-    : '<p class="empty">No governance actions recorded this month.</p>';
+    : `<p class="empty">No governance actions recorded ${PER()}.</p>`;
 
   // map + log
   const map=makeMap($('map'),'var(--c-governance)',{villages:false});
   const areaSel=$('farea'); [...new Set(all.map(e=>e.area).filter(Boolean))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
-  function select(id){ selected=id; const e=all.find(x=>x.id===id); if(!e) return; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); $('sel').innerHTML=eventCard(e); }
+  function select(id){ selected=id; const e=all.find(x=>x.id===id); if(!e) return; map.mark(id); SELID=id; writeHash(); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); $('sel').innerHTML=eventCard(e); }
   function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
-    map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',
+    map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc((e.actors||[]).join(', '))}`,aria:`${dShort(e.date)}, ${e.type}, ${(e.actors||[]).join(', ')}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
-    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor));
+    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
     list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
       tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}${e.outcome&&e.cat==='political'?`<br>${outcomePill(e.outcome)}`:''}</td><td>${actorChips(e)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(e.source)}</td>`;
@@ -684,7 +912,11 @@ function renderGovernance(){
   actSel.addEventListener('change',()=>{factor=actSel.value; drawLog();});
   V.querySelectorAll('.areabar').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.area; farea=[...areaSel.options].some(o=>o.value===k)?k:'all'; areaSel.value=farea;
     fcat='governance'; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.f==='governance')); drawLog(); $('log').scrollIntoView({behavior:'smooth',block:'start'}); }));
+  $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
+  if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,11.6); } if(map.place) map.place(PLACE);
+  chipCounts(all,null);
   drawMap(); drawLog();
+  if(SELID&&all.some(x=>x.id===SELID)) select(SELID);
 }
 
 /* =========================================================
@@ -708,12 +940,14 @@ function renderHumanitarian(){
   <section class="tile kpi"><h2>Humanitarian events</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.length}</div>
     <p class="cap">Displacement, evictions, aid, access, disasters and reported shortages.</p>
     <div class="foot">${Object.entries(byType).map(([t,n])=>`${esc(t)} ${n}`).join(' · ')||'None recorded'}</div></section>
-  <section class="tile kpi"><h2>Displacement figures</h2><div class="num">${sitesWith.length?`<i style="background:var(--c-site)"></i>${sitesWith.length}`:'<span class="na">None this month</span>'}</div>
+  <section class="tile kpi"><h2>Displacement figures</h2><div class="num">${sitesWith.length?`<i style="background:var(--c-site)"></i>${sitesWith.length}`:`<span class="na">None ${PER()}</span>`}</div>
     <p class="cap">${sitesWith.length?`${sitesWith.length===1?'Site':'Sites'} with figures reported. Figures are listed by site and source below and are not added together.`:'Other groups track IDP numbers in detail; CCPR records figures when the briefing reports them.'}</p></section>
   <section class="tile kpi"><h2>Market prices</h2><div class="num">${prices.length?`<i style="background:var(--c-livelihood)"></i>${prices.length}`:'<span class="na">Not collected yet</span>'}</div>
     <p class="cap">${prices.length?`Prices from ${plural(nMk,'market')} for ${plural(nCm,'item')}.`:'Monthly price collection for 10 essential items starts once the team begins reporting.'}</p>
-    <div class="foot">${liv.length?`${plural(liv.length,'livelihood event')} recorded`:'No livelihood events recorded this month'}</div></section>
+    <div class="foot">${liv.length?`${plural(liv.length,'livelihood event')} recorded`:`No livelihood events recorded ${PER()}`}</div></section>
 
+  ${trendTile('Humanitarian trends',[{label:'Humanitarian events',color:'var(--c-humanitarian)',fn:m=>(m.events||[]).filter(e=>e.cat==='humanitarian').length},
+     {label:'Livelihood events',color:'var(--c-livelihood)',fn:m=>(m.events||[]).filter(e=>e.cat==='livelihood').length}])}
   <section class="tile span7"><h2>Displacement by site <span class="src">as reported, by source</span></h2>
     <p class="sub">Each row is one figure from one source. Households and people are different units and are never converted or added.</p>
     <div class="tblwrap" id="disp"></div></section>
@@ -739,7 +973,7 @@ function renderHumanitarian(){
   // displacement
   $('disp').innerHTML = disp.length ? `<table class="t"><thead><tr><th>Site</th><th>Location</th><th>Origin</th><th class="r">Households</th><th class="r">People</th><th>Source</th></tr></thead><tbody>${
     disp.map(d=>{const s=(DATA.sites||{})[d.site]||{}; return `<tr><td><b>${esc(d.site)}</b><span class="tag">${esc(s.type||'')}${s.status?' · '+esc(s.status):''}</span></td><td>${esc(s.place||s.ts||'')}</td><td>${esc(s.origin||'')}</td><td class="n r">${d.households==null?'–':fmt(d.households)}</td><td class="n r">${d.people==null?'–':fmt(d.people)}</td><td class="n">${esc(d.source)}${d.note?`<span class="tag">${esc(d.note)}</span>`:''}</td></tr>`;}).join('')}</tbody></table>`
-    : '<p class="empty">No displacement figures recorded this month.</p>';
+    : `<p class="empty">No displacement figures recorded ${PER()}.</p>`;
 
   // prices
   renderPrices(prices, prevPrices);
@@ -748,16 +982,16 @@ function renderHumanitarian(){
   const map=makeMap($('map'),'var(--c-humanitarian)',{villages:false});
   const sitePts = sitesWith.map(s=>{const x=(DATA.sites||{})[s]||{}; const rows=disp.filter(d=>d.site===s); return {id:'site:'+s,lat:x.lat,lon:x.lon,color:'var(--c-site)',shape:'triangle',
     tip:`<b>${esc(s)}</b>${x.prec==='approx'?' <i>(district centre)</i>':''}<br>${rows.map(r=>[r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':''].filter(Boolean).join(', ')).join('<br>')}`,aria:`IDP site ${s}`};});
-  function select(id){ selected=id; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+  function select(id){ selected=id; map.mark(id); SELID=id; writeHash(); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
     if(id.startsWith('site:')){ const s=id.slice(5), x=(DATA.sites||{})[s]||{}; const rows=disp.filter(d=>d.site===s);
       $('sel').innerHTML=`<span class="meta">${esc(m.label)} · ${esc(x.place||x.ts||'')}</span><b>${esc(s)}</b>${esc([x.type,x.origin?'residents from '+x.origin:'',x.status].filter(Boolean).join(' · '))}
       <div class="meta" style="margin-top:6px">${rows.map(r=>esc([r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':'',r.source,r.note].filter(Boolean).join(' · '))).join('<br>')}</div>`; return; }
     const e=all.find(x=>x.id===id); if(e) $('sel').innerHTML=eventCard(e); }
   function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
-    const pts=all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(whereOf(e))}`,aria:`${dShort(e.date)}, ${e.type}`}));
+    const pts=all.filter(e=>layers[e.cat]&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(whereOf(e))}`,aria:`${dShort(e.date)}, ${e.type}`}));
     map.draw({counts:c,selected,onSelect:select,points:pts.concat(layers.site?sitePts:[])}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
-    const list=all.filter(e=>fcat==='all'||e.cat===fcat);
+    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
     list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
       const who=[...(e.actors||[]),e.others].filter(Boolean).join(', ');
@@ -766,7 +1000,11 @@ function renderHumanitarian(){
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
+  $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
+  if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,11.6); } if(map.place) map.place(PLACE);
+  chipCounts(all,{site:sitesWith.length});
   drawMap(); drawLog();
+  if(SELID&&all.some(x=>x.id===SELID)) select(SELID);
 }
 
 function renderPrices(prices, prevPrices){
@@ -840,6 +1078,8 @@ function renderAbout(){
     <li><b>Headline figures</b> are the totals published in each briefing. The map and logs show individual records, so they may not add up to every total.</li>
     <li><b>Nothing is estimated.</b> Displacement figures are shown per site and source and are never added together. Prices are never converted between currencies.</li>
     <li><b>Confidence:</b> confirmed by two or more sources, one source, or unconfirmed.</li>
+    <li><b>Choosing several months</b> adds the monthly counts together. Year-to-date figures, displacement figures, market prices and the briefing shown come from the latest month in the period.</li>
+    <li><b>Searching for a village</b> shows records at that village and within 5 km of it. Records known only at township level are included when you search for the township.</li>
   </ul>
 
   <h3 id="airstrikes">How airstrikes are counted</h3>
@@ -858,6 +1098,7 @@ function renderAbout(){
 
   <h3>Locations</h3>
   <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Chin State township boundaries are from MIMU. Mizoram district boundaries are from the Mizoram Remote Sensing Application Centre (MIRSAC), Government of Mizoram. Lines from the two sources can differ slightly along the border. All boundaries are for reference only and do not imply endorsement.</p>
+  <p>The base map shows terrain, rivers, roads and place names from OpenStreetMap (served by OpenFreeMap) and public elevation data. Inside Chin State, village dots and names come from MIMU, so they match the place codes used in the records.</p>
 
   <h3>Corrections</h3>
   <p>If a published record is wrong, CCPR corrects it in the next update. Earlier versions are kept in the site's public history.</p>
@@ -868,22 +1109,37 @@ function renderAbout(){
   </div></section>`;
 }
 
+/* ---------- shareable state in the address: #view/anchor?from=yyyy-mm&to=yyyy-mm&place=...&id=... ---------- */
+function parseHash(){ const h=location.hash.slice(1); const [path,q]=h.split('?'); const [v,anchor]=(path||'').split('/'); return {v,anchor,q:new URLSearchParams(q||'')}; }
+function writeHash(){ const {v,anchor}=parseHash(); const q=new URLSearchParams();
+  if(FROM!==DATA.latest||TO!==DATA.latest){ q.set('from',FROM); q.set('to',TO); }
+  if(PLACE) q.set('place',PLACE.kind+':'+PLACE.name+(PLACE.ts?'@'+PLACE.ts:'')); if(SELID) q.set('id',SELID);
+  const h='#'+(v||VIEW)+(anchor?'/'+anchor:'')+(q.toString()?'?'+q.toString():''); if(h!==location.hash) history.replaceState(null,'',h); }
+
 /* ---------- routing ---------- */
 const VIEWS={security:renderSecurity,governance:renderGovernance,humanitarian:renderHumanitarian,about:renderAbout};
 function render(){
-  const [hv]=location.hash.slice(1).split('/'); VIEW = VIEWS[hv] ? hv : 'security';
+  const P=parseHash(); const hv=P.v; VIEW = VIEWS[hv] ? hv : 'security';
   document.querySelectorAll('nav.views a').forEach(a=>a.setAttribute('aria-current',a.dataset.v===VIEW?'page':'false'));
-  $('month').closest('.month').style.visibility = VIEW==='about'?'hidden':'visible';
+  document.querySelector('.month').style.visibility = VIEW==='about'?'hidden':'visible';
   VIEWS[VIEW]();
 }
 fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(d=>{
   DATA=d; DATA.processes=DATA.processes||{}; DATA.actors=DATA.actors||{};
-  const sel=$('month'); Object.keys(d.months).sort().reverse().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=d.months[k].label;sel.appendChild(o);});
-  MONTH=d.latest; sel.value=MONTH; sel.addEventListener('change',()=>{MONTH=sel.value; render();});
+  const ks=Object.keys(d.months).sort();
+  ['pfrom','pto'].forEach(id=>ks.slice().reverse().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=d.months[k].label;$(id).appendChild(o);}));
+  const P0=parseHash(); FROM=ks.includes(P0.q.get('from'))?P0.q.get('from'):d.latest; TO=ks.includes(P0.q.get('to'))?P0.q.get('to'):d.latest; if(FROM>TO){const t=FROM;FROM=TO;TO=t;}
+  MONTH=TO; SELID=P0.q.get('id')||null;
+  const pl=P0.q.get('place'); if(pl){ const m=/^(\w+):([^@]+)(?:@(.+))?$/.exec(pl); if(m) PLACE=findPlace(m[1],m[2],m[3]); }
+  $('pfrom').value=FROM; $('pto').value=TO;
+  const onPeriod=()=>{ FROM=$('pfrom').value; TO=$('pto').value; if(FROM>TO){ const t=FROM; FROM=TO; TO=t; $('pfrom').value=FROM; $('pto').value=TO; } MONTH=TO; SELID=null; render(); writeHash(); };
+  $('pfrom').addEventListener('change',onPeriod); $('pto').addEventListener('change',onPeriod);
+  $('share').addEventListener('click',()=>{ writeHash(); const u=location.href; const done=()=>{ $('share').textContent='Link copied'; setTimeout(()=>{$('share').textContent='Copy link';},2000); };
+    if(navigator.clipboard) navigator.clipboard.writeText(u).then(done,()=>prompt('Copy this link',u)); else prompt('Copy this link',u); });
   if(d.generated) $('updated').textContent='Data last published '+new Date(d.generated).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'.';
-  const toAnchor=()=>{ const a=location.hash.split('/')[1]; const el=a&&document.getElementById(a); if(el) el.scrollIntoView(); else window.scrollTo(0,0); };
-  window.addEventListener('hashchange',()=>{ render(); toAnchor(); });
-  render(); toAnchor();
+  const toAnchor=()=>{ const a=parseHash().anchor; const el=a&&document.getElementById(a); if(el) el.scrollIntoView(); else window.scrollTo(0,0); };
+  window.addEventListener('hashchange',()=>{ SELID=null; render(); toAnchor(); writeHash(); });
+  render(); toAnchor(); writeHash();
 }).catch(()=>{ $('state').textContent='The data file could not be loaded. Please try again later.'; });
 })();
 </script>
