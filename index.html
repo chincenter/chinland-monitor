@@ -7,11 +7,8 @@
 <meta charset="utf-8">
 <meta name="description" content="Monthly monitoring of security, governance, politics, humanitarian conditions and livelihoods in Chinland, compiled by the Chin Center for Peace and Reconciliation.">
 <link rel="icon" type="image/png" href="data/ccpr-mark.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=PT+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: IISS-style bento board per page; one header with page tabs and a shared month selector. */
 :root{
@@ -22,9 +19,9 @@
   /* humanitarian page */ --c-humanitarian:#D9480F; --c-site:#1D6FB8; --c-livelihood:#5B8C1E;
   --accent:#A3123E; --accent-soft:#F3DCE3;
   --good:#1F7A45; --good-soft:#DDF1E4; --warn:#9C5A00; --warn-soft:#FCEBD0; --bad:#A3123E; --bad-soft:#F3DCE3;
-  --f-display:"PT Serif", Georgia, "Times New Roman", serif;
-  --f-body:"PT Sans", "Segoe UI", system-ui, sans-serif;
-  --f-data:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --f-display:Georgia, "Times New Roman", Times, serif;
+  --f-body:Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --f-data:Arial, "Helvetica Neue", Helvetica, sans-serif;
   --r:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -47,7 +44,7 @@
   color-scheme:dark}
 
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+body{font-variant-numeric:tabular-nums;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 a{color:inherit}
@@ -208,6 +205,10 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 .t td.d,.t td.n{font-family:var(--f-data);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .t td.r,.t th.r{text-align:right}
 .t.click tbody tr{cursor:pointer} .t.click tbody tr:hover td{background:var(--soft)} .t tr.sel td{background:var(--accent-soft)}
+.bignum{font-family:var(--f-display);font-size:44px;line-height:1.1;margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.airgrid{display:grid;grid-template-columns:1.2fr .8fr 1.4fr;gap:28px;margin-top:6px}
+@media (max-width:900px){.airgrid{grid-template-columns:1fr}}
+#airsize .hbar{grid-template-columns:minmax(0,210px) 1fr 40px}
 .edu-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
 .edu-k button{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;color:inherit}
 .edu-k button[aria-pressed="true"]{border-color:var(--ink);background:var(--soft)}
@@ -905,6 +906,11 @@ function renderSecurity(){
 
   <section class="tile span4"><h2>Drug seizures, by place</h2><div class="rowlist" id="drug-rows"></div></section>
 
+  <section class="tile span12" id="airsize"><h2>Size of air attacks <span class="src">all airstrikes in Chin State, on any target</span></h2>
+    <div class="airgrid"><div><div class="k">Aircraft in each airstrike</div><div id="ac-bars"></div><p class="sub" id="ac-cov"></p></div>
+      <div><div class="k">Bombs dropped</div><div class="bignum" id="bm-num"></div><p class="sub" id="bm-cov"></p></div>
+      <div><div class="k">Largest raids</div><div class="rowlist" id="ac-top"></div></div></div></section>
+
   <section class="tile span12"><h2>Incident log <span class="filters" role="group" aria-label="Filter incidents" id="filters">
       <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="conflict">Conflict</button>
       <button type="button" aria-pressed="false" data-f="landmine">Landmines</button><button type="button" aria-pressed="false" data-f="drug">Drugs</button></span></h2>
@@ -934,6 +940,19 @@ function renderSecurity(){
   $('k-meth').innerHTML=hasDrug?`<i style="background:var(--c-drug)"></i>${kgFmt(meth)}<small>kg</small>`:`<span class="na">None recorded</span>`;
   $('k-meth-cap').textContent=hasDrug?[arr?`${plural(arr,'person','people')} arrested`:'',heroin?`${heroin>=1000?kgFmt(heroin/1000)+' kg':fmt(heroin)+' g'} of heroin`:''].filter(Boolean).join(' · '):'';
   $('k-meth-foot').textContent='';
+
+  /* size of air attacks: aircraft and bombs, only as reported */
+  { const AS=ev.filter(e=>e.inChin&&e.type==='Airstrike'), A=e=>e.attacks||1, tot=AS.reduce((a,e)=>a+A(e),0);
+    const G=[['One aircraft',e=>e.aircraftN===1],['2 to 4 aircraft',e=>typeof e.aircraftN==='number'&&e.aircraftN>=2&&e.aircraftN<5],['5 or more aircraft',e=>typeof e.aircraftN==='number'&&e.aircraftN>=5],['More than one, number not given',e=>e.aircraftN==='Several'],['Not reported',e=>e.aircraftN==null]];
+    const gv=G.map(([l,f])=>[l,AS.filter(f).reduce((a,e)=>a+A(e),0)]), rep=tot-gv[4][1], gmx=Math.max(1,...gv.slice(0,4).map(x=>x[1]));
+    $('ac-bars').innerHTML=tot?gv.slice(0,4).map(([l,v])=>hbar(l,v,gmx,'var(--c-conflict)')).join(''):`<p class="empty">No airstrikes recorded ${PER()}.</p>`;
+    $('ac-cov').textContent=tot?`Reported for ${fmt(rep)} of ${plural(tot,'airstrike')}. Most reports give no aircraft number.`:'';
+    const BS=AS.filter(e=>e.bombs!=null), nb=BS.reduce((a,e)=>a+e.bombs,0), cb=BS.reduce((a,e)=>a+A(e),0);
+    $('bm-num').innerHTML=nb?`<small style="font-size:15px;font-family:var(--f-body)">at least </small>${fmt(nb)}`:'<span class="na">Not reported</span>';
+    $('bm-cov').textContent=tot?`Reported for ${fmt(cb)} of ${plural(tot,'airstrike')}.`:'';
+    const top=AS.filter(e=>typeof e.aircraftN==='number'&&e.aircraftN>=2).sort((x,y)=>y.aircraftN-x.aircraftN||y.date.localeCompare(x.date)).slice(0,5);
+    $('ac-top').innerHTML=top.length?top.map(e=>`<div class="row"><span>${esc(titleOf(e))}<span class="tag">${esc(dShort(e.date))} ${e.date.slice(0,4)} · ${esc(e.ts)}</span></span><span>${e.aircraftN} aircraft</span></div>`).join(''):`<p class="sub">No raid with two or more aircraft reported ${PER()}.</p>`;
+    if(!tot) $('airsize').hidden=true; }
 
   const b=m.briefing||{}; const cov=$('cover'); if(b.cover){cov.src='data/'+b.cover;} else cov.hidden=true;
   const dl=[]; if(b.pdf_en) dl.push(`<a href="data/${encodeURI(b.pdf_en)}" target="_blank" rel="noopener">Read the briefing in English <span>PDF</span></a>`);
@@ -1362,12 +1381,17 @@ function renderAbout(){
     <li><b>One airstrike is one attack on one place at one time</b>, however many bombs were dropped. If the same place is attacked again later, that is a second airstrike. Attacks on different villages are counted separately.</li>
     <li><b>What was hit, not what was intended.</b> The headline counts airstrikes on civilian areas: villages, towns, schools, churches, clinics and IDP sites. Strikes on armed positions, or where the target is unclear, are recorded but counted separately.</li>
     <li><b>Drone strikes are shown separately</b> from airstrikes by jet fighters and helicopters.</li>
+    <li><b>Aircraft and bombs are recorded only when the source gives them.</b> If a report says "jets" without a number, it is recorded as "more than one, number not given". If it gives some numbers but not all (for example "six jets and Y-12 aircraft"), the lowest certain number is used. Bomb counts use the lowest number reported, so "more than 50 bombs" is counted as 50. Many reports, including monthly totals, give no numbers. These figures are therefore minimums, and the site shows how many airstrikes they cover.</li>
+    <li><b>Air attacks during ground fighting</b> are recorded as an airstrike as well as a clash when the source reports aircraft bombing.</li>
     <li><b>Chin State only.</b> Strikes outside Chin State are not counted.</li>
     <li><b>Date of the attack</b>, not the date it was reported.</li>
     <li><b>Casualties</b> are civilians and combatants counted separately, as known at the time of recording, and updated if later information changes them.</li>
     <li><b>When sources disagree</b>, the best-confirmed figure is used and higher claims are noted in the description.</li>
   </ul>
   <p>The printed September 2026 briefing reported 12 airstrikes because it counted individual bombs. Counted by attack, September had 6. This site uses the same rule for every month. All other September totals match the printed briefing.</p>
+
+  <h3>Comparing with other trackers</h3>
+  <p>The Myanmar Peace Monitor of Burma News International records one airstrike event per township per day. This site counts each attack on each place separately, so the same reports can give a higher count here. Neither method records aircraft or bombs that were not reported, and actual numbers may be higher in both.</p>
 
   <h3>Locations</h3>
   <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Chin State township boundaries are from MIMU. Mizoram district boundaries are from the Mizoram Remote Sensing Application Centre (MIRSAC), Government of Mizoram. Lines from the two sources can differ slightly along the border. All boundaries are for reference only and do not imply endorsement.</p>
