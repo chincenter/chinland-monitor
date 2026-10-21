@@ -2,7 +2,7 @@
  "title": "Chinland Conflict Monitor",
  "publisher": "Chin Center for Peace and Reconciliation",
  "source": "Chinland Monitoring Briefing",
- "generated": "2026-10-21T04:08:48.645Z",
+ "generated": "2026-10-21T06:26:04.179Z",
  "latest": "2026-09",
  "months": {
   "2026-09": {
@@ -1729,6 +1729,15 @@
      "id": "E20260923-022"
     }
    ]
+  },
+  "Chin National Council (CNC) process": {
+   "id": "P05",
+   "about": null,
+   "actors": "Chin National Council",
+   "started": null,
+   "stage": null,
+   "last": null,
+   "log": []
   }
  },
  "markets": {},
@@ -1754,5 +1763,85 @@
    "lon": 92.718,
    "prec": "approx"
   }
- }
+ },
+ "briefings": [
+  {
+   "month": "2026-09",
+   "label": "September 2026",
+   "url_en": "data/CMB-2026-09-EN.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2026-05",
+   "label": "May 2026",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/06/CMB_May_2026.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2026-03",
+   "label": "March 2026",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/05/CMB_March_2026pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-11",
+   "label": "November 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Nov_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-10",
+   "label": "October 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Oct_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-09",
+   "label": "September 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Sep_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-08",
+   "label": "August 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Aug_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-07",
+   "label": "July 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Jul_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-06",
+   "label": "June 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Jun_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-05",
+   "label": "May 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/May_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-04",
+   "label": "April 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Apr_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-03",
+   "label": "March 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Mar_2025_CMB.pdf.pdf",
+   "url_my": null
+  },
+  {
+   "month": "2025-02",
+   "label": "February 2025",
+   "url_en": "https://chinpeacecenter.org/wp-content/uploads/2026/02/Feb_2025_CMB.pdf",
+   "url_my": null
+  }
+ ]
 }

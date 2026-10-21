@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=PT+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: IISS-style bento board per page; one header with page tabs and a shared month selector. */
@@ -175,7 +175,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .trend{margin:0;flex:1 1 220px;max-width:440px}
 .trend figcaption{font-size:12px;color:var(--muted);margin-bottom:4px}
 .chart .tv{font-family:var(--f-data);font-size:10px;fill:var(--ink)}
-.archive{margin:12px 0 0;padding:0;list-style:none;font-size:13px}
+.archive{max-height:260px;overflow:auto;margin:6px 0 0;padding:0;list-style:none;font-size:13px}
 .archive li{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)}
 .hbar .track,.hbar .fill{display:block}
 button.hbar{width:100%;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;padding:3px 4px;margin:4px 0;border-radius:6px;cursor:pointer;text-align:left;grid-template-columns:minmax(120px,38%) minmax(0,1fr) 34px}
@@ -322,12 +322,12 @@ footer p{margin:0 0 6px;max-width:80ch}
 </footer>
 </div>
 
-<script src="data/townships.js"></script>
-<script src="data/mizoram.js"></script>
-<script src="data/chin-outline.js"></script>
-<script src="data/villages.js"></script>
+<script defer src="data/townships.js"></script>
+<script defer src="data/mizoram.js"></script>
+<script defer src="data/chin-outline.js"></script>
+<script defer src="data/villages.js"></script>
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded',function(){
 'use strict';
 const TS = window.CHIN_TOWNSHIPS;
 const $ = id => document.getElementById(id);
@@ -494,7 +494,7 @@ function makeMap(host, shadeVar, opts){
     map.addLayer({id:'ts-line',type:'line',source:'ts',paint:{'line-color':C.edge,'line-width':1.3}});
     map.addLayer({id:'chin-outline',type:'line',source:'outline',paint:{'line-color':C.ink,'line-width':1,'line-opacity':0.5}});
     map.addLayer({id:'intl',type:'line',source:'intl',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':C.ink,'line-width':2.4}});
-    map.addLayer({id:'vill-dot',type:'circle',source:'vill',layout:{visibility:villagesOn?'visible':'none'},paint:{'circle-color':C.muted,'circle-opacity':0.75,'circle-radius':['interpolate',['linear'],['zoom'],7,1.3,10,2.6,13,4],'circle-stroke-color':C.halo,'circle-stroke-width':['interpolate',['linear'],['zoom'],8,0,11,0.8]}});
+    map.addLayer({id:'vill-dot',type:'circle',source:'vill',layout:{visibility:villagesOn?'visible':'none'},paint:{'circle-color':C.muted,'circle-opacity':['interpolate',['linear'],['zoom'],7,0.4,9.5,0.8],'circle-radius':['interpolate',['linear'],['zoom'],7,0.9,10,2.4,13,4],'circle-stroke-color':C.halo,'circle-stroke-width':['interpolate',['linear'],['zoom'],8,0,11,0.8]}});
     const F=['Noto Sans Regular'], FB=['Noto Sans Bold'];
     map.addLayer({id:'lbl-ts',type:'symbol',source:'lbl',maxzoom:10.5,filter:['==',['get','k'],'ts'],layout:{'text-field':['get','n'],'text-font':FB,'text-size':11,'text-letter-spacing':0.12,'text-allow-overlap':false},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.5}});
     map.addLayer({id:'lbl-mz',type:'symbol',source:'lbl',maxzoom:10.5,filter:['==',['get','k'],'mz'],layout:{'text-field':['get','n'],'text-font':F,'text-size':10},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.2}});
@@ -506,7 +506,7 @@ function makeMap(host, shadeVar, opts){
     /* external base map underneath our layers; if it fails, our layers still show */
     try{
       map.addSource('dem',{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:12,attribution:''});
-      map.addLayer({id:'hills',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':dark?0.35:0.45,'hillshade-shadow-color':dark?'#06080F':'#7A7468','hillshade-highlight-color':dark?'#2A3045':'#FFFFFF','hillshade-accent-color':dark?'#0B0E17':'#9A9284'}},'mz-fill');
+      map.addLayer({id:'hills',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':dark?0.25:0.3,'hillshade-shadow-color':dark?'#06080F':'#7A7468','hillshade-highlight-color':dark?'#2A3045':'#FFFFFF','hillshade-accent-color':dark?'#0B0E17':'#9A9284'}},'mz-fill');
       map.addSource('omt',{type:'vector',url:'https://tiles.openfreemap.org/planet'});
       map.addLayer({id:'water',type:'fill',source:'omt','source-layer':'water',paint:{'fill-color':C.water}},'mz-fill');
       map.addLayer({id:'rivers',type:'line',source:'omt','source-layer':'waterway',filter:['==',['get','class'],'river'],paint:{'line-color':C.water,'line-width':['interpolate',['linear'],['zoom'],7,0.6,12,2]}},'mz-fill');
@@ -526,7 +526,7 @@ function makeMap(host, shadeVar, opts){
     return `<svg width="${2*s+4}" height="${2*s+4}" viewBox="${-s-2} ${-s-2} ${2*s+4} ${2*s+4}"><circle r="${s}" ${st}/></svg>`; }
   const api={ draw(args){ if(!ready){ pending=args; return; } const {points,counts,onSelect,selected}=args; onSel=onSelect; sel=selected;
       const max=Math.max(1,...Object.values(counts||{}));
-      const op=(prefix)=>{ const e=['match',['get','n']]; let any=false; Object.entries(counts||{}).forEach(([k,n])=>{ const nm=prefix?(k.startsWith('MZ:')?k.slice(3):null):(k.startsWith('MZ:')?null:k); if(nm&&n){ e.push(nm,0.12+0.38*n/max); any=true; } }); e.push(0); return any?['interpolate',['linear'],['zoom'],8,e,11,['*',0.3,e]]:0; };
+      const op=(prefix)=>{ const e=['match',['get','n']]; let any=false; Object.entries(counts||{}).forEach(([k,n])=>{ const nm=prefix?(k.startsWith('MZ:')?k.slice(3):null):(k.startsWith('MZ:')?null:k); if(nm&&n){ e.push(nm,0.08+0.26*n/max); any=true; } }); e.push(0); return any?['interpolate',['linear'],['zoom'],8,e,11,['*',0.3,e]]:0; };
       map.setPaintProperty('ts-count','fill-opacity',op(false)); map.setPaintProperty('mz-count','fill-opacity',op(true));
       markers.forEach(m=>m.remove()); markers=[]; const seen={};
       points.forEach(pt=>{ if(pt.lat==null||pt.lon==null) return;
@@ -752,8 +752,8 @@ function renderSecurity(){
   const dl=[]; if(b.pdf_en) dl.push(`<a href="data/${encodeURI(b.pdf_en)}" target="_blank" rel="noopener">Read the briefing in English <span>PDF</span></a>`);
   if(b.pdf_my) dl.push(`<a href="data/${encodeURI(b.pdf_my)}" target="_blank" rel="noopener" lang="my">မြန်မာဘာသာဖြင့် ဖတ်ရန် <span>PDF</span></a>`);
   $('downloads').innerHTML=dl.join('')||'<p class="sub">The PDF for this month is not online yet.</p>';
-  const arch=Object.keys(DATA.months).sort().reverse().filter(k=>DATA.months[k].briefing&&DATA.months[k].briefing.pdf_en&&DATA.months[k].briefing!==b);
-  if(arch.length) $('downloads').insertAdjacentHTML('afterend',`<div class="k" style="margin-top:14px">Earlier briefings</div><ul class="archive">${arch.map(k=>`<li><span>${esc(DATA.months[k].label)}</span><a href="data/${encodeURI(DATA.months[k].briefing.pdf_en)}" target="_blank" rel="noopener">English PDF</a></li>`).join('')}</ul>`);
+  const arch=(DATA.briefings||[]).filter(x=>!(b&&x.month===TO));
+  if(arch.length) $('downloads').insertAdjacentHTML('afterend',`<div class="k" style="margin-top:14px">Earlier briefings</div><ul class="archive">${arch.map(x=>`<li><span>${esc(x.label)}</span><span>${x.url_en?`<a href="${esc(x.url_en)}" target="_blank" rel="noopener">English PDF</a>`:''}${x.url_my?` · <a href="${esc(x.url_my)}" target="_blank" rel="noopener" lang="my">မြန်မာ</a>`:''}</span></li>`).join('')}</ul><p class="note" style="padding-top:8px"><a href="https://chinpeacecenter.org/publication/" target="_blank" rel="noopener">All CCPR publications</a></p>`);
   const cnt=c=>ev.filter(e=>e.cat===c).length;
   $('brief-stats').innerHTML=`<li>Conflict incidents logged<b>${cnt('conflict')}</b></li><li>Landmine incidents logged<b>${cnt('landmine')}</b></li><li>Drug seizures logged<b>${cnt('drug')}</b></li><li>Governance and political events<b>${(m.events||[]).filter(e=>['governance','political','border'].includes(e.cat)).length}</b></li><li>Humanitarian and livelihood events<b>${(m.events||[]).filter(e=>['humanitarian','livelihood'].includes(e.cat)).length}</b></li>`;
 
@@ -876,8 +876,8 @@ function renderGovernance(){
     const side = cur==='Stalled'?'<span class="pill bad">Stalled</span>':cur==='Ended'?'<span class="pill neutral">Ended</span>':'';
     const ci=STAGES.indexOf(cur);
     const rail = log.length ? `<div class="rail" role="img" aria-label="${esc(name)}: current stage ${esc(cur||'not stated')}">${STAGES.map((s,i)=>`<div class="${s===cur?'now':(seen.has(s)||(ci>i&&false))?'past':''}">${esc(s)}</div>`).join('')}</div>` : '';
-    return `<div class="proc"><div class="proc-h"><b>${esc(name)}</b><span class="meta">${log.length?`Last update ${esc(dLong(log[log.length-1].date))} · ${plural(thisMonth,'event')} this month`:'No events up to this month'}</span></div>
-      <p>${esc(p.about)}</p>${rail}${side?`<div style="margin-top:6px">${side}</div>`:''}
+    return `<div class="proc"><div class="proc-h"><b>${esc(name)}</b><span class="meta">${log.length?`Last update ${esc(dLong(log[log.length-1].date))} · ${plural(thisMonth,'event')} ${PER()}`:'No events recorded yet'}</span></div>
+      ${p.about?`<p>${esc(p.about)}</p>`:''}${rail||'<p class="sub" style="margin-top:4px">Followed by CCPR. The stage will show here once the briefing reports a step in this process.</p>'}${side?`<div style="margin-top:6px">${side}</div>`:''}
       ${cur&&ci<0&&!side?`<p class="sub">Current stage: ${esc(cur)}</p>`:''}</div>`;
   }).join('') : '<p class="empty">No process events recorded yet.</p>';
 
@@ -1141,7 +1141,7 @@ fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new
   window.addEventListener('hashchange',()=>{ SELID=null; render(); toAnchor(); writeHash(); });
   render(); toAnchor(); writeHash();
 }).catch(()=>{ $('state').textContent='The data file could not be loaded. Please try again later.'; });
-})();
+});
 </script>
 
 </body>
