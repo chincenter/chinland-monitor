@@ -71,6 +71,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .tile h2 .src{font-family:var(--f-data);font-size:10.5px;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:400}
 .sub{margin:0 0 10px;font-size:13px;color:var(--muted)}
 .intro{grid-column:span 3;background:transparent;border:none;padding:4px 4px 0}
+.intro.wide{grid-column:span 12;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 28px}.intro.wide h1{margin:0}.intro.wide p{margin:0;max-width:70ch}
 .intro h1{font-family:var(--f-display);font-size:26px;line-height:1.15;margin:0 0 10px;text-wrap:balance}
 .intro p{margin:0 0 10px;color:var(--muted);font-size:14px;max-width:46ch}
 .kpi{grid-column:span 3;display:flex;flex-direction:column}
@@ -263,6 +264,7 @@ footer p{margin:0 0 6px;max-width:80ch}
 
 @media (max-width:1100px){
   .intro,.kpi,.span3{grid-column:span 6}
+  .intro.wide{grid-column:span 12}
   .span4,.span5{grid-column:span 6}
   .span7,.span8{grid-column:span 12}
   .rows2,.rows3{grid-row:auto}
@@ -636,7 +638,7 @@ function trendTile(title, series){
   const charts=series.map(se=>{ const vals=ks.map(k=>se.fn(DATA.months[k])); const max=Math.max(1,...vals.filter(v=>v!=null));
     const bars=vals.map((v,i)=>{ const x=6+i*((w-12)/ks.length)+((w-12)/ks.length-bw)/2, bh=v==null?0:Math.max(v>0?2:0,(h-pad-16)*v/max), y=h-pad-bh;
       const lab=v==null?'–':fmtDec(v); const show=ks.length<=8||i===ks.length-1||v===max;
-      return `<g><rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" style="fill:${se.color}"><title>${esc(DATA.months[ks[i]].label)}: ${v==null?'not reported':lab}</title></rect>${show?`<text class="tv" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${lab}</text>`:''}${ks.length<=7||i%3===0||i===ks.length-1?`<text class="axis" x="${x+bw/2}" y="${h-4}" text-anchor="middle">${esc(shortM(ks[i]).replace(' 20',' ’'))}</text>`:''}</g>`; }).join('');
+      return `<g><rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="3" style="fill:${se.color}"><title>${esc(DATA.months[ks[i]].label)}: ${v==null?'not reported':lab}</title></rect>${show?`<text class="tv" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${lab}</text>`:''}${ks.length<=7||(i%3===0&&i<ks.length-2)||i===ks.length-1?`<text class="axis" x="${x+bw/2}" y="${h-4}" text-anchor="middle">${esc(shortM(ks[i]).replace(' 20',' ’'))}</text>`:''}</g>`; }).join('');
     return `<figure class="trend"><figcaption>${esc(se.label)}</figcaption><svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(se.label)} by month">${bars}<line x1="0" x2="${w}" y1="${h-pad}" y2="${h-pad}" class="grid"/></svg></figure>`; }).join('');
   return `<section class="tile span12"><h2>${esc(title)} <span class="src">month by month, ${esc(mon().label)}</span></h2><div class="trends">${charts}</div></section>`;
 }
@@ -711,7 +713,7 @@ function renderSecurity(){
   const m = mon(), ev = m.incidents||[];
   const layers = {conflict:true,landmine:true,drug:true}; let filter='all', selected=null;
   V.innerHTML = `
-  <section class="tile intro">
+  <section class="tile intro wide">
     <h1>Armed conflict, landmines and drugs in Chinland</h1>
     <p>Incidents recorded in CCPR's Chinland Monitoring Briefing. Figures cover Chin State, with drug seizures on the Mizoram and Kalay borders where they concern trafficking into Chinland.</p>
     <p>Showing ${esc(m.label)}.</p>
@@ -720,6 +722,9 @@ function renderSecurity(){
   <section class="tile kpi"><h2>Civilian casualties <span class="src" id="src-civ"></span></h2>
     <div class="split"><div><span>Killed</span><b class="num" id="k-civk"></b></div><div><span>Injured</span><b class="num" id="k-civi"></b></div></div>
     <p class="cap">Airstrikes, heavy weapons, landmines and other armed violence.</p><div class="foot" id="k-civ-foot"></div></section>
+  <section class="tile kpi"><h2>Landmine casualties <span class="src" id="src-lm"></span></h2>
+    <div class="split"><div><span>Killed</span><b class="num" id="k-lmk"></b></div><div><span>Injured</span><b class="num" id="k-lmi"></b></div></div>
+    <p class="cap">Civilians killed or injured by landmines and explosive remnants of war.</p><div class="foot" id="k-lm-foot"></div></section>
   <section class="tile kpi"><h2>Methamphetamine seized <span class="src" id="src-drug"></span></h2><div class="num" id="k-meth"></div><p class="cap" id="k-meth-cap"></p><div class="foot" id="k-meth-foot"></div></section>
 
   ${trendTile('Security trends',[{label:'Airstrikes on civilian areas',color:'var(--c-conflict)',fn:strikeCount},
@@ -745,7 +750,7 @@ function renderSecurity(){
   <section class="tile span4"><h2>Airstrikes by township <span class="src" id="src-bars"></span></h2>
     <p class="sub">Separate attacks on civilian areas. The figure after the slash is civilians injured.</p>
     <div id="air-bars"></div><div class="chips" id="damage"></div>
-    <div class="duo"><div><div class="k">Landmine casualties</div><div id="lm-bars"></div></div>
+    <div class="duo"><div><div class="k">Landmine incidents by township</div><div id="lm-bars"></div></div>
       <div><div class="k">Children killed by airstrikes, year to date (other source)</div><b class="big" id="k-child"></b><p class="sub" id="k-child-cap" style="margin:0"></p></div></div></section>
 
   <section class="tile span4"><h2>Seizures on Chinland's borders <span class="src" id="src-drugs"></span></h2>
@@ -807,7 +812,12 @@ function renderSecurity(){
   $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):`<p class="empty">No airstrikes on civilian areas recorded ${PER()}.</p>`;
   $('damage').innerHTML=!allPrinted?'':[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`<span class="chip"><b>${fSum(i)}</b>${l} damaged</span>`).join('');
   const LG=CG.Landmines, lk=LG?LG[0]:(PS.civ.log?0:null), li=LG?LG[1]:(PS.civ.log?0:null), lmax=Math.max(1,lk||0,li||0);
-  $('lm-bars').innerHTML=(lk===null&&li===null)?'<p class="sub">Not reported</p>':hbar('Killed',lk||0,lmax,'var(--c-conflict)')+hbar('Injured',li||0,lmax,'var(--c-landmine)');
+  const lmEv=ev.filter(e=>e.cat==='landmine'&&e.inChin), lmTs={}; lmEv.forEach(e=>{lmTs[e.ts]=(lmTs[e.ts]||0)+1;});
+  const lmMax=Math.max(1,...Object.values(lmTs));
+  $('lm-bars').innerHTML=lmEv.length?Object.entries(lmTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,lmMax,'var(--c-landmine)')).join(''):`<p class="sub">None recorded ${PER()}</p>`;
+  setNum('k-lmk',lk,null,'var(--c-landmine)'); setNum('k-lmi',li); $('src-lm').textContent=PS.civ.src;
+  const mineAtt=ev.filter(e=>e.inChin&&e.type==='Mine or IED attack').length;
+  $('k-lm-foot').textContent=[lmEv.length?`${plural(lmEv.length,'landmine incident')} in the log, in ${plural(Object.keys(lmTs).length,'township')}`:`No landmine incidents in the log ${PER()}`, mineAtt?`${plural(mineAtt,'mine attack')} on armed forces, not counted here`:''].filter(Boolean).join(' · ');
   const ch=fVal('Children killed by airstrikes in Chinland, year to date');
   $('k-child').textContent=ch===null?'–':ch; $('k-child-cap').textContent=ch===null?`Not reported ${PER()}.`:[fNote('Children killed by airstrikes in Chinland, year to date'),fSrc('Children killed by airstrikes in Chinland, year to date')].filter(Boolean).join('. ');
 
