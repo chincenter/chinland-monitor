@@ -540,7 +540,7 @@ function makeMap(host, shadeVar, opts){
     },
     mark(id){ sel=id; el.querySelectorAll('.mk').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); },
     villages(on){ villagesOn=on; if(ready){ ['vill-dot','vill-lbl'].forEach(l=>map.setLayoutProperty(l,'visibility',on?'visible':'none')); } },
-    flyTo(lon,lat,z){ map.flyTo({center:[lon,lat],zoom:z||11,essential:true}); },
+    flyTo(lon,lat,z){ map.jumpTo({center:[lon,lat],zoom:z||11}); },
     fit(b){ map.fitBounds(b,{padding:30,maxZoom:11}); },
     map };
   return api;
@@ -792,6 +792,7 @@ function renderSecurity(){
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
   $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
+  if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,12.2); }
   chipCounts(ev,null);
   drawMap(); drawLog();
   if(SELID&&ev.some(x=>x.id===SELID)) select(SELID);
@@ -910,6 +911,7 @@ function renderGovernance(){
   V.querySelectorAll('.areabar').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.area; farea=[...areaSel.options].some(o=>o.value===k)?k:'all'; areaSel.value=farea;
     fcat='governance'; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.f==='governance')); drawLog(); $('log').scrollIntoView({behavior:'smooth',block:'start'}); }));
   $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
+  if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,12.2); }
   chipCounts(all,null);
   drawMap(); drawLog();
   if(SELID&&all.some(x=>x.id===SELID)) select(SELID);
@@ -997,6 +999,7 @@ function renderHumanitarian(){
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
   $('map').before(placeSearch(map,()=>{drawMap(); drawLog();}));
+  if(PLACE&&map.fit){ if(PLACE.bbox) map.fit(PLACE.bbox); else map.flyTo(PLACE.lon,PLACE.lat,12.2); }
   chipCounts(all,{site:sitesWith.length});
   drawMap(); drawLog();
   if(SELID&&all.some(x=>x.id===SELID)) select(SELID);
