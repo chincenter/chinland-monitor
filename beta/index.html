@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Chinland Conflict Monitor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="description" content="Monthly monitoring of security, governance, politics, humanitarian conditions and livelihoods in Chinland, compiled by the Chin Center for Peace and Reconciliation.">
+<link rel="icon" type="image/png" href="data/ccpr-mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=PT+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: IISS-style bento board per page; one header with page tabs and a shared month selector. */
+:root{
+  --bg:#EEF0F4; --panel:#FFFFFF; --ink:#1B2440; --muted:#5A6177; --line:#D9DDE6; --soft:#F4F5F8;
+  --land:#E4E7EE; --land-mz:#F1F2F6; --land-edge:#FFFFFF; --navy:#1B2440;
+  /* security */ --c-conflict:#A3123E; --c-landmine:#C97A12; --c-drug:#2B5BAE;
+  /* governance page */ --c-governance:#0E8A6A; --c-political:#7C3AED; --c-border:#B45309;
+  /* humanitarian page */ --c-humanitarian:#D9480F; --c-site:#1D6FB8; --c-livelihood:#5B8C1E;
+  --accent:#A3123E; --accent-soft:#F3DCE3;
+  --good:#1F7A45; --good-soft:#DDF1E4; --warn:#9C5A00; --warn-soft:#FCEBD0; --bad:#A3123E; --bad-soft:#F3DCE3;
+  --f-display:"PT Serif", Georgia, "Times New Roman", serif;
+  --f-body:"PT Sans", "Segoe UI", system-ui, sans-serif;
+  --f-data:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1320; --panel:#171C2B; --ink:#E6E9F2; --muted:#9AA1B6; --line:#2A3147; --soft:#1D2335;
+  --land:#252B3D; --land-mz:#1E2333; --land-edge:#171C2B; --navy:#0B0F19;
+  --c-conflict:#E2557B; --c-landmine:#BF7A1C; --c-drug:#5A8DE0;
+  --c-governance:#1FA27E; --c-political:#8F6EEB; --c-border:#CF7C14;
+  --c-humanitarian:#E8672A; --c-site:#4F86DC; --c-livelihood:#3FA65A;
+  --accent:#E2557B; --accent-soft:#3A1D2A;
+  --good:#5CC48A; --good-soft:#173326; --warn:#E6A345; --warn-soft:#3A2D18; --bad:#E2557B; --bad-soft:#3A1D2A;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1320; --panel:#171C2B; --ink:#E6E9F2; --muted:#9AA1B6; --line:#2A3147; --soft:#1D2335;
+  --land:#252B3D; --land-mz:#1E2333; --land-edge:#171C2B; --navy:#0B0F19;
+  --c-conflict:#E2557B; --c-landmine:#BF7A1C; --c-drug:#5A8DE0;
+  --c-governance:#1FA27E; --c-political:#8F6EEB; --c-border:#CF7C14;
+  --c-humanitarian:#E8672A; --c-site:#4F86DC; --c-livelihood:#3FA65A;
+  --accent:#E2557B; --accent-soft:#3A1D2A;
+  --good:#5CC48A; --good-soft:#173326; --warn:#E6A345; --warn-soft:#3A2D18; --bad:#E2557B; --bad-soft:#3A1D2A;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a{color:inherit}
+.wrap{max-width:1360px;margin:0 auto}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;padding-block:12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{width:34px;height:auto}
+.brand b{font-family:var(--f-display);font-size:19px;line-height:1.1;display:block}
+.brand small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+nav.views{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+nav.views a{font-size:13.5px;text-decoration:none;padding:7px 11px;border-radius:6px;color:var(--muted)}
+nav.views a:hover{color:var(--ink)}
+nav.views a[aria-current="page"]{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);font-weight:700}
+.month{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.month select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outline:2px solid var(--c-drug);outline-offset:2px}
+
+.board{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-top:16px}
+.tile{background:var(--panel);border-radius:var(--r);padding:18px 18px 16px;min-width:0;border:1px solid var(--line)}
+.tile h2{font-family:var(--f-body);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 6px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tile h2 .src{font-family:var(--f-data);font-size:10.5px;letter-spacing:0;text-transform:none;color:var(--muted);font-weight:400}
+.sub{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.intro{grid-column:span 3;background:transparent;border:none;padding:4px 4px 0}
+.intro h1{font-family:var(--f-display);font-size:26px;line-height:1.15;margin:0 0 10px;text-wrap:balance}
+.intro p{margin:0 0 10px;color:var(--muted);font-size:14px;max-width:46ch}
+.kpi{grid-column:span 3;display:flex;flex-direction:column}
+.kpi .num{font-family:var(--f-display);font-size:56px;line-height:1;margin:8px 0 6px;font-variant-numeric:tabular-nums;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.kpi .num small{font-size:20px;margin-left:2px}
+.kpi .num i{display:inline-block;width:6px;align-self:stretch;border-radius:3px;margin:6px 0}
+.kpi .cap{font-size:13px;color:var(--muted);margin:0}
+.kpi .split{display:flex;gap:22px;margin:8px 0 6px}
+.kpi .split div{display:flex;flex-direction:column}
+.kpi .split .num{font-size:50px;margin:0}
+.kpi .split span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.kpi .foot{margin-top:auto;padding-top:10px;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line)}
+.na{color:var(--muted)!important;font-size:26px!important}
+.empty{font-size:13.5px;color:var(--muted);padding:14px;border:1px dashed var(--line);border-radius:8px;background:var(--soft)}
+
+.span12{grid-column:span 12}.span8{grid-column:span 8}.span7{grid-column:span 7}.span6{grid-column:span 6}.span5{grid-column:span 5}.span4{grid-column:span 4}.span3{grid-column:span 3}
+.rows2{grid-row:span 2}.rows3{grid-row:span 3}
+
+/* briefing */
+.brief{display:flex;flex-direction:column}
+.brief .cover{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:4/3;max-width:100%;background:var(--navy)}
+.brief .cover img{width:100%;height:100%;object-fit:cover;opacity:.55;display:block}
+.brief .cover .t{position:absolute;inset:auto 0 0 0;padding:14px;color:#fff}
+.brief .cover .t small{font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.85}
+.brief .cover .t b{display:block;font-family:var(--f-display);font-size:22px;line-height:1.1;margin:4px 0 8px}
+.brief .cover .t span{display:inline-block;background:#A3123E;color:#fff;font-size:12px;padding:3px 9px;border-radius:3px;font-weight:700}
+.dl{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.dl a{display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:14px;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--soft)}
+.dl a:hover{border-color:var(--ink)}
+.dl a span{font-family:var(--f-data);font-weight:400;font-size:11px;color:var(--muted)}
+.stats{margin:14px 0 0;padding:0;list-style:none}
+.stats li{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.stats li b{font-family:var(--f-data);font-weight:500}
+.note{font-size:12px;color:var(--muted);margin-top:auto;padding-top:14px}
+
+/* map */
+.maptile{display:flex;flex-direction:column}
+.layers{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px}
+.layers button{font:inherit;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.layers button[aria-pressed="false"]{opacity:.45}
+.sw{width:10px;height:10px;display:inline-block;border-radius:50%}
+.sw.sq{border-radius:2px}.sw.tri{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid currentColor;border-radius:0;background:none!important}
+.sw.dia{transform:rotate(45deg);border-radius:1px;width:9px;height:9px}
+.mapbox{position:relative;flex:1;min-height:440px}
+.gl{position:relative;height:clamp(520px,74vh,820px);border-radius:8px;overflow:hidden;background:var(--land)}
+.gl .maplibregl-ctrl-attrib{font-size:10px}
+.gl .maplibregl-popup-content{background:var(--ink);color:var(--panel);font-family:var(--f-body);font-size:12px;padding:6px 8px;border-radius:5px;line-height:1.35;box-shadow:none}
+.gl .maplibregl-popup-tip{border-top-color:var(--ink)!important;border-bottom-color:var(--ink)!important}
+.mk{cursor:pointer;display:block;line-height:0}
+.mk svg{overflow:visible;display:block}
+.mk:focus{outline:none}.mk:focus-visible svg,.mk.sel svg{filter:drop-shadow(0 0 0 var(--ink))}
+.mk.sel svg *{stroke:var(--ink)!important;stroke-width:2.5px}
+.glreset{position:absolute;top:84px;right:10px;z-index:2;width:29px;height:29px;border-radius:4px;border:0;background:#fff;color:#333;box-shadow:0 0 0 2px rgba(0,0,0,.1);cursor:pointer;font-size:15px}
+.map{width:100%;height:100%;display:block}
+.map .ts{fill:var(--land);stroke:var(--land-edge);stroke-width:1.4}
+.map .mz{fill:var(--land-mz);stroke:var(--land-edge);stroke-width:1.1}
+.map .chin-outline{fill:none;stroke:var(--ink);stroke-width:1;stroke-opacity:.45;stroke-linejoin:round;pointer-events:none}
+.map .intl{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.legend i.bline{width:18px;height:0;border-radius:0;border-top:2.5px solid var(--ink);vertical-align:3px}
+.map .vdot{fill:var(--muted);fill-opacity:.55;stroke:none}
+.map .vlab{font-family:var(--f-body);font-size:8px;fill:var(--muted);display:none;pointer-events:none}
+.map.zoomed .vlab{display:block}
+.map.zoomed .vdot{fill-opacity:.8}
+.map path{vector-effect:non-scaling-stroke}
+.map .pt{vector-effect:non-scaling-stroke}
+.mapbox{user-select:none;-webkit-user-select:none}
+.zoom{position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:4px;z-index:1}
+.zoom button{width:30px;height:30px;font:inherit;font-size:16px;line-height:1;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);cursor:pointer}
+.zoom button:disabled{opacity:.4;cursor:default}
+.map{touch-action:pan-y;cursor:default}
+.map.zin{touch-action:none;cursor:grab}
+.map .mzlabel{font-family:var(--f-body);font-size:8.5px;fill:var(--muted);text-anchor:middle;pointer-events:none;opacity:.85}
+.map .country{font-family:var(--f-body);font-size:10px;font-weight:700;fill:var(--muted);letter-spacing:.2em;text-transform:uppercase}
+.map .tslabel{font-family:var(--f-body);font-size:10px;fill:var(--muted);text-anchor:middle;pointer-events:none;letter-spacing:.06em;text-transform:uppercase}
+.map .ctx{font-family:var(--f-body);font-size:10px;fill:var(--muted);letter-spacing:.18em;text-transform:uppercase;opacity:.75}
+.map .town{fill:var(--ink)} .map .townl{font-family:var(--f-body);font-size:9.5px;fill:var(--ink)}
+.map .pt{cursor:pointer;stroke:var(--panel);stroke-width:1.5}
+.map .pt:focus{outline:none} .map .pt:focus-visible,.map .pt.sel{stroke:var(--ink);stroke-width:2.5}
+.map .pt.approx{fill-opacity:0;stroke-width:2;stroke-dasharray:3 2}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--panel);font-size:12px;padding:6px 8px;border-radius:5px;max-width:240px;line-height:1.35;transform:translate(-50%,calc(-100% - 10px));z-index:2}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.legend i.ring{background:transparent;border:2px dashed var(--muted)}
+.sel-card{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;font-size:13.5px;min-height:74px}
+.meta{font-family:var(--f-data);font-size:11px;color:var(--muted)}
+.sel-card b{display:block;margin:2px 0}
+
+/* bars */
+.hbar{display:grid;grid-template-columns:96px minmax(0,1fr) 46px;align-items:center;gap:8px;font-size:13px;margin:7px 0}
+.hbar .track,.hbar .fill{display:block}
+button.hbar{width:100%;font:inherit;font-size:13px;color:var(--ink);background:none;border:0;padding:3px 4px;margin:4px 0;border-radius:6px;cursor:pointer;text-align:left;grid-template-columns:minmax(120px,38%) minmax(0,1fr) 34px}
+button.hbar:hover{background:var(--soft)}
+.hbar .track{height:14px;background:var(--soft);border-radius:3px;overflow:hidden}
+.hbar .fill{height:100%;border-radius:0 3px 3px 0}
+.hbar .v{font-family:var(--f-data);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--soft);border:1px solid var(--line)}
+.chip b{font-family:var(--f-data);font-weight:500;margin-right:4px}
+.big{font-family:var(--f-display);font-size:40px;line-height:1;display:block;margin:6px 0 2px}
+
+.rowlist .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.rowlist .row:last-child{border-bottom:none}
+.rowlist .row > span{min-width:0}
+.rowlist .row > span:last-child{font-family:var(--f-data);font-size:12.5px;text-align:right;flex-shrink:0;max-width:52%}
+.tag{font-size:10.5px;color:var(--muted);display:block;font-family:var(--f-body)}
+
+/* tables */
+.tblwrap{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+.t th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.t td b{white-space:nowrap}
+.t td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.t td.d,.t td.n{font-family:var(--f-data);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.t td.r,.t th.r{text-align:right}
+.t.click tbody tr{cursor:pointer} .t.click tbody tr:hover td{background:var(--soft)} .t tr.sel td{background:var(--accent-soft)}
+.log{min-width:860px}
+.log td.txt{min-width:300px;max-width:520px}
+.cat{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap;border:1px solid var(--line);background:var(--soft)}
+.cat i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+.filters{display:flex;gap:6px;flex-wrap:wrap;text-transform:none;letter-spacing:0}
+.filters button,.filters select{font:inherit;font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}
+.filters button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+
+/* process tracker */
+.proc{padding:12px 0;border-bottom:1px solid var(--line)}
+.proc:last-child{border-bottom:none}
+.proc-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.proc-h b{font-size:15px}
+.proc p{margin:2px 0 8px;font-size:13px;color:var(--muted);max-width:80ch}
+.rail{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:6px 0 4px}
+.rail div{position:relative;font-size:11px;color:var(--muted);padding-top:12px;text-align:center;line-height:1.2}
+.rail div::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;border-radius:3px;background:var(--soft);border:1px solid var(--line)}
+.rail div.past::before{background:color-mix(in srgb,var(--c-governance) 35%,var(--panel));border-color:transparent}
+.rail div.now::before{background:var(--c-governance);border-color:transparent}
+.rail div.now{color:var(--ink);font-weight:700}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.good{background:var(--good-soft);color:var(--good)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.neutral{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+
+/* matrix */
+table.mx{border-collapse:separate;border-spacing:2px;font-size:12.5px;width:100%}
+.mx th{font-size:10.5px;color:var(--muted);font-weight:700;text-align:left;padding:4px 2px;vertical-align:bottom;line-height:1.15}
+.mx thead th:not(:first-child){writing-mode:vertical-rl;transform:rotate(180deg);height:118px;white-space:nowrap}
+.mx th.a{text-align:left;font-size:12.5px;color:var(--ink);font-weight:400;white-space:nowrap;padding-right:8px}
+.mx td{text-align:center;font-family:var(--f-data);font-size:12px;height:26px;min-width:28px;border-radius:4px;background:var(--soft)}
+.mx td.z{color:transparent}
+.mx td.tot{background:none;color:var(--muted)}
+
+/* relations */
+.rel{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.rel:last-child{border-bottom:none}
+.actor{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:var(--soft);margin:1px 2px 1px 0;white-space:nowrap}
+
+/* price matrix + chart */
+.pcell{font-family:var(--f-data);font-size:12.5px;white-space:nowrap}
+.pcell small{display:block;font-size:10.5px;color:var(--muted)}
+.up{color:var(--bad)} .down{color:var(--good)}
+.chart{width:100%;height:auto;display:block}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{font-family:var(--f-data);font-size:10px;fill:var(--muted)}
+.chart .lbl{font-family:var(--f-body);font-size:11px;fill:var(--ink)}
+
+.about{max-width:76ch}
+.about h3{font-family:var(--f-display);font-size:19px;margin:22px 0 6px;scroll-margin-top:96px}
+.about p,.about li{font-size:14.5px}
+.about code{font-family:var(--f-data);font-size:12.5px;background:var(--soft);padding:1px 5px;border-radius:4px}
+
+.state{grid-column:1/-1;padding:40px 18px;text-align:center;color:var(--muted)}
+footer{margin-top:20px;display:grid;grid-template-columns:2fr 1fr;gap:20px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+footer b{color:var(--ink)}
+footer p{margin:0 0 6px;max-width:80ch}
+
+@media (max-width:1100px){
+  .intro,.kpi,.span3{grid-column:span 6}
+  .span4,.span5{grid-column:span 6}
+  .span7,.span8{grid-column:span 12}
+  .rows2,.rows3{grid-row:auto}
+}
+@media (max-width:760px){
+  .board{grid-template-columns:minmax(0,1fr)}
+  .board > *{grid-column:1/-1!important;grid-row:auto!important}
+  .mapbox{min-height:560px}
+  .gl{height:560px}
+  footer{grid-template-columns:1fr}
+  nav.views{margin-left:0}
+  .duo{grid-template-columns:1fr}
+  .rail div{font-size:0;overflow:visible;white-space:nowrap}
+  .rail div.now{font-size:11px;text-align:left}
+  .rail div.now:nth-child(n+4){direction:rtl;text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="top">
+  <a class="brand" href="#security" aria-label="Chinland Conflict Monitor home">
+    <img src="data/ccpr-mark.png" alt="CCPR logo">
+    <span><b>Chinland Conflict Monitor</b><small>Chin Center for Peace and Reconciliation</small></span>
+  </a>
+  <nav class="views" aria-label="Pages">
+    <a href="#security" data-v="security">Security</a>
+    <a href="#governance" data-v="governance">Governance and politics</a>
+    <a href="#humanitarian" data-v="humanitarian">Humanitarian and livelihood</a>
+    <a href="#about" data-v="about">About the data</a>
+  </nav>
+  <label class="month" for="month">Month
+    <select id="month"></select>
+  </label>
+</header>
+
+<main class="board" id="view">
+  <div class="state" id="state">Loading the latest data…</div>
+</main>
+
+<footer>
+  <div>
+    <p><b>About the data.</b> Compiled from CCPR's Chinland Monitoring Briefing, which draws, as far as accessible, on news media reports, statements of the relevant organizations and information from local residents. Actual figures on the ground may be higher. Counts show what was recorded, not complete totals.</p>
+    <p>Locations use MIMU Place Codes and the India Post directory for Mizoram. Boundaries from MIMU (Chin State) and MIRSAC (Mizoram) are for reference only and do not imply endorsement. <a href="#about">How the data is collected and checked</a>.</p>
+    <p id="updated"></p>
+  </div>
+  <div>
+    <p><b>Chin Center for Peace and Reconciliation</b></p>
+    <p>chinpeacecenter.org</p>
+  </div>
+</footer>
+</div>
+
+<script src="data/townships.js"></script>
+<script src="data/mizoram.js"></script>
+<script src="data/chin-outline.js"></script>
+<script src="data/villages.js"></script>
+<script>
+(function(){
+'use strict';
+const TS = window.CHIN_TOWNSHIPS;
+const $ = id => document.getElementById(id);
+const V = $('view');
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = (n,d=0) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtDec = n => Number(n).toLocaleString('en-US',{maximumFractionDigits:3});
+const fmtKg = n => (Math.round(n*10)/10).toLocaleString('en-US',{maximumFractionDigits:1});
+const dShort = s => new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+const dLong = s => new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+const plural = (n,w,p) => `${n} ${n===1?w:(p||w+'s')}`;
+const monthEnd = m => { const [y,mo]=m.split('-').map(Number); return new Date(Date.UTC(y,mo,0)).toISOString().slice(0,10); };
+const prevMonth = m => { const [y,mo]=m.split('-').map(Number); const d=new Date(Date.UTC(y,mo-2,1)); return d.toISOString().slice(0,7); };
+
+let DATA=null, MONTH=null, VIEW='security';
+const CATS = {
+  conflict:{label:'Conflict',color:'var(--c-conflict)',shape:'circle'},
+  landmine:{label:'Landmine',color:'var(--c-landmine)',shape:'circle'},
+  drug:{label:'Drugs',color:'var(--c-drug)',shape:'square'},
+  governance:{label:'Governance',color:'var(--c-governance)',shape:'circle'},
+  political:{label:'Political',color:'var(--c-political)',shape:'square'},
+  border:{label:'Border',color:'var(--c-border)',shape:'diamond'},
+  humanitarian:{label:'Humanitarian',color:'var(--c-humanitarian)',shape:'circle'},
+  livelihood:{label:'Livelihood',color:'var(--c-livelihood)',shape:'square'},
+};
+const catTag = c => `<span class="cat"><i style="background:${CATS[c].color}${CATS[c].shape==='square'?';border-radius:2px':''}"></i>${esc(CATS[c].label)}</span>`;
+const PREC = {village:'Village (MIMU place code)',town:'Town (MIMU town code)',township:'Township only; exact site not confirmed',approx:'District centre in Mizoram (exact point not yet verified)',verified:'Verified point in Mizoram (India Post place)',gps:'GPS coordinates',none:'Not mapped (Chinland-wide or place not stated)',unknown:''};
+
+/* ---------- map ---------- */
+const cent = {}, MZ = window.MZ_DISTRICTS||[], mzCent = {};
+const centroid = c=>{let a=0,cx=0,cy=0;for(let i=0;i<c.length-1;i++){const[x0,y0]=c[i],[x1,y1]=c[i+1];const f=x0*y1-x1*y0;a+=f;cx+=(x0+x1)*f;cy+=(y0+y1)*f;}a/=2;return [cx/(6*a),cy/(6*a)];};
+TS.forEach(t=>{cent[t.n]=centroid(t.c);});
+MZ.forEach(d=>{mzCent[d.n]=centroid(d.r.reduce((a,b)=>b.length>a.length?b:a));});
+/* Mizoram district of a record, from its place name, e.g. 'Zokhawthar, Champhai (Mizoram)' or 'Champhai District (Mizoram)' */
+const mzDistrict = p => { const m=/(?:,\s*|^)([A-Za-z]+)(?: District)? \(Mizoram\)/.exec(p||''); return m?m[1]:null; };
+const B = {w:92.22,e:94.3,s:20.6,n:24.55}, K = Math.cos(22.4*Math.PI/180);
+const W = 400, H = Math.round(W*(B.n-B.s)/((B.e-B.w)*K));
+const px = (lon,lat)=>[ (lon-B.w)/(B.e-B.w)*W, (B.n-lat)/(B.n-B.s)*H ];
+const NS='http://www.w3.org/2000/svg';
+function mk(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const a in attrs)e.setAttribute(a,attrs[a]);parent.appendChild(e);return e;}
+
+function makeSvgMap(host, shadeVar, opts){
+  opts=opts||{};
+  host.innerHTML = `<div class="mapbox"><svg class="map" role="img" aria-label="Map of Chin State and Mizoram with recorded locations" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="zoom" role="group" aria-label="Map zoom"><button type="button" data-z="in" aria-label="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out">−</button><button type="button" data-z="reset" aria-label="Reset map">⟲</button></div>
+    <div class="tip" hidden></div></div>`;
+  const svg = host.querySelector('svg'), tip = host.querySelector('.tip'), box = host.querySelector('.mapbox');
+  let vb={x:0,y:0,w:W,h:H}, villagesOn=opts.villages!==false;
+  const z=()=>W/vb.w;
+  function applyView(){ svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const k=1/z();
+    svg.querySelectorAll('.anc').forEach(g=>g.setAttribute('transform',`translate(${g.dataset.x} ${g.dataset.y}) scale(${k})`));
+    svg.classList.toggle('zoomed',z()>=3.5); svg.classList.toggle('zin',z()>1.01); host.querySelector('[data-z="out"]').disabled=z()<=1.01; host.querySelector('[data-z="in"]').disabled=z()>=12; }
+  function zoomAt(f,cx,cy){ const nw=Math.min(W,Math.max(W/12,vb.w/f)), nh=nw*H/W;
+    if(cx==null){cx=vb.x+vb.w/2; cy=vb.y+vb.h/2;}
+    vb={x:cx-(cx-vb.x)*nw/vb.w, y:cy-(cy-vb.y)*nh/vb.h, w:nw, h:nh}; clamp(); applyView(); }
+  function clamp(){ vb.x=Math.max(0,Math.min(W-vb.w,vb.x)); vb.y=Math.max(0,Math.min(H-vb.h,vb.y)); }
+  function userPt(e){ const pt=svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
+  host.querySelectorAll('.zoom button').forEach(b=>b.addEventListener('click',()=>{ const d=b.dataset.z; if(d==='in') zoomAt(2); else if(d==='out') zoomAt(.5); else { vb={x:0,y:0,w:W,h:H}; applyView(); } }));
+  svg.addEventListener('wheel',e=>{ if(!(e.ctrlKey||e.metaKey)) return; e.preventDefault(); const u=userPt(e); zoomAt(e.deltaY<0?1.25:0.8,u.x,u.y); },{passive:false});
+  let drag=null, moved=false;
+  svg.addEventListener('pointerdown',e=>{ moved=false; if(z()<=1.01) return; e.preventDefault(); drag={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y}; });
+  window.addEventListener('pointermove',e=>{ if(!drag) return; const r=svg.getBoundingClientRect(), sc=Math.min(r.width/vb.w,r.height/vb.h);
+    const dx=(e.clientX-drag.x)/sc, dy=(e.clientY-drag.y)/sc; if(Math.abs(dx)+Math.abs(dy)>2) moved=true; vb.x=drag.vx-dx; vb.y=drag.vy-dy; clamp(); applyView(); });
+  window.addEventListener('pointerup',()=>{ drag=null; });
+  svg.addEventListener('click',e=>{ if(moved){ e.stopPropagation(); moved=false; } },true);
+  function showTip(text,x,y){ const pt=svg.createSVGPoint(); pt.x=x; pt.y=y; const s2=pt.matrixTransform(svg.getScreenCTM()), b=box.getBoundingClientRect();
+    tip.innerHTML=text; tip.style.left=(s2.x-b.left)+'px'; tip.style.top=(s2.y-b.top)+'px'; tip.hidden=false; }
+  const anc=(x,y,parent)=>{ const g=mk('g',{class:'anc'},parent); g.dataset.x=x.toFixed(2); g.dataset.y=y.toFixed(2); return g; };
+  let last=null;
+  const api={ draw(args){ last=args; const {points, counts, onSelect, selected}=args;
+    svg.innerHTML='';
+    const max = Math.max(1,...Object.values(counts||{}));
+    MZ.forEach(dd=>{
+      const d=dd.r.map(r=>'M'+r.map(p=>px(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join('L')+'Z').join('');
+      const p=mk('path',{d,class:'mz'},svg); const n=(counts||{})['MZ:'+dd.n]||0;
+      if(n) p.style.fill=`color-mix(in srgb, ${shadeVar} ${Math.round(10+32*n/max)}%, var(--land-mz))`;
+      const tt=document.createElementNS(NS,'title'); tt.textContent=`${dd.n} District, Mizoram (India): ${plural(n,'record')} shown`; p.appendChild(tt);
+    });
+    TS.forEach(t=>{
+      const d='M'+t.c.map(p=>px(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join('L')+'Z';
+      const p=mk('path',{d,class:'ts'},svg); const n=(counts||{})[t.n]||0;
+      if(n) p.style.fill=`color-mix(in srgb, ${shadeVar} ${Math.round(10+32*n/max)}%, var(--land))`;
+      const tt=document.createElementNS(NS,'title'); tt.textContent=`${t.n} Township: ${plural(n,'record')} shown`; p.appendChild(tt);
+    });
+    const line=pts=>'M'+pts.map(p=>px(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join('L');
+    if(window.CHIN_OUTLINE) mk('path',{d:line(window.CHIN_OUTLINE)+'Z',class:'chin-outline'},svg);
+    (window.CHIN_INDIA_BORDER||[]).forEach(r=>{ const b=mk('path',{d:line(r),class:'intl'},svg); const tt=document.createElementNS(NS,'title'); tt.textContent='Border between Chin State (Myanmar) and Mizoram (India)'; b.appendChild(tt); });
+    /* villages: MIMU village points, no boundaries */
+    if(villagesOn && window.CHIN_VILLAGES){ const vg=mk('g',{class:'vill'},svg);
+      window.CHIN_VILLAGES.forEach(v=>{ const [x,y]=px(v[4],v[3]); const g=anc(x,y,vg);
+        const c=mk('circle',{cx:0,cy:0,r:1.5,class:'vdot'},g); const tt=document.createElementNS(NS,'title'); tt.textContent=`${v[0]}${v[1]?' / '+v[1]:''} · ${v[2]} Township · MIMU ${v[5]}`; c.appendChild(tt);
+        mk('text',{x:3,y:3,class:'vlab'},g).textContent=v[0]; }); }
+    TS.forEach(t=>{const [x,y]=px(...cent[t.n]); mk('text',{x:0,y:0,class:'tslabel'},anc(x,y+(t.n==='Kanpetlet'?14:t.n==='Paletwa'?-24:t.n==='Tedim'?-16:0),svg)).textContent=t.n;});
+    MZ.forEach(dd=>{const [x,y]=px(...mzCent[dd.n]); mk('text',{x:0,y:0,class:'mzlabel'},anc(x,y+(dd.n==='Lawngtlai'?-18:dd.n==='Saitual'?6:0),svg)).textContent=dd.n;});
+    [['MIZORAM','INDIA',92.47,24.42,'country'],['BANGLADESH',null,92.45,21.62,'ctx'],['SAGAING',null,94.12,22.75,'ctx'],['MAGWAY',null,94.14,21.75,'ctx'],['RAKHINE',null,93.0,20.75,'ctx'],['CHIN STATE','MYANMAR',93.95,24.3,'country']].forEach(([a,b,lon,lat,cl])=>{
+      const [x,y]=px(lon,lat); const g=anc(x,y,svg); mk('text',{x:0,y:0,class:cl,'text-anchor':'middle'},g).textContent=a;
+      if(b) mk('text',{x:0,y:12,class:cl,'text-anchor':'middle'},g).textContent=b;
+    });
+    [['Hakha',93.60483,22.64011],['Tedim',93.65619,23.37058],['Falam',93.68034,22.91105],['Mindat',93.97365,21.37176],['Matupi',93.44086,21.60475],['Kalay',94.02977,23.1933]].forEach(([n,lon,lat])=>{
+      const [x,y]=px(lon,lat); const g=anc(x,y,svg); mk('rect',{x:-2,y:-2,width:4,height:4,class:'town'},g); mk('text',{x:6,y:3,class:'townl'},g).textContent=n;
+    });
+    const pg=mk('g',{},svg), seen={};
+    points.forEach(pt=>{
+      if(pt.lat==null||pt.lon==null) return;
+      let [x,y]=px(pt.lon,pt.lat); const key=x.toFixed(0)+','+y.toFixed(0); const n=seen[key]=(seen[key]||0)+1;
+      if(n>1){const a=(n-1)*2.1, r=7*Math.ceil((n-1)/3+0.1)/Math.max(1,z()); x+=Math.cos(a)*r; y+=Math.sin(a)*r;}
+      const g=anc(x,y,pg); let el; const s=pt.big?7:5.5, cl='pt'+(pt.approx?' approx':'');
+      if(pt.shape==='square') el=mk('rect',{x:-5,y:-5,width:10,height:10,rx:2,class:cl},g);
+      else if(pt.shape==='diamond') el=mk('rect',{x:-4.5,y:-4.5,width:9,height:9,rx:1,transform:'rotate(45)',class:cl},g);
+      else if(pt.shape==='triangle') el=mk('path',{d:'M0 -7L6.5 5L-6.5 5Z',class:cl},g);
+      else el=mk('circle',{cx:0,cy:0,r:s,class:cl},g);
+      el.style.fill=pt.color; if(pt.approx) el.style.stroke=pt.color;
+      el.setAttribute('tabindex','0'); el.setAttribute('role','button'); el.setAttribute('aria-label',pt.aria);
+      el.dataset.id=pt.id; if(pt.id===selected) el.classList.add('sel');
+      el.addEventListener('mouseenter',()=>showTip(pt.tip,x,y)); el.addEventListener('mouseleave',()=>{tip.hidden=true;});
+      if(onSelect){ el.addEventListener('click',()=>onSelect(pt.id)); el.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();onSelect(pt.id);}}); }
+    });
+    applyView();
+  }, mark(id){ svg.querySelectorAll('.pt').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); },
+    villages(on){ villagesOn=on; if(last) api.draw(last); } };
+  return api;
+}
+
+
+/* ---------- base map (MapLibre + OpenFreeMap + terrain), falls back to the SVG map ---------- */
+let LIVE_MAPS=[];
+function cssVar(v){ const m=/var\((--[^)]+)\)/.exec(v); return m?getComputedStyle(document.documentElement).getPropertyValue(m[1]).trim():v; }
+const isDark=()=>getComputedStyle(document.body).backgroundColor.match(/\d+/g).slice(0,3).reduce((a,b)=>a+ +b,0)<200;
+const ringFeature=(name,rings)=>({type:'Feature',properties:{n:name},geometry:{type:'Polygon',coordinates:rings}});
+function makeMap(host, shadeVar, opts){
+  if(!window.maplibregl) return makeSvgMap(host, shadeVar, opts);
+  opts=opts||{}; LIVE_MAPS.forEach(m=>{try{m.remove();}catch(e){}}); LIVE_MAPS=[];
+  host.innerHTML='<div class="mapbox"><div class="gl" role="region" aria-label="Map of Chin State and Mizoram with recorded locations. Use the zoom buttons or two fingers to move."></div></div>';
+  const el=host.querySelector('.gl'), dark=isDark();
+  const C={land:dark?'#1B2030':'#EFEEE9', water:dark?'#22324A':'#C7D6E4', road:dark?'#4A5168':'#C8BBA6', ink:cssVar('var(--ink)'), muted:cssVar('var(--muted)'),
+    edge:dark?'#3A4259':'#FFFFFF', halo:dark?'#1B2030':'#FFFFFF', mz:dark?'rgba(255,255,255,0.03)':'rgba(255,255,255,0.35)', shade:cssVar(shadeVar)};
+  const B0=[[92.2,20.6],[94.35,24.55]];
+  const map=new maplibregl.Map({container:el, bounds:B0, fitBoundsOptions:{padding:8}, maxBounds:[[90.8,19.6],[95.8,25.6]], minZoom:5.5, maxZoom:14,
+    attributionControl:false, cooperativeGestures:true, dragRotate:false, pitchWithRotate:false, touchPitch:false,
+    style:{version:8, glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+      sources:{}, layers:[{id:'bg',type:'background',paint:{'background-color':C.land}}]}});
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+  map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:'Base map © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a>. Terrain: Mapzen terrain tiles (AWS). Chin State: MIMU. Mizoram: MIRSAC.'}),'bottom-right');
+  const reset=document.createElement('button'); reset.type='button'; reset.className='glreset'; reset.textContent='⟲'; reset.setAttribute('aria-label','Reset map'); el.appendChild(reset);
+  reset.addEventListener('click',()=>map.fitBounds(B0,{padding:8}));
+  LIVE_MAPS.push(map);
+  let ready=false, pending=null, markers=[], villagesOn=opts.villages!==false, sel=null, onSel=null;
+  const pop=new maplibregl.Popup({closeButton:false,closeOnClick:false,offset:12,maxWidth:'260px'});
+  map.on('load',()=>{
+    const fc=f=>({type:'FeatureCollection',features:f});
+    map.addSource('mz',{type:'geojson',data:fc(MZ.map(d=>({type:'Feature',properties:{n:d.n},geometry:{type:'MultiPolygon',coordinates:d.r.map(r=>[r])}})))});
+    map.addSource('ts',{type:'geojson',data:fc(TS.map(t=>ringFeature(t.n,[t.c])))});
+    map.addSource('outline',{type:'geojson',data:fc(window.CHIN_OUTLINE?[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:window.CHIN_OUTLINE.concat([window.CHIN_OUTLINE[0]])}}]:[])});
+    map.addSource('intl',{type:'geojson',data:fc((window.CHIN_INDIA_BORDER||[]).map(r=>({type:'Feature',properties:{},geometry:{type:'LineString',coordinates:r}})))});
+    map.addSource('vill',{type:'geojson',data:fc((window.CHIN_VILLAGES||[]).map(v=>({type:'Feature',properties:{n:v[0],my:v[1],ts:v[2],c:v[5]},geometry:{type:'Point',coordinates:[v[4],v[3]]}})))});
+    map.addSource('lbl',{type:'geojson',data:fc([
+      ...TS.map(t=>({type:'Feature',properties:{n:t.n.toUpperCase(),k:'ts'},geometry:{type:'Point',coordinates:cent[t.n]}})),
+      ...MZ.map(d=>({type:'Feature',properties:{n:d.n,k:'mz'},geometry:{type:'Point',coordinates:mzCent[d.n]}})),
+      ...[['MIZORAM, INDIA',92.55,24.4],['CHIN STATE, MYANMAR',93.9,24.35],['BANGLADESH',92.35,21.7],['SAGAING',94.15,22.75],['MAGWAY',94.18,21.75],['RAKHINE',93.05,20.75]].map(([n,x,y])=>({type:'Feature',properties:{n,k:'ctry'},geometry:{type:'Point',coordinates:[x,y]}}))])});
+    map.addLayer({id:'mz-fill',type:'fill',source:'mz',paint:{'fill-color':C.mz,'fill-opacity':1}});
+    map.addLayer({id:'mz-count',type:'fill',source:'mz',paint:{'fill-color':C.shade,'fill-opacity':0}});
+    map.addLayer({id:'ts-count',type:'fill',source:'ts',paint:{'fill-color':C.shade,'fill-opacity':0}});
+    map.addLayer({id:'mz-line',type:'line',source:'mz',paint:{'line-color':C.edge,'line-width':0.9,'line-opacity':0.9}});
+    map.addLayer({id:'ts-line',type:'line',source:'ts',paint:{'line-color':C.edge,'line-width':1.3}});
+    map.addLayer({id:'chin-outline',type:'line',source:'outline',paint:{'line-color':C.ink,'line-width':1,'line-opacity':0.5}});
+    map.addLayer({id:'intl',type:'line',source:'intl',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':C.ink,'line-width':2.4}});
+    map.addLayer({id:'vill-dot',type:'circle',source:'vill',layout:{visibility:villagesOn?'visible':'none'},paint:{'circle-color':C.muted,'circle-opacity':0.75,'circle-radius':['interpolate',['linear'],['zoom'],7,1.3,10,2.6,13,4],'circle-stroke-color':C.halo,'circle-stroke-width':['interpolate',['linear'],['zoom'],8,0,11,0.8]}});
+    const F=['Noto Sans Regular'], FB=['Noto Sans Bold'];
+    map.addLayer({id:'lbl-ts',type:'symbol',source:'lbl',maxzoom:10.5,filter:['==',['get','k'],'ts'],layout:{'text-field':['get','n'],'text-font':FB,'text-size':11,'text-letter-spacing':0.12,'text-allow-overlap':false},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.5}});
+    map.addLayer({id:'lbl-mz',type:'symbol',source:'lbl',maxzoom:10.5,filter:['==',['get','k'],'mz'],layout:{'text-field':['get','n'],'text-font':F,'text-size':10},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.2}});
+    map.addLayer({id:'lbl-ctry',type:'symbol',source:'lbl',maxzoom:9,filter:['==',['get','k'],'ctry'],layout:{'text-field':['get','n'],'text-font':FB,'text-size':10.5,'text-letter-spacing':0.18,'text-max-width':8},paint:{'text-color':C.muted,'text-opacity':0.85,'text-halo-color':C.halo,'text-halo-width':1.2}});
+    map.addLayer({id:'vill-lbl',type:'symbol',source:'vill',minzoom:9.2,layout:{visibility:villagesOn?'visible':'none','text-field':['get','n'],'text-font':F,'text-size':['interpolate',['linear'],['zoom'],9.2,10,13,12],'text-anchor':'left','text-offset':[0.55,0],'text-padding':1},paint:{'text-color':C.ink,'text-halo-color':C.halo,'text-halo-width':1.4}});
+    map.on('mousemove','vill-dot',e=>{ const p=e.features[0].properties; map.getCanvas().style.cursor='default';
+      pop.setLngLat(e.lngLat).setHTML(`<b>${esc(p.n)}</b>${p.my?' / '+esc(p.my):''}<br>${esc(p.ts)} Township · MIMU ${esc(p.c)}`).addTo(map); });
+    map.on('mouseleave','vill-dot',()=>pop.remove());
+    /* external base map underneath our layers; if it fails, our layers still show */
+    try{
+      map.addSource('dem',{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:12,attribution:''});
+      map.addLayer({id:'hills',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':dark?0.35:0.45,'hillshade-shadow-color':dark?'#06080F':'#7A7468','hillshade-highlight-color':dark?'#2A3045':'#FFFFFF','hillshade-accent-color':dark?'#0B0E17':'#9A9284'}},'mz-fill');
+      map.addSource('omt',{type:'vector',url:'https://tiles.openfreemap.org/planet'});
+      map.addLayer({id:'water',type:'fill',source:'omt','source-layer':'water',paint:{'fill-color':C.water}},'mz-fill');
+      map.addLayer({id:'rivers',type:'line',source:'omt','source-layer':'waterway',filter:['==',['get','class'],'river'],paint:{'line-color':C.water,'line-width':['interpolate',['linear'],['zoom'],7,0.6,12,2]}},'mz-fill');
+      map.addLayer({id:'roads-main',type:'line',source:'omt','source-layer':'transportation',filter:['match',['get','class'],['motorway','trunk','primary','secondary'],true,false],paint:{'line-color':C.road,'line-width':['interpolate',['linear'],['zoom'],7,0.7,12,2.2]}},'chin-outline');
+      map.addLayer({id:'roads-minor',type:'line',source:'omt','source-layer':'transportation',minzoom:9,filter:['match',['get','class'],['tertiary','minor','track'],true,false],paint:{'line-color':C.road,'line-opacity':0.7,'line-width':['interpolate',['linear'],['zoom'],9,0.4,13,1.4]}},'roads-main');
+      map.addLayer({id:'osm-places',type:'symbol',source:'omt','source-layer':'place',filter:['match',['get','class'],['city','town'],true,false],layout:{'text-field':['coalesce',['get','name:en'],['get','name_en'],['get','name']],'text-font':F,'text-size':11,'text-anchor':'left','text-offset':[0.5,0]},paint:{'text-color':C.ink,'text-halo-color':C.halo,'text-halo-width':1.4}},'lbl-ts');
+      map.addLayer({id:'osm-villages',type:'symbol',source:'omt','source-layer':'place',minzoom:11,filter:['match',['get','class'],['village','hamlet'],true,false],layout:{'text-field':['coalesce',['get','name:en'],['get','name_en'],['get','name']],'text-font':F,'text-size':10,'text-optional':true},paint:{'text-color':C.muted,'text-halo-color':C.halo,'text-halo-width':1.2}},'lbl-ts');
+    }catch(e){ console.warn('Base map not available',e); }
+    map.resize(); el.querySelectorAll('.maplibregl-ctrl-attrib').forEach(x=>x.classList.remove('maplibregl-compact-show'));
+    ready=true; if(pending){ api.draw(pending); pending=null; }
+  });
+  function shape(pt){ const c=pt.color, st=pt.approx?`style="fill:none;stroke:${c};stroke-width:2;stroke-dasharray:3 2"`:`style="fill:${c};stroke:var(--panel);stroke-width:1.5"`;
+    const s=pt.big?7:5.5;
+    if(pt.shape==='square') return `<svg width="14" height="14" viewBox="-7 -7 14 14"><rect x="-5" y="-5" width="10" height="10" rx="2" ${st}/></svg>`;
+    if(pt.shape==='diamond') return `<svg width="14" height="14" viewBox="-7 -7 14 14"><rect x="-4.5" y="-4.5" width="9" height="9" rx="1" transform="rotate(45)" ${st}/></svg>`;
+    if(pt.shape==='triangle') return `<svg width="16" height="16" viewBox="-8 -8 16 16"><path d="M0 -7L6.5 5L-6.5 5Z" ${st}/></svg>`;
+    return `<svg width="${2*s+4}" height="${2*s+4}" viewBox="${-s-2} ${-s-2} ${2*s+4} ${2*s+4}"><circle r="${s}" ${st}/></svg>`; }
+  const api={ draw(args){ if(!ready){ pending=args; return; } const {points,counts,onSelect,selected}=args; onSel=onSelect; sel=selected;
+      const max=Math.max(1,...Object.values(counts||{}));
+      const op=(prefix)=>{ const e=['match',['get','n']]; let any=false; Object.entries(counts||{}).forEach(([k,n])=>{ const nm=prefix?(k.startsWith('MZ:')?k.slice(3):null):(k.startsWith('MZ:')?null:k); if(nm&&n){ e.push(nm,0.12+0.38*n/max); any=true; } }); e.push(0); return any?e:0; };
+      map.setPaintProperty('ts-count','fill-opacity',op(false)); map.setPaintProperty('mz-count','fill-opacity',op(true));
+      markers.forEach(m=>m.remove()); markers=[]; const seen={};
+      points.forEach(pt=>{ if(pt.lat==null||pt.lon==null) return;
+        const key=pt.lat.toFixed(3)+','+pt.lon.toFixed(3); const n=seen[key]=(seen[key]||0)+1; let off=[0,0];
+        if(n>1){ const a=(n-1)*2.1, r=8*Math.ceil((n-1)/3+0.1); off=[Math.cos(a)*r,Math.sin(a)*r]; }
+        const d=document.createElement('div'); d.className='mk'+(pt.id===selected?' sel':''); d.innerHTML=shape(pt); d.tabIndex=0; d.setAttribute('role','button'); d.setAttribute('aria-label',pt.aria); d.dataset.id=pt.id;
+        const mk=new maplibregl.Marker({element:d,offset:off}).setLngLat([pt.lon,pt.lat]).addTo(map);
+        d.addEventListener('mouseenter',()=>pop.setLngLat([pt.lon,pt.lat]).setHTML(pt.tip).addTo(map)); d.addEventListener('mouseleave',()=>pop.remove());
+        if(onSelect){ d.addEventListener('click',ev=>{ev.stopPropagation(); onSelect(pt.id);}); d.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault(); onSelect(pt.id);}}); }
+        markers.push(mk); });
+    },
+    mark(id){ sel=id; el.querySelectorAll('.mk').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); },
+    villages(on){ villagesOn=on; if(ready){ ['vill-dot','vill-lbl'].forEach(l=>map.setLayoutProperty(l,'visibility',on?'visible':'none')); } },
+    flyTo(lon,lat,z){ map.flyTo({center:[lon,lat],zoom:z||11,essential:true}); },
+    fit(b){ map.fitBounds(b,{padding:30,maxZoom:11}); },
+    map };
+  return api;
+}
+
+function hbar(label,v,max,color,extra){ return `<div class="hbar"><span>${esc(label)}</span><span class="track"><span class="fill" style="width:${max?Math.max(2,v/max*100):0}%;background:${color}"></span></span><span class="v">${v}${extra||''}</span></div>`; }
+
+/* ---------- data helpers ---------- */
+const mon = () => DATA.months[MONTH] || {incidents:[],figures:[],events:[],prices:[],displacement:[],label:MONTH};
+const figRows = ind => (mon().figures||[]).filter(f=>f.indicator===ind);
+const fHas = ind => figRows(ind).length>0;
+const fSum = ind => figRows(ind).reduce((s,f)=>s+(f.value||0),0);
+const fVal = ind => fHas(ind)?fSum(ind):null;
+const fBy = ind => { const o={}; figRows(ind).forEach(f=>{o[f.breakdown]=(o[f.breakdown]||0)+(f.value||0);}); return o; };
+const fSrc = (...inds) => { for(const i of inds){ const r=figRows(i)[0]; if(r&&r.source) return r.source; } return ''; };
+const fNote = ind => (figRows(ind).find(f=>f.note)||{}).note||'';
+const evs = (...cats) => (mon().events||[]).filter(e=>cats.includes(e.cat));
+const whereOf = e => [e.place, e.detail].filter(Boolean).join(', ') || e.ts || 'Chinland-wide or not stated';
+const actorName = a => (DATA.actors&&DATA.actors[a]&&DATA.actors[a].name) || a;
+const actorChips = e => (e.actors||[]).map(a=>`<span class="actor" title="${esc(actorName(a))}">${esc(a)}</span>`).join('');
+
+/* ---------- selection card + log (shared) ---------- */
+function eventCard(e){
+  const ppl = [];
+  if(e.actors&&e.actors.length) ppl.push('Actors: '+e.actors.map(actorName).join('; '));
+  if(e.facilitator) ppl.push('Facilitator: '+actorName(e.facilitator));
+  if(e.others) ppl.push('Also: '+e.others);
+  if(e.process) ppl.push('Process: '+e.process+(e.stage?' ('+e.stage+')':''));
+  if(e.outcome) ppl.push('Outcome: '+e.outcome);
+  if(e.area) ppl.push('Policy area: '+e.area);
+  ppl.push('Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''));
+  if(e.confidence) ppl.push('Confidence: '+e.confidence);
+  return `<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts||'Chinland-wide')} · ${esc(e.source)}</span>
+    <b>${esc(e.type)}: ${esc(whereOf(e))}</b>${esc(e.text)}
+    ${e.text_my?`<div style="margin-top:4px" lang="my">${esc(e.text_my)}</div>`:''}
+    <div class="meta" style="margin-top:6px">${ppl.map(esc).join(' · ')}</div>`;
+}
+
+/* =========================================================
+   SECURITY PAGE
+   ========================================================= */
+function renderSecurity(){
+  const m = mon(), ev = m.incidents||[];
+  const layers = {conflict:true,landmine:true,drug:true}; let filter='all', selected=null;
+  V.innerHTML = `
+  <section class="tile intro">
+    <h1>Armed conflict, landmines and drugs in Chinland</h1>
+    <p>Incidents recorded in CCPR's Chinland Monitoring Briefing. Figures cover Chin State, with drug seizures on the Mizoram and Kalay borders where they concern trafficking into Chinland.</p>
+    <p>Showing ${esc(m.label)}.</p>
+  </section>
+  <section class="tile kpi"><h2>Airstrikes on civilian areas <a class="src" href="#about/airstrikes">How we count</a></h2><div class="num" id="k-air"></div><p class="cap" id="k-air-cap"></p><div class="foot" id="k-air-foot"></div></section>
+  <section class="tile kpi"><h2>Civilian casualties <span class="src" id="src-civ"></span></h2>
+    <div class="split"><div><span>Killed</span><b class="num" id="k-civk"></b></div><div><span>Injured</span><b class="num" id="k-civi"></b></div></div>
+    <p class="cap">Airstrikes, heavy weapons, landmines and other armed violence.</p><div class="foot" id="k-civ-foot"></div></section>
+  <section class="tile kpi"><h2>Methamphetamine seized <span class="src" id="src-drug"></span></h2><div class="num" id="k-meth"></div><p class="cap" id="k-meth-cap"></p><div class="foot" id="k-meth-foot"></div></section>
+
+  <section class="tile brief span3 rows2" id="brief"><h2>The briefing</h2>
+    <div class="cover"><img id="cover" alt="Cover photo of the Chinland Monitoring Briefing"><div class="t"><small>Monthly situation briefing</small><b>Chinland Monitoring Briefing</b><span>${esc(m.label)}</span></div></div>
+    <div class="dl" id="downloads"></div><ul class="stats" id="brief-stats"></ul>
+    <p class="note">Published monthly in Burmese and English for diplomats, donors and researchers.</p></section>
+
+  <section class="tile maptile span5 rows2"><h2>Incident map <span class="src">MIMU and MIRSAC boundaries</span></h2>
+    <div class="layers" role="group" aria-label="Map layers">
+      <button type="button" aria-pressed="true" data-cat="conflict"><span class="sw" style="background:var(--c-conflict)"></span>Conflict</button>
+      <button type="button" aria-pressed="true" data-cat="landmine"><span class="sw" style="background:var(--c-landmine)"></span>Landmines</button>
+      <button type="button" aria-pressed="true" data-cat="drug"><span class="sw sq" style="background:var(--c-drug)"></span>Drug seizures</button>
+      <button type="button" aria-pressed="true" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
+    </div>
+    <div id="map"></div>
+    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i style="background:var(--muted);width:6px;height:6px;opacity:.6"></i>Village (MIMU, 1,373 in Chin State)</span><span><i style="background:var(--muted)"></i>Incident at a village or town</span><span>Zoom in to read village names</span><span><i class="ring"></i>Township or Mizoram district only (exact site not confirmed)</span><span>Larger dot: civilians harmed</span><span>Shading: records per township or Mizoram district</span></div>
+    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row in the incident log to see details.</span></div></section>
+
+  <section class="tile span4"><h2>Airstrikes by township <span class="src" id="src-bars"></span></h2>
+    <p class="sub">Separate attacks on civilian areas. The figure after the slash is civilians injured.</p>
+    <div id="air-bars"></div><div class="chips" id="damage"></div>
+    <div class="duo"><div><div class="k">Landmine casualties</div><div id="lm-bars"></div></div>
+      <div><div class="k">Children killed by airstrikes, year to date (other source)</div><b class="big" id="k-child"></b><p class="sub" id="k-child-cap" style="margin:0"></p></div></div></section>
+
+  <section class="tile span4"><h2>Seizures on Chinland's borders <span class="src" id="src-drugs"></span></h2>
+    <p class="sub">Arrests of traffickers on routes into and out of Chinland.</p><div class="rowlist" id="drug-rows"></div></section>
+
+  <section class="tile span12"><h2>Incident log <span class="filters" role="group" aria-label="Filter incidents" id="filters">
+      <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="conflict">Conflict</button>
+      <button type="button" aria-pressed="false" data-f="landmine">Landmines</button><button type="button" aria-pressed="false" data-f="drug">Drugs</button></span></h2>
+    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Township</th><th>Location</th><th>What happened</th><th>Civilians</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+
+  const setNum=(id,v,html,color)=>{ const el=$(id); el.classList.toggle('na',v===null); el.innerHTML = v===null?'Not reported':(color?`<i style="background:${color}"></i>`:'')+(html||esc(v)); };
+  /* Airstrikes are counted from the incident log: one attack on one place at one time = 1, inside Chin State only. */
+  const strikes=ev.filter(e=>e.inChin&&(e.type==='Airstrike'||e.type==='Drone strike'));
+  const civAir=strikes.filter(e=>e.type==='Airstrike'&&e.hit==='Civilian area');
+  const nAtt=list=>list.reduce((a,e)=>a+(e.attacks||1),0);
+  const air=nAtt(civAir), airTs={}, airInj={};
+  civAir.forEach(e=>{airTs[e.ts]=(airTs[e.ts]||0)+(e.attacks||1);});
+  strikes.filter(e=>e.type==='Airstrike').forEach(e=>{ if(e.civI) airInj[e.ts]=(airInj[e.ts]||0)+e.civI; });
+  const nTs=Object.keys(airTs).length;
+  setNum('k-air',air,null,'var(--c-conflict)');
+  $('k-air-cap').textContent = air?`Separate attacks on villages, towns and other civilian places in ${plural(nTs,'township')}. Counted by attack, not by bomb.`:'No airstrikes on civilian areas recorded this month.';
+  const aK=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civK||0),0), aI=strikes.filter(e=>e.type==='Airstrike').reduce((a,e)=>a+(e.civI||0),0);
+  const parts=[]; if(strikes.length) parts.push(`${aK} civilians killed, ${aI} injured`);
+  const dm=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`${fSum(i)} ${l}`);
+  if(dm.length) parts.push(dm.join(', ')+' damaged');
+  const armed=nAtt(strikes.filter(e=>e.type==='Airstrike'&&e.hit!=='Civilian area')), drone=nAtt(strikes.filter(e=>e.type==='Drone strike'));
+  parts.push(drone?`${plural(drone,'drone strike')}`:'No drone strikes recorded'); if(armed) parts.push(`${plural(armed,'airstrike')} on armed positions or unclear targets`);
+  const printed=fVal('Airstrikes as printed in the briefing');
+  if(printed!==null&&printed!==air) parts.push(`The printed briefing reported ${printed}, counting individual bombs`);
+  $('k-air-foot').textContent=parts.join(' · ');
+  const groups=[['Landmines','Landmines: civilians killed','Landmines: civilians injured'],['Heavy weapons','Heavy weapons: civilians killed','Heavy weapons: civilians injured'],['Airstrikes','Civilians killed in airstrikes','Civilians injured in airstrikes'],['Other armed violence','Other armed violence: civilians killed','Other armed violence: civilians injured']];
+  let ck=null,ci=null; const cf=[];
+  groups.forEach(([l,kk,ii])=>{ if(fHas(kk)||fHas(ii)){ const a=fVal(kk)||0,b=fVal(ii)||0; ck=(ck||0)+a; ci=(ci||0)+b; cf.push(`${l} ${a} killed, ${b} injured`);} });
+  setNum('k-civk',ck); setNum('k-civi',ci); $('src-civ').textContent=fSrc('Landmines: civilians killed','Heavy weapons: civilians killed'); $('k-civ-foot').textContent=cf.join(' · ');
+  const mzM=fVal('Drugs, Mizoram: methamphetamine (kg)'), klM=fVal('Drugs, Kalay: methamphetamine (kg)'), mzA=fVal('Drugs, Mizoram: people arrested'), klA=fVal('Drugs, Kalay: people arrested'), mzH=fVal('Drugs, Mizoram: heroin (g)');
+  const meth=(mzM===null&&klM===null)?null:(mzM||0)+(klM||0);
+  setNum('k-meth',meth,meth===null?null:`${fmtKg(meth)}<small>kg</small>`,'var(--c-drug)'); $('src-drug').textContent=fSrc('Drugs, Mizoram: methamphetamine (kg)','Drugs, Kalay: methamphetamine (kg)');
+  const arr=(mzA===null&&klA===null)?null:(mzA||0)+(klA||0);
+  $('k-meth-cap').textContent=arr===null?'':`${arr} people arrested in Mizoram State and Kalay town.`;
+  const mf=[]; if(mzM!==null) mf.push(`Mizoram ${fmtDec(mzM)} kg`+(mzH?` and ${fmt(mzH)} g heroin`:'')); if(klM!==null) mf.push(`Kalay ${fmtDec(klM)} kg`); $('k-meth-foot').textContent=mf.join(' · ');
+
+  const b=m.briefing||{}; const cov=$('cover'); if(b.cover){cov.src='data/'+b.cover;} else cov.hidden=true;
+  const dl=[]; if(b.pdf_en) dl.push(`<a href="data/${encodeURI(b.pdf_en)}" target="_blank" rel="noopener">Read the briefing in English <span>PDF</span></a>`);
+  if(b.pdf_my) dl.push(`<a href="data/${encodeURI(b.pdf_my)}" target="_blank" rel="noopener" lang="my">မြန်မာဘာသာဖြင့် ဖတ်ရန် <span>PDF</span></a>`);
+  $('downloads').innerHTML=dl.join('')||'<p class="sub">The PDF for this month is not online yet.</p>';
+  const cnt=c=>ev.filter(e=>e.cat===c).length;
+  $('brief-stats').innerHTML=`<li>Conflict incidents logged<b>${cnt('conflict')}</b></li><li>Landmine incidents logged<b>${cnt('landmine')}</b></li><li>Drug seizures logged<b>${cnt('drug')}</b></li><li>Governance and political events<b>${(m.events||[]).filter(e=>['governance','political','border'].includes(e.cat)).length}</b></li><li>Humanitarian and livelihood events<b>${(m.events||[]).filter(e=>['humanitarian','livelihood'].includes(e.cat)).length}</b></li>`;
+
+  const ai=airInj, amax=Math.max(1,...Object.values(airTs));
+  $('src-bars').textContent='counted from the incident log';
+  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)',ai[t]?` <span style="color:var(--muted)">/${ai[t]}</span>`:'')).join(''):'<p class="empty">No airstrikes on civilian areas recorded this month.</p>';
+  $('damage').innerHTML=[['Homes damaged in airstrikes','homes'],['Religious buildings damaged in airstrikes','religious buildings'],['Schools damaged in airstrikes','schools']].filter(([i])=>fHas(i)).map(([i,l])=>`<span class="chip"><b>${fSum(i)}</b>${l} damaged</span>`).join('');
+  const lk=fVal('Landmines: civilians killed'), li=fVal('Landmines: civilians injured'), lmax=Math.max(1,lk||0,li||0);
+  $('lm-bars').innerHTML=(lk===null&&li===null)?'<p class="sub">Not reported</p>':hbar('Killed',lk||0,lmax,'var(--c-conflict)')+hbar('Injured',li||0,lmax,'var(--c-landmine)');
+  const ch=fVal('Children killed by airstrikes in Chinland, year to date');
+  $('k-child').textContent=ch===null?'–':ch; $('k-child-cap').textContent=ch===null?'Not reported this month.':[fNote('Children killed by airstrikes in Chinland, year to date'),fSrc('Children killed by airstrikes in Chinland, year to date')].filter(Boolean).join('. ');
+
+  $('src-drugs').textContent=fSrc('Drugs, Mizoram: methamphetamine (kg)');
+  const md=fBy('Drugs, Mizoram: methamphetamine (kg)'), hd=fBy('Drugs, Mizoram: heroin (g)');
+  let rows=[...new Set([...Object.keys(md),...Object.keys(hd)])].map(d=>`<div class="row"><span>${esc(d==='All'?'Mizoram State':d+' District')}<span class="tag">Mizoram, India</span></span><span>${md[d]!=null?fmtDec(md[d])+' kg meth':''}${md[d]!=null&&hd[d]?' · ':''}${hd[d]?fmt(hd[d])+' g heroin':''}</span></div>`).join('');
+  if(klM!==null) rows+=`<div class="row"><span>Kalay town<span class="tag">Sagaing Region, main route into Chinland</span></span><span>${fmtDec(klM)} kg meth</span></div>`;
+  if(arr!==null) rows+=`<div class="row"><span>People arrested<span class="tag">Myanmar nationals in Mizoram; all arrests in Kalay</span></span><span>${mzA||0} + ${klA||0}</span></div>`;
+  $('drug-rows').innerHTML=rows||'<p class="empty">No drug figures for this month.</p>';
+
+  const map=makeMap($('map'),'var(--c-conflict)');
+  const casualty=e=>{const p=[]; if(e.civK)p.push(`${e.civK} civilian${e.civK>1?'s':''} killed`); if(e.civI)p.push(`${e.civI} civilian${e.civI>1?'s':''} injured`); if(e.cbK)p.push(`${e.cbK} combatant${e.cbK>1?'s':''} killed`); if(e.cbI)p.push(`${e.cbI} combatant${e.cbI>1?'s':''} injured`);
+    if(e.cat==='drug'){ if(e.arrests)p.push(`${e.arrests} arrested`); if(e.methKg)p.push(`${fmtDec(e.methKg)} kg meth`); if(e.methTablets)p.push(`${fmt(e.methTablets)} meth tablets`); if(e.heroinG)p.push(`${fmt(e.heroinG)} g heroin`);} return p.join(' · ');};
+  function select(id){ selected=id; const e=ev.find(x=>x.id===id); if(!e) return; map.mark(id);
+    document.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+    $('sel').innerHTML=`<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts)} · ${esc(e.source)}</span><b>${esc(e.type)}: ${esc([e.place,e.detail].filter(Boolean).join(', ')||e.ts)}</b>${esc(e.text)}
+      <div class="meta" style="margin-top:4px">${[e.actors,e.attacks?`${plural(e.attacks,'separate attack')}`:'',e.hit?'Hit: '+e.hit:'',e.aircraft&&e.aircraft!=='Not stated'?'Aircraft: '+e.aircraft:'',casualty(e),'Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''),e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`; }
+  function drawMap(){ const counts={}; ev.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) counts[k]=(counts[k]||0)+1;});
+    map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',big:!!(e.civK||e.civI),
+      tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(e.place||e.detail||e.ts)}`,aria:`${dShort(e.date)}, ${e.type}, ${e.place||e.detail||e.ts}`}))}); }
+  function drawLog(){ const tb=$('rows'); tb.innerHTML='';
+    const list=ev.filter(e=>filter==='all'||e.cat===filter);
+    if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No incidents recorded for this selection.</p></td></tr>'; return; }
+    list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
+      const civ=(e.civK||e.civI)?`${e.civK||0} killed, ${e.civI||0} injured`:(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'None reported');
+      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}${e.attacks>1?`<span class="tag">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td>${esc([e.place,e.detail].filter(Boolean).join(', '))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(civ)}</td><td class="n">${esc(e.source)}</td>`;
+      tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
+  V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
+  V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
+  drawMap(); drawLog();
+}
+
+/* =========================================================
+   GOVERNANCE AND POLITICS PAGE
+   ========================================================= */
+const STAGES=['Proposed','Drafting','Consultation','Agreed or adopted','Enacted','Implementation'];
+const outcomePill = o => !o?'':`<span class="pill ${o==='Agreement reached'?'good':o==='No agreement'?'bad':(o==='Ongoing'||o==='Postponed')?'warn':'neutral'}">${esc(o)}</span>`;
+
+function renderGovernance(){
+  const m=mon(), all=evs('governance','political','border'), gov=evs('governance'), pol=evs('political'), bor=evs('border');
+  const edu=(m.events||[]).filter(e=>e.area==='Education');
+  const layers={governance:true,political:true,border:true}; let fcat='all', farea='all', factor='all', selected=null;
+  const byLevel={}; gov.forEach(e=>{const l=e.level||'Not stated'; byLevel[l]=(byLevel[l]||0)+1;});
+  const school=fVal('Schools damaged in airstrikes');
+  const unmapped=all.filter(e=>e.lat==null).length;
+
+  V.innerHTML=`
+  <section class="tile intro">
+    <h1>Governance, politics and the border</h1>
+    <p>What Chin authorities decided and delivered, how political actors engaged with each other, and what changed on the India border. Recorded from the Chinland Monitoring Briefing.</p>
+    <p>Showing ${esc(m.label)}. Counts are events recorded, not every action taken.</p>
+  </section>
+  <section class="tile kpi"><h2>Governance actions</h2><div class="num"><i style="background:var(--c-governance)"></i>${gov.length}</div>
+    <p class="cap">Laws, orders, services, justice and public consultations by Chin authorities.</p>
+    <div class="foot">${Object.entries(byLevel).map(([l,n])=>`${esc(l)} ${n}`).join(' · ')||'None recorded'}</div></section>
+  <section class="tile kpi"><h2>Political events</h2><div class="num"><i style="background:var(--c-political)"></i>${pol.length}</div>
+    <p class="cap">Meetings, agreements, statements and disputes between actors.</p>
+    <div class="foot">${pol.length?Object.entries(pol.reduce((o,e)=>(o[e.type]=(o[e.type]||0)+1,o),{})).map(([t,n])=>`${esc(t)} ${n}`).join(' · '):'None recorded'}</div></section>
+  <section class="tile kpi"><h2>Border events</h2><div class="num"><i style="background:var(--c-border)"></i>${bor.length}</div>
+    <p class="cap">Orders by Indian and Mizoram authorities, and road and trade route closures.</p>
+    <div class="foot">${bor.length?esc([...new Set(bor.map(e=>e.type))].join(' · ')):'None recorded'}</div></section>
+
+  <section class="tile span7" id="procs"><h2>Processes to watch <span class="src">stage as of the end of ${esc(m.label)}</span></h2>
+    <p class="sub">Long-running processes and the latest stage the briefing reported. A stage only moves when a recorded event shows it.</p>
+    <div id="proc-list"></div></section>
+
+  <section class="tile maptile span5 rows3"><h2>Where it happened <span class="src">MIMU and MIRSAC boundaries</span></h2>
+    <div class="layers" role="group" aria-label="Map layers">
+      <button type="button" aria-pressed="true" data-cat="governance"><span class="sw" style="background:var(--c-governance)"></span>Governance</button>
+      <button type="button" aria-pressed="true" data-cat="political"><span class="sw sq" style="background:var(--c-political)"></span>Political</button>
+      <button type="button" aria-pressed="true" data-cat="border"><span class="sw dia" style="background:var(--c-border)"></span>Border</button>
+      <button type="button" aria-pressed="false" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
+    </div>
+    <div id="map"></div>
+    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i class="ring"></i>Township or Mizoram district only</span><span>Shading: events per township or district</span>${unmapped?`<span>${plural(unmapped,'event')} Chinland-wide or without a place, listed below but not mapped</span>`:''}</div>
+    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
+
+  <section class="tile span7" id="areas"><h2>What Chin authorities worked on <span class="src">governance actions by policy area</span></h2>
+    <p class="sub">Each bar counts recorded governance actions this month. Select a bar to list those actions below.</p>
+    <div id="area-bars"></div></section>
+
+  <section class="tile span7" id="edu"><h2>Education <span class="src">a less-watched sector</span></h2>
+    <p class="sub">Education decisions, disputes and damage this month, in one place.</p>
+    <div class="duo" style="margin-top:0">
+      <div><div class="k">Education events recorded</div><b class="big">${edu.length}</b></div>
+      <div><div class="k">Schools damaged by airstrikes</div><b class="big">${school===null?'–':school}</b><p class="sub" style="margin:0">${school===null?'Not reported':esc(fSrc('Schools damaged in airstrikes'))}</p></div>
+    </div>
+    <div class="rowlist" id="edu-list" style="margin-top:8px"></div></section>
+
+  <section class="tile span12" id="log"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
+      <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="governance">Governance</button>
+      <button type="button" aria-pressed="false" data-f="political">Political</button><button type="button" aria-pressed="false" data-f="border">Border</button>
+      <select id="farea" aria-label="Filter by policy area"><option value="all">All policy areas</option></select>
+      <select id="factor" aria-label="Filter by actor"><option value="all">All actors</option></select></span></h2>
+    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Actors</th><th>Where</th><th>What happened</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+
+  // processes
+  const end=monthEnd(MONTH), procs=Object.entries(DATA.processes||{});
+  $('proc-list').innerHTML = procs.length ? procs.map(([name,p])=>{
+    const log=(p.log||[]).filter(x=>x.date<=end); const staged=log.filter(x=>x.stage);
+    const cur=staged.length?staged[staged.length-1].stage:null; const seen=new Set(staged.map(x=>x.stage));
+    const thisMonth=log.filter(x=>x.date.slice(0,7)===MONTH).length;
+    const side = cur==='Stalled'?'<span class="pill bad">Stalled</span>':cur==='Ended'?'<span class="pill neutral">Ended</span>':'';
+    const ci=STAGES.indexOf(cur);
+    const rail = log.length ? `<div class="rail" role="img" aria-label="${esc(name)}: current stage ${esc(cur||'not stated')}">${STAGES.map((s,i)=>`<div class="${s===cur?'now':(seen.has(s)||(ci>i&&false))?'past':''}">${esc(s)}</div>`).join('')}</div>` : '';
+    return `<div class="proc"><div class="proc-h"><b>${esc(name)}</b><span class="meta">${log.length?`Last update ${esc(dLong(log[log.length-1].date))} · ${plural(thisMonth,'event')} this month`:'No events up to this month'}</span></div>
+      <p>${esc(p.about)}</p>${rail}${side?`<div style="margin-top:6px">${side}</div>`:''}
+      ${cur&&ci<0&&!side?`<p class="sub">Current stage: ${esc(cur)}</p>`:''}</div>`;
+  }).join('') : '<p class="empty">No process events recorded yet.</p>';
+
+  // education list
+  $('edu-list').innerHTML = edu.length ? edu.map(e=>`<div class="row"><span>${esc(e.type)}<span class="tag">${esc((e.actors||[]).join(', ')||e.ts||'')} · ${esc(dShort(e.date))}</span></span><span>${catTag(e.cat)}</span></div>`).join('') : '<p class="empty">No education events recorded this month.</p>';
+
+  // policy areas (governance actions only)
+  const byArea={}; gov.forEach(e=>{const k=e.area||'Not stated'; byArea[k]=(byArea[k]||0)+1;});
+  const amax2=Math.max(1,...Object.values(byArea));
+  $('area-bars').innerHTML = gov.length ? Object.entries(byArea).sort((x,y)=>y[1]-x[1]||x[0].localeCompare(y[0])).map(([k,v])=>
+    `<button type="button" class="hbar areabar" data-area="${esc(k)}" aria-label="${esc(k)}: ${plural(v,'action')}. Show in the event log"><span>${esc(k)}</span><span class="track"><span class="fill" style="width:${Math.max(2,v/amax2*100)}%;background:var(--c-governance)"></span></span><span class="v">${v}</span></button>`).join('')
+    : '<p class="empty">No governance actions recorded this month.</p>';
+
+  // map + log
+  const map=makeMap($('map'),'var(--c-governance)',{villages:false});
+  const areaSel=$('farea'); [...new Set(all.map(e=>e.area).filter(Boolean))].sort().forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;areaSel.appendChild(o);});
+  function select(id){ selected=id; const e=all.find(x=>x.id===id); if(!e) return; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id)); $('sel').innerHTML=eventCard(e); }
+  function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
+    map.draw({counts:c,selected,onSelect:select,points:all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',
+      tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc((e.actors||[]).join(', '))}`,aria:`${dShort(e.date)}, ${e.type}, ${(e.actors||[]).join(', ')}`}))}); }
+  function drawLog(){ const tb=$('rows'); tb.innerHTML='';
+    const list=all.filter(e=>(fcat==='all'||e.cat===fcat)&&(farea==='all'||e.area===farea)&&(factor==='all'||(e.actors||[]).includes(factor)||e.facilitator===factor));
+    if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
+    list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
+      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}${e.outcome&&e.cat==='political'?`<br>${outcomePill(e.outcome)}`:''}</td><td>${actorChips(e)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td class="n">${esc(e.source)}</td>`;
+      tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
+  V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
+  V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
+  areaSel.addEventListener('change',()=>{farea=areaSel.value; drawLog();});
+  const actSel=$('factor'); [...new Set(all.flatMap(e=>(e.actors||[]).concat(e.facilitator?[e.facilitator]:[])))].sort((x,y)=>x.localeCompare(y)).forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;actSel.appendChild(o);});
+  actSel.addEventListener('change',()=>{factor=actSel.value; drawLog();});
+  V.querySelectorAll('.areabar').forEach(b=>b.addEventListener('click',()=>{ const k=b.dataset.area; farea=[...areaSel.options].some(o=>o.value===k)?k:'all'; areaSel.value=farea;
+    fcat='governance'; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.f==='governance')); drawLog(); $('log').scrollIntoView({behavior:'smooth',block:'start'}); }));
+  drawMap(); drawLog();
+}
+
+/* =========================================================
+   HUMANITARIAN AND LIVELIHOOD PAGE
+   ========================================================= */
+function renderHumanitarian(){
+  const m=mon(), hum=evs('humanitarian'), liv=evs('livelihood'), all=hum.concat(liv).sort((a,b)=>a.date.localeCompare(b.date));
+  const disp=m.displacement||[], prices=m.prices||[];
+  const layers={humanitarian:true,livelihood:true,site:true}; let fcat='all', selected=null;
+  const pm=DATA.months[prevMonth(MONTH)]; const prevPrices=(pm&&pm.prices)||[];
+  const byType={}; hum.forEach(e=>{byType[e.type]=(byType[e.type]||0)+1;});
+  const sitesWith=[...new Set(disp.map(d=>d.site))];
+  const nMk=new Set(prices.map(p=>p.market)).size, nCm=new Set(prices.map(p=>p.commodity)).size;
+
+  V.innerHTML=`
+  <section class="tile intro">
+    <h1>Humanitarian needs and livelihoods</h1>
+    <p>Displacement, aid, disasters, food security and market prices affecting people from Chinland, inside Chin State and in Mizoram.</p>
+    <p>Showing ${esc(m.label)}. Blank means no data was available, not zero.</p>
+  </section>
+  <section class="tile kpi"><h2>Humanitarian events</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.length}</div>
+    <p class="cap">Displacement, evictions, aid, access, disasters and reported shortages.</p>
+    <div class="foot">${Object.entries(byType).map(([t,n])=>`${esc(t)} ${n}`).join(' · ')||'None recorded'}</div></section>
+  <section class="tile kpi"><h2>Displacement figures</h2><div class="num">${sitesWith.length?`<i style="background:var(--c-site)"></i>${sitesWith.length}`:'<span class="na">None this month</span>'}</div>
+    <p class="cap">${sitesWith.length?`${sitesWith.length===1?'Site':'Sites'} with figures reported. Figures are listed by site and source below and are not added together.`:'Other groups track IDP numbers in detail; CCPR records figures when the briefing reports them.'}</p></section>
+  <section class="tile kpi"><h2>Market prices</h2><div class="num">${prices.length?`<i style="background:var(--c-livelihood)"></i>${prices.length}`:'<span class="na">Not collected yet</span>'}</div>
+    <p class="cap">${prices.length?`Prices from ${plural(nMk,'market')} for ${plural(nCm,'item')}.`:'Monthly price collection for 10 essential items starts once the team begins reporting.'}</p>
+    <div class="foot">${liv.length?`${plural(liv.length,'livelihood event')} recorded`:'No livelihood events recorded this month'}</div></section>
+
+  <section class="tile span7"><h2>Displacement by site <span class="src">as reported, by source</span></h2>
+    <p class="sub">Each row is one figure from one source. Households and people are different units and are never converted or added.</p>
+    <div class="tblwrap" id="disp"></div></section>
+
+  <section class="tile maptile span5 rows2"><h2>Where it happened <span class="src">MIMU and MIRSAC boundaries</span></h2>
+    <div class="layers" role="group" aria-label="Map layers">
+      <button type="button" aria-pressed="true" data-cat="humanitarian"><span class="sw" style="background:var(--c-humanitarian)"></span>Humanitarian</button>
+      <button type="button" aria-pressed="true" data-cat="livelihood"><span class="sw sq" style="background:var(--c-livelihood)"></span>Livelihood</button>
+      <button type="button" aria-pressed="true" data-cat="site"><span class="sw tri" style="color:var(--c-site)"></span>IDP sites with figures</button>
+      <button type="button" aria-pressed="false" data-vill><span class="sw" style="background:var(--muted);width:6px;height:6px"></span>All villages</button>
+    </div>
+    <div id="map"></div>
+    <div class="legend"><span><i class="bline"></i>Chin State–Mizoram border</span><span><i class="ring"></i>Township or Mizoram district only</span><span>IDP sites without a verified point sit at the district centre</span></div>
+    <div class="sel-card" id="sel" aria-live="polite"><span class="meta">Select a point or a row to see details.</span></div></section>
+
+  <section class="tile span7"><h2>Market prices <span class="src" id="psrc"></span></h2><div id="prices"></div></section>
+
+  <section class="tile span12"><h2>Event log <span class="filters" role="group" aria-label="Filter events">
+      <button type="button" aria-pressed="true" data-f="all">All</button><button type="button" aria-pressed="false" data-f="humanitarian">Humanitarian</button>
+      <button type="button" aria-pressed="false" data-f="livelihood">Livelihood</button></span></h2>
+    <div class="tblwrap"><table class="t click log"><thead><tr><th>Date</th><th>Category</th><th>Type</th><th>Where</th><th>What happened</th><th>Who</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table></div></section>`;
+
+  // displacement
+  $('disp').innerHTML = disp.length ? `<table class="t"><thead><tr><th>Site</th><th>Location</th><th>Origin</th><th class="r">Households</th><th class="r">People</th><th>Source</th></tr></thead><tbody>${
+    disp.map(d=>{const s=(DATA.sites||{})[d.site]||{}; return `<tr><td><b>${esc(d.site)}</b><span class="tag">${esc(s.type||'')}${s.status?' · '+esc(s.status):''}</span></td><td>${esc(s.place||s.ts||'')}</td><td>${esc(s.origin||'')}</td><td class="n r">${d.households==null?'–':fmt(d.households)}</td><td class="n r">${d.people==null?'–':fmt(d.people)}</td><td class="n">${esc(d.source)}${d.note?`<span class="tag">${esc(d.note)}</span>`:''}</td></tr>`;}).join('')}</tbody></table>`
+    : '<p class="empty">No displacement figures recorded this month.</p>';
+
+  // prices
+  renderPrices(prices, prevPrices);
+
+  // map + log
+  const map=makeMap($('map'),'var(--c-humanitarian)',{villages:false});
+  const sitePts = sitesWith.map(s=>{const x=(DATA.sites||{})[s]||{}; const rows=disp.filter(d=>d.site===s); return {id:'site:'+s,lat:x.lat,lon:x.lon,color:'var(--c-site)',shape:'triangle',
+    tip:`<b>${esc(s)}</b>${x.prec==='approx'?' <i>(district centre)</i>':''}<br>${rows.map(r=>[r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':''].filter(Boolean).join(', ')).join('<br>')}`,aria:`IDP site ${s}`};});
+  function select(id){ selected=id; map.mark(id); V.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+    if(id.startsWith('site:')){ const s=id.slice(5), x=(DATA.sites||{})[s]||{}; const rows=disp.filter(d=>d.site===s);
+      $('sel').innerHTML=`<span class="meta">${esc(m.label)} · ${esc(x.place||x.ts||'')}</span><b>${esc(s)}</b>${esc([x.type,x.origin?'residents from '+x.origin:'',x.status].filter(Boolean).join(' · '))}
+      <div class="meta" style="margin-top:6px">${rows.map(r=>esc([r.households!=null?fmt(r.households)+' households':'',r.people!=null?fmt(r.people)+' people':'',r.source,r.note].filter(Boolean).join(' · '))).join('<br>')}</div>`; return; }
+    const e=all.find(x=>x.id===id); if(e) $('sel').innerHTML=eventCard(e); }
+  function drawMap(){ const c={}; all.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) c[k]=(c[k]||0)+1;});
+    const pts=all.filter(e=>layers[e.cat]).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(whereOf(e))}`,aria:`${dShort(e.date)}, ${e.type}`}));
+    map.draw({counts:c,selected,onSelect:select,points:pts.concat(layers.site?sitePts:[])}); }
+  function drawLog(){ const tb=$('rows'); tb.innerHTML='';
+    const list=all.filter(e=>fcat==='all'||e.cat===fcat);
+    if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No events recorded for this selection.</p></td></tr>'; return; }
+    list.forEach(e=>{ const tr=document.createElement('tr'); tr.dataset.id=e.id; tr.tabIndex=0;
+      const who=[...(e.actors||[]),e.others].filter(Boolean).join(', ');
+      tr.innerHTML=`<td class="d">${esc(dShort(e.date))}</td><td>${catTag(e.cat)}</td><td>${esc(e.type)}</td><td>${esc(whereOf(e))}</td><td class="txt">${esc(e.text)}</td><td>${esc(who)}</td><td class="n">${esc(e.source)}</td>`;
+      tr.addEventListener('click',()=>select(e.id)); tr.addEventListener('keydown',x=>{if(x.key==='Enter')select(e.id);}); if(e.id===selected) tr.classList.add('sel'); tb.appendChild(tr); }); }
+  V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
+  V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
+  V.querySelectorAll('.filters button').forEach(b=>b.addEventListener('click',()=>{fcat=b.dataset.f; V.querySelectorAll('.filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
+  drawMap(); drawLog();
+}
+
+function renderPrices(prices, prevPrices){
+  const box=$('prices');
+  if(!prices.length){ box.innerHTML='<p class="empty">No market prices recorded for this month. Once the team reports prices, this panel shows each item by market with the change from the previous month, and a trend line after two months.</p>'; return; }
+  $('psrc').textContent='retail prices as collected';
+  const key=p=>p.market+'|'+p.commodity+'|'+p.unit+'|'+p.currency;
+  const prev={}; prevPrices.forEach(p=>{prev[key(p)]=p.price;});
+  const markets=[...new Set(prices.map(p=>p.market))], comms=[...new Set(prices.map(p=>p.commodity))];
+  const cell=(c,mk)=>{ const p=prices.find(x=>x.commodity===c&&x.market===mk); if(!p) return '<td class="pcell" style="color:var(--muted)">–</td>';
+    const pv=prev[key(p)]; let ch='<small>no earlier price</small>';
+    if(pv!=null&&pv>0){ const d=(p.price-pv)/pv*100; ch = Math.abs(d)<0.5?'<small>no change</small>':`<small class="${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toFixed(0)}% vs last month</small>`; }
+    return `<td class="pcell" title="${esc(mk)} · ${esc(c)}: ${fmt(p.price)} ${esc(p.currency)} per ${esc(p.unit)}">${fmt(p.price)} <span style="color:var(--muted)">${esc(p.currency)}</span>${ch}</td>`; };
+  let html=`<p class="sub">Price per unit in local currency (MMK in Myanmar, INR in Mizoram). Currencies are never converted. Change is shown only when the same market reported the same item, unit and currency last month.</p>
+    <div class="tblwrap"><table class="t"><thead><tr><th>Item</th><th>Unit</th>${markets.map(mk=>`<th>${esc(mk)}</th>`).join('')}</tr></thead><tbody>${
+    comms.map(c=>{const u=((DATA.commodities||{})[c]||{}).unit||(prices.find(p=>p.commodity===c)||{}).unit; return `<tr><td>${esc(c)}</td><td class="n">${esc(u)}</td>${markets.map(mk=>cell(c,mk)).join('')}</tr>`;}).join('')}</tbody></table></div>`;
+  // trend: months with prices
+  const monthsWith=Object.keys(DATA.months).filter(k=>(DATA.months[k].prices||[]).length&&k<=MONTH).sort();
+  html+=`<div style="margin-top:14px"><div class="k" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">Trend <select id="tr-c" aria-label="Item for the trend chart">${comms.map(c=>`<option>${esc(c)}</option>`).join('')}</select>
+    <select id="tr-cur" aria-label="Currency">${[...new Set(prices.map(p=>p.currency))].map(c=>`<option>${esc(c)}</option>`).join('')}</select></div><div id="trend"></div></div>`;
+  box.innerHTML=html;
+  const draw=()=>{ const c=$('tr-c').value, cur=$('tr-cur').value, t=$('trend');
+    if(monthsWith.length<2){ t.innerHTML='<p class="sub" style="margin-top:8px">A trend line appears once two months of prices are recorded.</p>'; return; }
+    const series={}; monthsWith.forEach(k=>(DATA.months[k].prices||[]).filter(p=>p.commodity===c&&p.currency===cur).forEach(p=>{(series[p.market]=series[p.market]||{})[k]=p.price;}));
+    const mks=Object.keys(series); if(!mks.length){ t.innerHTML='<p class="sub">No prices for this item in this currency.</p>'; return; }
+    const vals=mks.flatMap(mk=>Object.values(series[mk])); const lo=0, hi=Math.max(...vals)*1.1;
+    const w=640,h=220,l=56,r=110,tp=12,bt=26, X=i=>l+(monthsWith.length===1?0:i*(w-l-r)/(monthsWith.length-1)), Y=v=>tp+(1-(v-lo)/(hi-lo))*(h-tp-bt);
+    const ticks=[0,.25,.5,.75,1].map(f=>lo+f*(hi-lo));
+    const pal=['var(--c-livelihood)','var(--c-site)','var(--c-humanitarian)','var(--c-political)','var(--c-governance)','var(--c-border)','var(--c-conflict)','var(--c-drug)'];
+    let s=`<svg class="chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(c)} price by market, ${esc(cur)}">`;
+    ticks.forEach(v=>{s+=`<line class="grid" x1="${l}" x2="${w-r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${l-6}" y="${Y(v)+3}" text-anchor="end">${fmt(v)}</text>`;});
+    monthsWith.forEach((k,i)=>{s+=`<text class="axis" x="${X(i)}" y="${h-8}" text-anchor="middle">${esc(DATA.months[k].label.replace(/ (\d{4})$/,' ’$1'.replace('$1','')).slice(0,3))} ${k.slice(2,4)}</text>`;});
+    mks.slice(0,8).forEach((mk,j)=>{ const pts=monthsWith.map((k,i)=>series[mk][k]!=null?[X(i),Y(series[mk][k]),series[mk][k],k]:null);
+      let d='',open=false; pts.forEach(p=>{ if(!p){open=false;return;} d+=(open?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1); open=true; });
+      s+=`<path d="${d}" fill="none" stroke="${pal[j]}" stroke-width="2"/>`;
+      pts.forEach(p=>{ if(p) s+=`<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="${pal[j]}" stroke="var(--panel)" stroke-width="2"><title>${esc(mk)}, ${esc(DATA.months[p[3]].label)}: ${fmt(p[2])} ${esc(cur)}</title></circle>`; });
+      const last=pts.filter(Boolean).pop(); if(last) s+=`<text class="lbl" x="${last[0]+8}" y="${last[1]+4}">${esc(mk)}</text>`; });
+    t.innerHTML=s+'</svg>'+(mks.length>8?`<p class="sub">Showing 8 of ${mks.length} markets.</p>`:''); };
+  $('tr-c').addEventListener('change',draw); $('tr-cur').addEventListener('change',draw); draw();
+}
+
+/* =========================================================
+   ABOUT PAGE
+   ========================================================= */
+function renderAbout(){
+  V.innerHTML=`<section class="tile span12"><div class="about">
+  <h1 style="font-family:var(--f-display);font-size:28px;margin:0 0 8px">About the data</h1>
+  <p>The Chinland Conflict Monitor turns CCPR's monthly <b>Chinland Monitoring Briefing</b> into structured, mapped records.</p>
+
+  <h3>What is covered</h3>
+  <ul>
+    <li><b>Security:</b> armed clashes, airstrikes, heavy weapons, landmine and explosive casualties, and drug seizures on routes into Chinland.</li>
+    <li><b>Governance and politics:</b> laws, orders, public services (with education tracked as its own sector), justice, consultations, political meetings, agreements, disputes, and India border measures. Long-running processes are tracked stage by stage.</li>
+    <li><b>Humanitarian and livelihood:</b> displacement, evictions, aid, disasters, shortages, food security events and monthly market prices for essential items.</li>
+  </ul>
+  <p>Human rights documentation is left to specialist organizations such as the Chin Human Rights Organization. Civilian harm from attacks is recorded under Security.</p>
+
+  <h3>How records are made and checked</h3>
+  <ol>
+    <li>A CCPR data officer records each item from the news, organizations' statements and local contacts, with its source.</li>
+    <li>A second staff member verifies it against another source where possible, removes duplicates and sets a confidence level.</li>
+    <li>Descriptions are written in Burmese and translated into English.</li>
+    <li>Monthly totals are checked against the individual records. Differences are explained, not hidden.</li>
+    <li>Each month is reviewed and approved within CCPR before publication. Only approved records are published.</li>
+  </ol>
+
+  <h3>How to read the numbers</h3>
+  <ul>
+    <li><b>Recorded, not total.</b> Counts show what CCPR could record. Actual figures on the ground may be higher.</li>
+    <li><b>Blank is not zero.</b> "Not reported" or a dash means no data was available. Zero is shown only when a source reports none.</li>
+    <li><b>Headline figures</b> are the totals published in each briefing. The map and logs show individual records, so they may not add up to every total.</li>
+    <li><b>Nothing is estimated.</b> Displacement figures are shown per site and source and are never added together. Prices are never converted between currencies.</li>
+    <li><b>Confidence:</b> confirmed by two or more sources, one source, or unconfirmed.</li>
+  </ul>
+
+  <h3 id="airstrikes">How airstrikes are counted</h3>
+  <ul>
+    <li><b>One airstrike is one attack on one place at one time</b>, however many bombs were dropped. If the same place is attacked again later, that is a second airstrike. Attacks on different villages are counted separately.</li>
+    <li><b>What was hit, not what was intended.</b> The headline counts airstrikes on civilian areas: villages, towns, schools, churches, clinics and IDP sites. Strikes on armed positions, or where the target is unclear, are recorded but counted separately.</li>
+    <li><b>Drone strikes are shown separately</b> from airstrikes by jet fighters and helicopters.</li>
+    <li><b>Chin State only.</b> Strikes outside Chin State are not counted.</li>
+    <li><b>Date of the attack</b>, not the date it was reported.</li>
+    <li><b>Casualties</b> are civilians and combatants counted separately, as known at the time of recording, and updated if later information changes them.</li>
+    <li><b>When sources disagree</b>, the best-confirmed figure is used, higher claims are noted in the description, and each record carries a confidence level.</li>
+    <li><b>The headline is the sum of the individual records</b>, so the totals, the township bars and the map always agree.</li>
+    <li><b>Figures from other organizations</b>, such as children killed by airstrikes year to date, are shown with their source and are not mixed with CCPR's counts.</li>
+  </ul>
+  <p>The printed September 2026 briefing reported 12 airstrikes because it counted individual bombs. Counted by attack, as above, September had 6. This site uses the counting rule for every month.</p>
+
+  <h3>Locations</h3>
+  <p>Places use MIMU Place Codes: village points (version 9.7, 1,373 villages in Chin State) and town points (version 9.4). When a place cannot be matched with confidence, the record is shown at township level as a dashed ring. MIMU covers Myanmar only, so places in Mizoram use the India Post directory (place name, district and PIN code). A Mizoram place is shown at its district centre, as a dashed ring, until CCPR has verified its exact location. Records that concern all of Chinland, or give no place, are listed but not mapped. Chin State township boundaries are from MIMU. Mizoram district boundaries are from the Mizoram Remote Sensing Application Centre (MIRSAC), Government of Mizoram. Lines from the two sources can differ slightly along the border. All boundaries are for reference only and do not imply endorsement.</p>
+
+  <h3>Corrections</h3>
+  <p>If a published record is wrong, CCPR corrects it in the next update. Earlier versions are kept in the site's public history.</p>
+
+  <h3>How to cite</h3>
+  <p><code>Chin Center for Peace and Reconciliation. Chinland Conflict Monitor. monitor.chinpeacecenter.org. Accessed ${esc(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}))}.</code></p>
+  <p>Researchers can read the full published dataset as one file: <a href="data/monitor-data.json">monitor-data.json</a>.</p>
+  </div></section>`;
+}
+
+/* ---------- routing ---------- */
+const VIEWS={security:renderSecurity,governance:renderGovernance,humanitarian:renderHumanitarian,about:renderAbout};
+function render(){
+  const [hv]=location.hash.slice(1).split('/'); VIEW = VIEWS[hv] ? hv : 'security';
+  document.querySelectorAll('nav.views a').forEach(a=>a.setAttribute('aria-current',a.dataset.v===VIEW?'page':'false'));
+  $('month').closest('.month').style.visibility = VIEW==='about'?'hidden':'visible';
+  VIEWS[VIEW]();
+}
+fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(d=>{
+  DATA=d; DATA.processes=DATA.processes||{}; DATA.actors=DATA.actors||{};
+  const sel=$('month'); Object.keys(d.months).sort().reverse().forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=d.months[k].label;sel.appendChild(o);});
+  MONTH=d.latest; sel.value=MONTH; sel.addEventListener('change',()=>{MONTH=sel.value; render();});
+  if(d.generated) $('updated').textContent='Data last published '+new Date(d.generated).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'.';
+  const toAnchor=()=>{ const a=location.hash.split('/')[1]; const el=a&&document.getElementById(a); if(el) el.scrollIntoView(); else window.scrollTo(0,0); };
+  window.addEventListener('hashchange',()=>{ render(); toAnchor(); });
+  render(); toAnchor();
+}).catch(()=>{ $('state').textContent='The data file could not be loaded. Please try again later.'; });
+})();
+</script>
+
+</body>
+</html>
