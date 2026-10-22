@@ -212,6 +212,7 @@ table.t{width:100%;border-collapse:collapse;font-size:13.5px}
 .bignum{font-family:var(--f-display);font-weight:700;font-size:40px;letter-spacing:-.02em;line-height:1.1;margin:6px 0 4px;font-variant-numeric:tabular-nums}
 .airgrid{display:grid;grid-template-columns:1.2fr .8fr 1.4fr;gap:28px;margin-top:6px}
 @media (max-width:900px){.airgrid{grid-template-columns:1fr}}
+#air-bars .hbar{grid-template-columns:150px minmax(0,1fr) 40px}
 #airsize .hbar{grid-template-columns:minmax(0,210px) 1fr 40px}
 .edu-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px}
 .edu-k button{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;color:inherit}
@@ -680,8 +681,11 @@ const FAMILY = {
   'Dispute or public accusation':'Disputes and splits','Split, withdrawal or suspension':'Disputes and splits',
   'Checkpoint, raid or security operation':'Security measures',
   'Refugee or IDP policy':'Border and refugees','Road or trade route closed or reopened':'Border and refugees','Cross-border incident':'Border and refugees','Other border event':'Border and refugees',
-  'Public statement or message':'Statements','Joint statement':'Statements','Statement or warning':'Statements'};
-const FAMS=['Laws and orders','Services and programmes','Institutions and leaders','Talks and agreements','Disputes and splits','Security measures','Border and refugees','Statements','Other'];
+  'Public statement or message':'Statements','Joint statement':'Statements','Statement or warning':'Statements',
+  'Plan or policy announced':'Laws and orders','Legal or accountability action':'Rights and accountability','Prisoner release or exchange':'Talks and agreements',
+  'Funding or material support':'Services and programmes','Workshop or public event':'Talks and agreements',
+  'Protest or advocacy on border issues':'Border and refugees','Statement by Indian or Mizoram officials':'Border and refugees','Cross-border infrastructure project':'Border and refugees'};
+const FAMS=['Laws and orders','Services and programmes','Institutions and leaders','Talks and agreements','Disputes and splits','Rights and accountability','Security measures','Border and refugees','Statements','Other'];
 const famOf = t => FAMILY[t]||'Other';
 let REC=null;
 function recIndex(){ if(REC) return REC; const all=[],byId={},kids={};
@@ -931,9 +935,9 @@ function renderSecurity(){
   const civAir=strikes.filter(e=>e.type==='Airstrike'&&e.hit==='Civilian area');
   const nAtt=list=>list.reduce((a,e)=>a+(e.attacks||1),0);
   const air=nAtt(civAir), airTs={}, airInj={};
-  civAir.forEach(e=>{airTs[e.ts]=(airTs[e.ts]||0)+(e.attacks||1);});
+  civAir.forEach(e=>{const k=e.spread?e.spread+' (not split)':e.ts; airTs[k]=(airTs[k]||0)+(e.attacks||1);});
   strikes.filter(e=>e.type==='Airstrike').forEach(e=>{ if(e.civI) airInj[e.ts]=(airInj[e.ts]||0)+e.civI; });
-  const nTs=Object.keys(airTs).length;
+  const nTs=new Set(civAir.flatMap(e=>e.spread?e.spread.split(/,\s*/):[e.ts])).size;
   setNum('k-air',air,null,'var(--c-conflict)');
   $('k-air-cap').textContent = air?`In ${plural(nTs,'township')}. One attack on one place counts once, however many bombs.`:`None recorded ${PER()}.`;
   const armed=nAtt(strikes.filter(e=>e.type==='Airstrike'&&e.hit!=='Civilian area')), drone=nAtt(strikes.filter(e=>e.type==='Drone strike'));
@@ -974,7 +978,7 @@ function renderSecurity(){
   const cnt=c=>ev.filter(e=>e.cat===c).length;
 
   const ai=airInj, amax=Math.max(1,...Object.values(airTs));
-  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)')).join(''):`<p class="empty">None recorded ${PER()}.</p>`;
+  $('air-bars').innerHTML=Object.keys(airTs).length?Object.entries(airTs).sort((a,b)=>(/not split/.test(a[0])-/not split/.test(b[0]))||b[1]-a[1]).map(([t,v])=>hbar(t,v,amax,'var(--c-conflict)')).join(''):`<p class="empty">None recorded ${PER()}.</p>`;
   const LG=CG.Landmines, lk=LG?LG[0]:(PS.civ.log?0:null), li=LG?LG[1]:(PS.civ.log?0:null), lmax=Math.max(1,lk||0,li||0);
   const lmEv=ev.filter(e=>e.cat==='landmine'&&e.inChin&&e.type!=='Clearance or EORE activity'), lmTs={}; lmEv.forEach(e=>{lmTs[e.ts]=(lmTs[e.ts]||0)+1;});
   const lmMax=Math.max(1,...Object.values(lmTs));
@@ -992,15 +996,15 @@ function renderSecurity(){
     document.querySelectorAll('#rows tr').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
     $('sel').innerHTML=`<span class="meta">${esc(dLong(e.date))} · ${esc(e.ts)} · ${esc(e.source)}</span><b>${esc(e.type)}: ${esc([e.place,e.detail].filter(Boolean).join(', ')||e.ts)}</b>${esc(e.text)}
       <div class="meta" style="margin-top:4px">${[e.actors,e.attacks?`${plural(e.attacks,'separate attack')}`:'',e.hit?'Hit: '+e.hit:'',e.aircraft&&e.aircraft!=='Not stated'?'Aircraft: '+e.aircraft:'',casualty(e),'Location: '+PREC[e.prec]+(e.pcode&&(e.prec==='village'||/^PIN/.test(e.pcode))?' '+e.pcode:''),e.confidence?'Confidence: '+e.confidence:''].filter(Boolean).map(esc).join(' · ')}</div>`; }
-  function drawMap(){ const counts={}; ev.forEach(e=>{if(!layers[e.cat]) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) counts[k]=(counts[k]||0)+1;});
-    map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',big:!!(e.civK||e.civI),
+  function drawMap(){ const counts={}; ev.forEach(e=>{if(!layers[e.cat]||e.spread) return; const k=e.inChin?e.ts:(mzDistrict(e.place)?'MZ:'+mzDistrict(e.place):null); if(k) counts[k]=(counts[k]||0)+1;});
+    map.draw({counts,selected,onSelect:select,points:ev.filter(e=>layers[e.cat]&&!e.spread&&inPlace(e)).map(e=>({id:e.id,lat:e.lat,lon:e.lon,color:CATS[e.cat].color,shape:CATS[e.cat].shape,approx:e.prec==='township'||e.prec==='approx',big:!!(e.civK||e.civI),
       tip:`<b>${esc(dShort(e.date))}</b> · ${esc(e.type)}<br>${esc(e.place||e.detail||e.ts)}`,aria:`${dShort(e.date)}, ${e.type}, ${e.place||e.detail||e.ts}`}))}); }
   function drawLog(){ const tb=$('rows'); tb.innerHTML='';
     const list=ev.filter(e=>(filter==='all'||e.cat===filter)&&inPlace(e));
     if(!list.length){ tb.innerHTML='<tr><td colspan="7"><p class="empty">No incidents recorded for this selection.</p></td></tr>'; return; }
     const P=logPage(list,selected); P.vis.forEach(e=>{
       const civ=(e.civK||e.civI)?[e.civK?`${e.civK} killed`:'',e.civI?`${e.civI} injured`:''].filter(Boolean).join(', '):(e.cat==='drug'&&e.arrests?`${e.arrests} arrested`:'');
-      const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))} ${e.date.slice(2,4)}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}${e.attacks>1?` <span class="pill neutral">${e.attacks} attacks</span>`:''}</td><td>${esc(e.ts)}</td><td class="n">${esc(civ)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); logMoreRow(tb,P.more,drawLog); }
+      const tr=logRow(tb,e,`<td class="d">${esc(dShort(e.date))} ${e.date.slice(2,4)}</td><td class="ttl">${dotOf(e.cat)}${esc(titleOf(e))}${e.attacks>1?` <span class="pill neutral">${e.attacks} attacks</span>`:''}</td><td>${esc(e.spread||e.ts)}</td><td class="n">${esc(civ)}</td>`,select); if(e.id===selected) tr.classList.add('sel'); }); logMoreRow(tb,P.more,drawLog); }
   V.querySelectorAll('.layers button[data-cat]').forEach(b=>b.addEventListener('click',()=>{const c=b.dataset.cat; layers[c]=!layers[c]; b.setAttribute('aria-pressed',layers[c]); drawMap();}));
   V.querySelectorAll('.layers button[data-vill]').forEach(b=>b.addEventListener('click',()=>{const on=b.getAttribute('aria-pressed')!=='true'; b.setAttribute('aria-pressed',on); map.villages(on);}));
   V.querySelectorAll('#filters button').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.f; V.querySelectorAll('#filters button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawLog();}));
@@ -1381,7 +1385,7 @@ function renderAbout(){
     <li><b>Several months</b> are added together. Displacement figures and the briefing shown are from the latest month in the period.</li>
     <li><b>Actor groups</b> describe reported membership, not CCPR's view of any actor: the Chinland Council and its members; the ICNCC and Chin Brotherhood and their members; other Chin forces; the Union revolution and its allies; the junta and its allies; the ULA/AA; India and Mizoram; and civil society and diaspora. A body that belonged to no coalition at the time has no group.</li>
     <li><b>Issues and positions.</b> Records on the same subject share an issue tag, so it can be followed across months. When a record responds to an earlier one, it is linked and given a position: supports, objects, responds or follows up.</li>
-    <li><b>Kinds of event.</b> The governance page groups 30 detailed event types into nine kinds. The detailed type is shown when a record is opened.</li>
+    <li><b>Kinds of event.</b> The governance page groups the detailed event types into ten kinds. The detailed type is shown when a record is opened.</li>
     <li><b>Methamphetamine</b> tablets are converted to weight at 0.1 g each. Heroin is shown separately.</li>
     <li><b>Displacement</b> figures are shown per site as reported. Households and people are never converted or added together.</li>
     <li><b>Searching for a village</b> shows records at that village and within 5 km of it.</li>
@@ -1395,6 +1399,7 @@ function renderAbout(){
     <li><b>Aircraft and bombs are recorded only when the source gives them.</b> If a report says "jets" without a number, it is recorded as "more than one, number not given". If it gives some numbers but not all (for example "six jets and Y-12 aircraft"), the lowest certain number is used. Bomb counts use the lowest number reported, so "more than 50 bombs" is counted as 50. Many reports, including monthly totals, give no numbers. These figures are therefore minimums, and the site shows how many airstrikes they cover.</li>
     <li><b>Air attacks during ground fighting</b> are recorded as an airstrike as well as a clash when the source reports aircraft bombing.</li>
     <li><b>Chin State only.</b> Strikes outside Chin State are not counted.</li>
+    <li><b>When a report does not say which township</b>, the attacks are shown as spread across the townships it names, not placed in one of them, and they are not shown as a single point on the map.</li>
     <li><b>Date of the attack</b>, not the date it was reported.</li>
     <li><b>Casualties</b> are civilians and combatants counted separately, as known at the time of recording, and updated if later information changes them.</li>
     <li><b>When sources disagree</b>, the best-confirmed figure is used and higher claims are noted in the description.</li>
