@@ -6,6 +6,19 @@
 <title>Chinland Conflict Monitor</title>
 <meta charset="utf-8">
 <meta name="description" content="Monthly monitoring of security, governance, politics, humanitarian conditions and livelihoods in Chinland, compiled by the Chin Center for Peace and Reconciliation.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Chin Center for Peace and Reconciliation">
+<meta property="og:title" content="Chinland Conflict Monitor">
+<meta property="og:description" content="Monthly data on airstrikes, landmines, drugs, governance, politics, displacement and livelihoods in Chinland, from CCPR's Chinland Monitoring Briefing.">
+<meta property="og:url" content="https://monitor.chinpeacecenter.org/">
+<meta property="og:image" content="https://monitor.chinpeacecenter.org/data/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Chinland Conflict Monitor, by the Chin Center for Peace and Reconciliation">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chinland Conflict Monitor">
+<meta name="twitter:description" content="Monthly data on airstrikes, landmines, drugs, governance, politics, displacement and livelihoods in Chinland.">
+<meta name="twitter:image" content="https://monitor.chinpeacecenter.org/data/og-card.png">
 <link rel="icon" type="image/png" href="data/ccpr-mark.png">
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -62,6 +75,15 @@ nav.views a[aria-current="page"]{color:var(--ink);background:var(--panel);box-sh
 .month{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .sharebtn{font:inherit;font-size:12.5px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer}
 .month select{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.presets{display:flex;gap:4px;align-items:center}
+.presets button{font:inherit;font-size:12.5px;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer;white-space:nowrap}
+.presets button:hover{color:var(--ink)}
+.presets button[aria-pressed="true"]{color:var(--bg);background:var(--teal);border-color:var(--teal);font-weight:700}
+.custom{display:flex;align-items:center;gap:6px}
+.custom[hidden]{display:none}
+.chg{font-size:12.5px;color:var(--muted);margin:0 0 6px}
+.chg:empty{display:none}
+.chg b{font-weight:700;color:var(--ink)}
 a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outline:2px solid var(--c-drug);outline-offset:2px}
 
 .board{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-top:16px}
@@ -71,6 +93,7 @@ a:focus-visible,button:focus-visible,select:focus-visible,tr:focus-visible{outli
 .sub{margin:0 0 10px;font-size:13px;color:var(--muted)}
 .intro{grid-column:span 3;background:transparent;border:none;padding:4px 4px 0}
 .intro.wide{grid-column:span 12;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 28px}.intro.wide h1{margin:0}.intro.wide p{margin:0;max-width:70ch}
+.intro.wide .sumbox{flex:1 1 420px;max-width:80ch}
 .intro .lede{font-size:15.5px;line-height:1.5;margin:0}
 .intro h1{font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.15;margin:0 0 10px;text-wrap:balance}
 .intro p{margin:0 0 10px;color:var(--muted);font-size:14px;max-width:46ch}
@@ -356,7 +379,17 @@ footer p{margin:0 0 6px;max-width:80ch}
   .mapbox{min-height:560px}
   .gl{height:560px}
   footer{grid-template-columns:1fr}
-  nav.views{margin-left:0}
+  nav.views{margin-left:0;flex-wrap:nowrap;overflow-x:auto;width:100%;scrollbar-width:none;margin-inline:-4px;padding-inline:4px}
+  nav.views::-webkit-scrollbar,.presets::-webkit-scrollbar{display:none}
+  nav.views a{white-space:nowrap;flex:none;padding:6px 10px}
+  header.top{gap:8px;padding-block:8px}
+  .brand small{display:none}
+  .brand b{font-size:17px}
+  .brand img{width:28px}
+  .month{width:100%;gap:6px}
+  .presets{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;max-width:100%}
+  .presets button{flex:none}
+  .custom{width:100%}
   .duo{grid-template-columns:1fr}
   .rail div{font-size:0;overflow:visible;white-space:nowrap}
   .rail div.now{font-size:11px;text-align:left}
@@ -380,9 +413,14 @@ footer p{margin:0 0 6px;max-width:80ch}
     <a href="#about" data-v="about">About the data</a>
   </nav>
   <div class="month" role="group" aria-label="Period shown">
-    <label for="pfrom">From</label><select id="pfrom"></select>
-    <label for="pto">to</label><select id="pto"></select>
-    <button type="button" id="share" class="sharebtn" title="Copy a link to exactly this view">Copy link</button>
+    <div class="presets" id="presets">
+      <button type="button" data-p="1">Latest month</button><button type="button" data-p="3">Last 3 months</button><button type="button" data-p="12">Last 12 months</button><button type="button" data-p="all">All</button><button type="button" data-p="custom">Choose months</button>
+      <button type="button" id="share" class="sharebtn" title="Copy a link to exactly this view">Copy link</button>
+    </div>
+    <div class="custom" id="custom" hidden>
+      <label for="pfrom">From</label><select id="pfrom"></select>
+      <label for="pto">to</label><select id="pto"></select>
+    </div>
   </div>
 </header>
 
@@ -637,6 +675,16 @@ function hbar(label,v,max,color,extra){ return `<div class="hbar"><span>${esc(la
 /* ---------- data helpers ---------- */
 const monthsIn = () => Object.keys(DATA.months).filter(k=>k>=FROM&&k<=TO).sort();
 const PER = () => mon().multi?'in this period':'this month';
+/* the same number of months just before the selected period, for "up from / down from" lines */
+function prevKeys(){ const ks=Object.keys(DATA.months).sort(), a=ks.indexOf(FROM), b=ks.indexOf(TO), n=b-a+1; return a>=0&&b>=0&&a-n>=0?ks.slice(a-n,a):null; }
+const sumKs=(ks,fn)=>ks.reduce((a,k)=>a+(fn(DATA.months[k])||0),0);
+const prevLabel=ks=>{ if(ks.length===1) return DATA.months[ks[0]].label; const a=shortM(ks[0]), b=shortM(ks[ks.length-1]); return (a.slice(-4)===b.slice(-4)?a.slice(0,-5):a)+' to '+b; };
+function chg(cur,fn,F){ const pk=prevKeys(); if(!pk||cur==null) return ''; F=F||fmt; const p=sumKs(pk,fn), r=v=>F(v), L=esc(prevLabel(pk));
+  if(r(cur)===r(p)) return `Same as ${L}`; return `${cur>p?'Up':'Down'} from <b>${r(p)}</b> in ${L}`; }
+function chg2(fnK,fnI){ const pk=prevKeys(); if(!pk) return ''; return `${esc(prevLabel(pk))}: <b>${fmt(sumKs(pk,fnK))}</b> killed, <b>${fmt(sumKs(pk,fnI))}</b> injured`; }
+/* the short summary written for a page, from the latest briefing at or before the period's end */
+function pageSummary(kind){ const k=Object.keys(DATA.months).sort().filter(k=>k<=TO&&DATA.months[k].summaries&&DATA.months[k].summaries[kind]).pop();
+  return k?`<div class="sumbox"><p class="lede">${esc(DATA.months[k].summaries[kind])}</p><p class="sub" style="margin:6px 0 0">As of ${esc(DATA.months[k].label)} · CCPR Chinland Monitoring Briefing</p></div>`:''; }
 const shortM = k => { const [y,m]=k.split('-'); return new Date(Date.UTC(+y,+m-1,1)).toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'}).replace('Sept','Sep'); };
 /* The selected period: one month as published, or several months merged. Additive figures are summed;
    year-to-date figures, displacement snapshots, prices and the briefing come from the latest month. */
@@ -881,16 +929,16 @@ function renderSecurity(){
   V.innerHTML = `
   <section class="tile intro wide">
     <h1>Armed conflict, landmines and drugs in Chinland</h1>
-    <p>From CCPR's monthly Chinland Monitoring Briefing. Chin State, plus drug seizures on routes through Mizoram and Kalay.</p>
+    ${pageSummary('security')||`<p>From CCPR's monthly Chinland Monitoring Briefing. Chin State, plus drug seizures on routes through Mizoram and Kalay.</p>`}
   </section>
-  <section class="tile kpi"><h2>Airstrikes on civilian areas <a class="src" href="#about/airstrikes">Method</a></h2><div class="num" id="k-air"></div><p class="cap" id="k-air-cap"></p><div class="foot" id="k-air-foot"></div></section>
+  <section class="tile kpi"><h2>Airstrikes on civilian areas <a class="src" href="#about/airstrikes">Method</a></h2><div class="num" id="k-air"></div><p class="chg" id="k-air-chg"></p><p class="cap" id="k-air-cap"></p><div class="foot" id="k-air-foot"></div></section>
   <section class="tile kpi"><h2>Civilian casualties</h2>
     <div class="split"><div><span>Killed</span><b class="num" id="k-civk"></b></div><div><span>Injured</span><b class="num" id="k-civi"></b></div></div>
-    <div class="foot" id="k-civ-foot"></div></section>
+    <p class="chg" id="k-civ-chg"></p><div class="foot" id="k-civ-foot"></div></section>
   <section class="tile kpi"><h2>Landmine casualties</h2>
     <div class="split"><div><span>Killed</span><b class="num" id="k-lmk"></b></div><div><span>Injured</span><b class="num" id="k-lmi"></b></div></div>
-    <p class="cap">Civilians, including explosive remnants of war.</p></section>
-  <section class="tile kpi"><h2>Methamphetamine seized</h2><div class="num" id="k-meth"></div><p class="cap" id="k-meth-cap"></p><div class="foot" id="k-meth-foot"></div></section>
+    <p class="chg" id="k-lm-chg"></p><p class="cap">Civilians, including explosive remnants of war.</p></section>
+  <section class="tile kpi"><h2>Methamphetamine seized</h2><div class="num" id="k-meth"></div><p class="chg" id="k-meth-chg"></p><p class="cap" id="k-meth-cap"></p><div class="foot" id="k-meth-foot"></div></section>
 
   ${trendTile('Security trends',[{label:'Airstrikes on civilian areas',color:'var(--c-conflict)',fn:strikeCount},
      {label:'Civilians killed',color:'var(--c-conflict)',fn:m=>Object.values(monthSec(m).civ.groups).reduce((a,g)=>a+g[0],0)},
@@ -945,6 +993,10 @@ function renderSecurity(){
   let ck=0,ci=0; const cf=[];
   CIVG.forEach(([l])=>{ if(CG[l]){ ck+=CG[l][0]; ci+=CG[l][1]; cf.push(`${l}: ${CG[l][0]} killed, ${CG[l][1]} injured`);} });
   setNum('k-civk',ck); setNum('k-civi',ci); $('k-civ-foot').textContent=cf.join(' · ');
+  const civSum=(m,j)=>Object.values(monthSec(m).civ.groups).reduce((a,g)=>a+g[j],0), lmG=(m,j)=>{const g=monthSec(m).civ.groups.Landmines; return g?g[j]:0;};
+  $('k-air-chg').innerHTML=chg(air,strikeCount);
+  $('k-civ-chg').innerHTML=chg2(m=>civSum(m,0),m=>civSum(m,1));
+  $('k-lm-chg').innerHTML=chg2(m=>lmG(m,0),m=>lmG(m,1));
   const mzKg=r1(Object.values(DR.by).reduce((a,o)=>a+o.kg,0)), mzH=Object.values(DR.by).reduce((a,o)=>a+o.h,0);
   const klM=DR.hasKl?r1(DR.klM):0, meth=r1(mzKg+klM), heroin=mzH, arr=(DR.mzA||0)+(DR.klA||0);
   const kgFmt=v=>fmtDec(Math.round(v*10)/10);
@@ -952,6 +1004,7 @@ function renderSecurity(){
   $('k-meth').innerHTML=hasDrug?`<i style="background:var(--c-drug)"></i>${kgFmt(meth)}<small>kg</small>`:`<span class="na">None recorded</span>`;
   $('k-meth-cap').textContent=hasDrug?[arr?`${plural(arr,'person','people')} arrested`:'',heroin?`${heroin>=1000?kgFmt(heroin/1000)+' kg':fmt(heroin)+' g'} of heroin`:''].filter(Boolean).join(' · '):'';
   $('k-meth-foot').textContent='';
+  $('k-meth-chg').innerHTML=chg(meth,m=>{const d=monthSec(m).dr; return Object.values(d.by).reduce((a,o)=>a+o.kg,0)+d.klM;},v=>kgFmt(v)+' kg');
 
   /* size of air attacks: aircraft and bombs, only as reported */
   { const AS=ev.filter(e=>e.inChin&&e.type==='Airstrike'), A=e=>e.attacks||1, tot=AS.reduce((a,e)=>a+A(e),0);
@@ -1032,14 +1085,14 @@ function renderGovernance(){
   V.innerHTML=`
   <section class="tile intro">
     <h1>Governance, politics and the border</h1>
-    <p>What Chin authorities decided and delivered, how political actors dealt with each other, and what changed on the India border.</p>
+    ${pageSummary('governance')||`<p>What Chin authorities decided and delivered, how political actors dealt with each other, and what changed on the India border.</p>`}
   </section>
   <section class="tile kpi"><h2>Governance actions</h2><div class="num"><i style="background:var(--c-governance)"></i>${gov.length}</div>
-    <p class="cap">Laws, orders, services and justice by Chin authorities.</p></section>
+    <p class="chg">${chg(gov.length,m=>(m.events||[]).filter(e=>e.cat==='governance').length)}</p><p class="cap">Laws, orders, services and justice by Chin authorities.</p></section>
   <section class="tile kpi"><h2>Political events</h2><div class="num"><i style="background:var(--c-political)"></i>${pol.length}</div>
-    <p class="cap">Meetings, agreements, statements and disputes.</p></section>
+    <p class="chg">${chg(pol.length,m=>(m.events||[]).filter(e=>e.cat==='political').length)}</p><p class="cap">Meetings, agreements, statements and disputes.</p></section>
   <section class="tile kpi"><h2>Border events</h2><div class="num"><i style="background:var(--c-border)"></i>${bor.length}</div>
-    <p class="cap">Indian and Mizoram measures, refugees, and trade routes.</p></section>
+    <p class="chg">${chg(bor.length,m=>(m.events||[]).filter(e=>e.cat==='border').length)}</p><p class="cap">Indian and Mizoram measures, refugees, and trade routes.</p></section>
 
   ${trendTile('Governance and political trends',[{label:'Governance actions',color:'var(--c-governance)',fn:m=>(m.events||[]).filter(e=>e.cat==='governance').length},
      {label:'Political events',color:'var(--c-political)',fn:m=>(m.events||[]).filter(e=>e.cat==='political').length},
@@ -1245,7 +1298,7 @@ function renderHumanitarian(){
   </section>
   ${HH?HH.figures.map(f=>`<section class="tile kpi"><h2>${esc(f.counts)}</h2><div class="num${/^[\d,.]+$/.test(f.value)?'':' numtxt'}"><i style="background:var(--c-humanitarian)"></i>${esc(f.value)}</div><p class="cap">${esc(f.source)}</p></section>`).join(''):''}
   <section class="tile kpi"><h2>Humanitarian events</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.length}</div>
-    <p class="cap">${HH?`In ${esc(m.label)}${liv.length?`, plus ${plural(liv.length,'livelihood event')}`:''}.`:'Displacement, aid, disease, disasters and shortages.'}</p></section>
+    <p class="chg">${chg(hum.length,m=>(m.events||[]).filter(e=>e.cat==='humanitarian').length)}</p><p class="cap">${HH?`In ${esc(m.label)}${liv.length?`, plus ${plural(liv.length,'livelihood event')}`:''}.`:'Displacement, aid, disease, disasters and shortages.'}</p></section>
   ${HH?'':`<section class="tile kpi"><h2>Displacement and evictions</h2><div class="num"><i style="background:var(--c-humanitarian)"></i>${hum.filter(e=>/displacement|evict|relocat|return/i.test(e.type)).length}</div>
     <p class="cap">New displacement, evictions and returns.</p></section>
   <section class="tile kpi"><h2>Livelihood events</h2><div class="num"><i style="background:var(--c-livelihood)"></i>${liv.length}</div>
@@ -1430,7 +1483,8 @@ function writeHash(){ const {v,anchor}=parseHash(); const q=new URLSearchParams(
 
 /* ---------- routing ---------- */
 const VIEWS={security:renderSecurity,governance:renderGovernance,humanitarian:renderHumanitarian,about:renderAbout};
-function render(){ LOGALL=false;
+let PERIODSYNC=null;
+function render(){ LOGALL=false; if(PERIODSYNC) PERIODSYNC();
   const P=parseHash(); const hv=P.v; VIEW = VIEWS[hv] ? hv : 'security';
   document.querySelectorAll('nav.views a').forEach(a=>a.setAttribute('aria-current',a.dataset.v===VIEW?'page':'false'));
   document.querySelector('.month').style.visibility = VIEW==='about'?'hidden':'visible';
@@ -1447,6 +1501,16 @@ fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new
   if(ACTOR) setTimeout(()=>{ if(DATA.actors[ACTOR]||ACTOR) openActor(ACTOR); },600);
   const onPeriod=()=>{ FROM=$('pfrom').value; TO=$('pto').value; if(FROM>TO){ const t=FROM; FROM=TO; TO=t; $('pfrom').value=FROM; $('pto').value=TO; } MONTH=TO; SELID=null; render(); writeHash(); };
   $('pfrom').addEventListener('change',onPeriod); $('pto').addEventListener('change',onPeriod);
+  const L=ks.length-1, PRE={'1':[ks[L],ks[L]],'3':[ks[Math.max(0,L-2)],ks[L]],'12':[ks[Math.max(0,L-11)],ks[L]],'all':[ks[0],ks[L]]};
+  let custom=false;
+  $('presets').querySelector('[data-p="all"]').textContent='All since '+shortM(ks[0]);
+  const syncPresets=()=>{ const hit=custom?null:Object.keys(PRE).find(p=>PRE[p][0]===FROM&&PRE[p][1]===TO);
+    $('presets').querySelectorAll('button[data-p]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===(hit||'custom')));
+    $('custom').hidden=!!hit; };
+  PERIODSYNC=syncPresets;
+  $('presets').querySelectorAll('button[data-p]').forEach(b=>b.addEventListener('click',()=>{ const p=b.dataset.p;
+    if(p==='custom'){ custom=true; syncPresets(); $('pfrom').focus(); return; }
+    custom=false; FROM=PRE[p][0]; TO=PRE[p][1]; $('pfrom').value=FROM; $('pto').value=TO; MONTH=TO; SELID=null; render(); writeHash(); }));
   $('share').addEventListener('click',()=>{ writeHash(); const u=location.href; const done=()=>{ $('share').textContent='Link copied'; setTimeout(()=>{$('share').textContent='Copy link';},2000); };
     if(navigator.clipboard) navigator.clipboard.writeText(u).then(done,()=>prompt('Copy this link',u)); else prompt('Copy this link',u); });
   if(d.generated) $('updated').textContent='Data last published '+new Date(d.generated).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+'.';
@@ -1456,6 +1520,5 @@ fetch('data/monitor-data.json',{cache:'no-cache'}).then(r=>{ if(!r.ok) throw new
 }).catch(()=>{ $('state').textContent='The data file could not be loaded. Please try again later.'; });
 });
 </script>
-
 </body>
 </html>
