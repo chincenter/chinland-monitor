@@ -2,7 +2,7 @@
  "title": "Chinland Conflict Monitor",
  "publisher": "Chin Center for Peace and Reconciliation",
  "source": "Chinland Monitoring Briefing",
- "generated": "2026-11-12T03:11:05.950Z",
+ "generated": "2026-11-12T03:55:36.238Z",
  "latest": "2026-10",
  "months": {
   "2025-01": {
@@ -32658,7 +32658,7 @@
    "displacement": [],
    "briefing": {
     "title": "Chinland Monitoring Briefing, October 2026",
-    "pdf_en": null,
+    "pdf_en": "CMB-2026-10-EN.pdf",
     "pdf_my": null,
     "cover": "cmb-2026-10-cover.jpg",
     "published": null
@@ -33436,6 +33436,12 @@
   }
  },
  "briefings": [
+  {
+   "month": "2026-10",
+   "label": "October 2026",
+   "url_en": "data/CMB-2026-10-EN.pdf",
+   "url_my": null
+  },
   {
    "month": "2026-09",
    "label": "September 2026",
